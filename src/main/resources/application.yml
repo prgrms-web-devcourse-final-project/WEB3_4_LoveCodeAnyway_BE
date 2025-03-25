@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: backend
+
+  profiles:
+    active: dev
+
+  mvc:
+    servlet:
+      path: /api/v1
+
+  # h2
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  datasource:
+    url: jdbc:h2:./db_dev;MODE=MySQL
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ""
+
+  # JPA
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+
+# logging
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.ddobang.backend: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+
+# swagger
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
