@@ -1,0 +1,31 @@
+name: "🐞 Bug"
+description: "버그 수정 이슈"
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 📄 버그 설명
+      description: 어떤 문제가 있었는지 구체적으로 적어주세요.
+      placeholder: 버그 발생 상황, 예상 동작 등...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 🔁 재현 방법
+      description: 어떤 순서로 버그가 발생했는지 단계별로 알려주세요.
+      placeholder: |
+        1. 로그인 페이지로 이동  
+        2. 아이디 입력 없이 로그인 버튼 클릭  
+        3. 에러 페이지 출력됨
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 🖼 스크린샷 또는 로그
+      description: 관련 이미지나 콘솔 로그가 있다면 첨부해 주세요.
+      placeholder: drag & drop으로 이미지 첨부 가능
