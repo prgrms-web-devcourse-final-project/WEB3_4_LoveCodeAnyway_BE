@@ -19,10 +19,8 @@ jobs:
 
       - name: Send PR Event Notification
         env:
-          # 공통 채널 Webhook
           DISCORD_WEBHOOK_ALL: ${{ secrets.DISCORD_WEBHOOK_ALL }}
 
-          # 팀원 채널 Webhook + Discord ID
           DISCORD_WEBHOOK_GYUJIN: ${{ secrets.DISCORD_WEBHOOK_GYUJIN }}
           DISCORD_ID_GYUJIN: ${{ secrets.DISCORD_ID_GYUJIN }}
 
@@ -44,11 +42,10 @@ jobs:
           PR_URL=$(jq -r '.pull_request.html_url' "$GITHUB_EVENT_PATH")
           ACTION=$(jq -r '.action' "$GITHUB_EVENT_PATH")
           MERGED=$(jq -r '.pull_request.merged // false' "$GITHUB_EVENT_PATH")
-          
+
           echo "🎯 이벤트: $ACTION / 병합 여부: $MERGED"
           echo "작성자: $AUTHOR / 리뷰어: $REVIEWER"
 
-          # 채널 매핑 함수
           getUserInfo() {
             case "$1" in
               "notmybussiness") echo "$DISCORD_ID_GYUJIN|$DISCORD_WEBHOOK_GYUJIN" ;;
@@ -67,28 +64,28 @@ jobs:
               -d "{\"content\": \"$CONTENT\"}" "$WEBHOOK_URL"
           }
 
-          # 공통 채널 메시지
           COMMON_MESSAGE=""
           case "$ACTION" in
             "opened")
-              COMMON_MESSAGE="📌 [PR 생성] [$PR_TITLE]($PR_URL)\n작성자: \`$AUTHOR\`"
+              COMMON_MESSAGE="📌 **[PR 생성]**\n👤 작성자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
               ;;
             "review_requested")
-              COMMON_MESSAGE="📝 [리뷰 요청] [$PR_TITLE]($PR_URL)\n작성자: \`$AUTHOR\` → 리뷰어: \`$REVIEWER\`"
+              COMMON_MESSAGE="📝 **[리뷰 요청]**\n👤 요청자: \`$AUTHOR\` → 🧑‍💻 리뷰어: \`$REVIEWER\`\n\n🔗 [$PR_TITLE]($PR_URL)"
               ;;
             "review_submitted")
               STATE=$(jq -r '.review.state' "$GITHUB_EVENT_PATH")
-              COMMON_MESSAGE="✅ [리뷰 완료] [$PR_TITLE]($PR_URL)\n리뷰어: \`$REVIEWER\` → 상태: *$STATE*"
+              REVIEWER_NAME=$(jq -r '.review.user.login' "$GITHUB_EVENT_PATH")
+              COMMON_MESSAGE="✅ **[리뷰 완료]**\n🧑‍💻 리뷰어: \`$REVIEWER_NAME\` → 상태: **$STATE**\n\n🔗 [$PR_TITLE]($PR_URL)"
               ;;
             "closed")
               if [ "$MERGED" = "true" ]; then
-                COMMON_MESSAGE="🎉 [PR 머지됨] [$PR_TITLE]($PR_URL)\n작성자: \`$AUTHOR\`"
+                COMMON_MESSAGE="🎉 **[PR 머지됨]**\n👤 작성자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
               else
-                COMMON_MESSAGE="❌ [PR 닫힘] [$PR_TITLE]($PR_URL)\n작성자: \`$AUTHOR\`"
+                COMMON_MESSAGE="❌ **[PR 닫힘] (병합되지 않음)**\n👤 작성자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
               fi
               ;;
             "synchronize")
-              COMMON_MESSAGE="🔄 [PR 업데이트] [$PR_TITLE]($PR_URL)\n작성자: \`$AUTHOR\`"
+              COMMON_MESSAGE="🔄 **[PR 업데이트됨]**\n👤 작성자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
               ;;
           esac
 
@@ -96,26 +93,31 @@ jobs:
             sendMessage "$DISCORD_WEBHOOK_ALL" "$COMMON_MESSAGE"
           fi
 
-          # 리뷰어 멘션 (review_requested)
           if [ "$ACTION" = "review_requested" ]; then
             IFS='|' read -r DISCORD_ID WEBHOOK <<< "$(getUserInfo "$REVIEWER")"
-            [ -n "$DISCORD_ID" ] && sendMessage "$WEBHOOK" "<@$DISCORD_ID> 님, 리뷰 요청이 도착했습니다! 🔔\n👉 [$PR_TITLE]($PR_URL)"
+            if [ -n "$DISCORD_ID" ]; then
+              MESSAGE="📝 **리뷰 요청 알림**\n👤 요청자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
+              sendMessage "$WEBHOOK" "<@$DISCORD_ID> $MESSAGE"
+            fi
           fi
 
-          # 작성자 멘션 (review_submitted, closed/merged)
           if [[ "$ACTION" = "review_submitted" || "$ACTION" = "closed" ]]; then
             IFS='|' read -r DISCORD_ID WEBHOOK <<< "$(getUserInfo "$AUTHOR")"
 
             if [ -n "$DISCORD_ID" ]; then
               if [ "$ACTION" = "review_submitted" ]; then
                 STATE=$(jq -r '.review.state' "$GITHUB_EVENT_PATH")
-                sendMessage "$WEBHOOK" "<@$DISCORD_ID> 님, 리뷰가 완료되었습니다! ✅\n상태: *$STATE*\n👉 [$PR_TITLE]($PR_URL)"
+                REVIEWER_NAME=$(jq -r '.review.user.login' "$GITHUB_EVENT_PATH")
+
+                MESSAGE="✅ **리뷰 완료 알림**\n🧑‍💻 리뷰어: \`$REVIEWER_NAME\`\n📋 상태: **$STATE**\n\n🔗 [$PR_TITLE]($PR_URL)"
+                sendMessage "$WEBHOOK" "<@$DISCORD_ID> $MESSAGE"
               elif [ "$ACTION" = "closed" ]; then
                 if [ "$MERGED" = "true" ]; then
-                  sendMessage "$WEBHOOK" "🎉 <@$DISCORD_ID> 님, PR이 머지되었습니다!\n👉 [$PR_TITLE]($PR_URL)"
+                  MESSAGE="🎉 **PR 머지 완료!**\n🙌 정말 고생하셨습니다!\n\n🔗 [$PR_TITLE]($PR_URL)"
                 else
-                  sendMessage "$WEBHOOK" "⚠️ <@$DISCORD_ID> 님, PR이 닫혔습니다 (병합되지 않음)\n👉 [$PR_TITLE]($PR_URL)"
+                  MESSAGE="⚠️ **PR이 닫혔습니다 (병합되지 않음)**\n👤 작성자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
                 fi
+                sendMessage "$WEBHOOK" "<@$DISCORD_ID> $MESSAGE"
               fi
             fi
           fi
