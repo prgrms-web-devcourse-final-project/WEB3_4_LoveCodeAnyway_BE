@@ -1,0 +1,38 @@
+name: 🪄 Create Branch on Issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Create branch for new issue
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          ISSUE_BODY="${{ github.event.issue.body }}"
+
+          # 도메인 추출 (ex: 인증 (auth) → auth)
+          DOMAIN_LINE=$(echo "$ISSUE_BODY" | grep -A 1 "🗂 도메인" | tail -n 1 | xargs)
+          DOMAIN=$(echo "$DOMAIN_LINE" | sed -n 's/.*(\(.*\)).*/\1/p' | tr '[:upper:]' '[:lower:]')
+
+          # 브랜치 이름 생성
+          BRANCH_NAME="feature/${DOMAIN}-${ISSUE_NUMBER}"
+          echo "📌 브랜치 이름: $BRANCH_NAME"
+
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+
+          git clone https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} repo
+          cd repo
+
+          git checkout -b "$BRANCH_NAME"
+          git push origin "$BRANCH_NAME"
