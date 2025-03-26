@@ -17,8 +17,21 @@ body:
         - 문의 (board)
         - 쪽지 (message)
         - 알림 (noti)
+        - 기타 (etc)
     validations:
       required: true
+
+  - type: input
+    id: etc-domain
+    attributes:
+      label: ✏️ 기타 도메인 입력
+      description: 기타를 선택한 경우, 도메인명을 직접 입력해 주세요.
+      placeholder: 예) 공통, 검색, 통계 등
+    validations:
+      required: false
+    when:
+      field: domain
+      equals: 기타 (etc)
 
   - type: textarea
     id: description
