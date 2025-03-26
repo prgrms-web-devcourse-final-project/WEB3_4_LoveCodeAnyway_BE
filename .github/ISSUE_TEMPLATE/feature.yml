@@ -8,15 +8,15 @@ body:
       label: 🗂 도메인
       description: 이 기능이 속한 도메인을 선택해 주세요.
       options:
-        - auth
-        - member
-        - theme
-        - store
-        - party
-        - diary
-        - board
-        - message
-        - noti
+        - 인증 (auth)
+        - 회원 (member)
+        - 테마 (theme)
+        - 매장 (store)
+        - 모임 (party)
+        - 탈출일지 (diary)
+        - 문의 (board)
+        - 쪽지 (message)
+        - 알림 (noti)
     validations:
       required: true
 
