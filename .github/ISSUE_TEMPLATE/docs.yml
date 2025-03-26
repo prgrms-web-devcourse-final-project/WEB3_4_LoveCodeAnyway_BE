@@ -1,4 +1,4 @@
-name: "📝 문서 수정"
+name: "📝 Docs"
 description: "README 또는 기타 문서 수정 이슈"
 labels: ["docs"]
 body:
