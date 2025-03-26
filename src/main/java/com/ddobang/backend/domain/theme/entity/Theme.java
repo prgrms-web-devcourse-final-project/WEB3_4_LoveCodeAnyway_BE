@@ -8,5 +8,5 @@ import jakarta.persistence.Id;
 @Entity
 public class Theme extends BaseTime {
 	@Id
-	Long idi;
+	Long id;
 }
