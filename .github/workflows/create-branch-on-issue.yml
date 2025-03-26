@@ -26,11 +26,9 @@ jobs:
           echo "🧾 이슈 번호: $ISSUE_NUMBER"
           echo "🧾 이슈 본문: $ISSUE_BODY"
 
-          # 도메인 라인 추출
-          DOMAIN_LINE=$(echo "$ISSUE_BODY" | grep -A 1 "🗂 도메인" | tail -n 1 | xargs)
-          DOMAIN=$(echo "$DOMAIN_LINE" | sed -n 's/.*(\(.*\)).*/\1/p' | tr '[:upper:]' '[:lower:]')
+          # 빈 줄 무시하고 도메인 추출 (🗂 도메인 다음 줄 중 실제 값)
+          DOMAIN=$(echo "$ISSUE_BODY" | awk '/🗂 도메인/{getline; while ($0 ~ /^$/) {getline}; print}' | sed -n 's/.*(\(.*\)).*/\1/p' | tr '[:upper:]' '[:lower:]')
 
-          echo "🔎 DOMAIN_LINE: $DOMAIN_LINE"
           echo "🔎 DOMAIN 추출 결과: $DOMAIN"
 
           if [ -z "$DOMAIN" ]; then
