@@ -2,6 +2,24 @@ name: "✨ Feature"
 description: "새로운 기능 추가"
 labels: ["feature"]
 body:
+  - type: dropdown
+    id: domain
+    attributes:
+      label: 🗂 도메인
+      description: 이 기능이 속한 도메인을 선택해 주세요.
+      options:
+        - auth
+        - member
+        - theme
+        - store
+        - party
+        - diary
+        - board
+        - message
+        - noti
+    validations:
+      required: true
+
   - type: textarea
     id: description
     attributes:
