@@ -5,16 +5,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 public class ResponseFactory {
-    public static <T> ResponseEntity<T> ok(T data) {
-        return ResponseEntity.status(HttpStatus.OK).body(data);
+    public static <T> ResponseEntity<SuccessResponse<T>> ok(String message, T data) {
+        return ResponseEntity.status(HttpStatus.OK).body(SuccessResponse.of(message, data));
     }
 
-    public static <T> ResponseEntity<T> created(T data) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(data);
+    public static <T> ResponseEntity<SuccessResponse<T>> created(String message, T data) {
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(SuccessResponse.of(message, data));
     }
 
-    public static ResponseEntity<Void> noContent() {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    public static ResponseEntity<SuccessResponse<Void>> noContent(String message) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .body(SuccessResponse.of(message));
     }
 
     public static ResponseEntity<ErrorResponse> error(ErrorCode errorCode) {
