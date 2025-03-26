@@ -22,8 +22,8 @@ public class ResponseFactory {
                 .body(ErrorResponse.of(errorCode));
     }
 
-    public static ResponseEntity<ErrorResponse> error(String code, String message, HttpStatus status) {
+    public static ResponseEntity<ErrorResponse> error(String errorCode, String message, HttpStatus status) {
         return ResponseEntity.status(status)
-                .body(ErrorResponse.of(code, message));
+                .body(ErrorResponse.of(errorCode, message));
     }
 }

@@ -15,7 +15,7 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = e.getErrorCode();
         log.warn("[ServiceException] status={}, code={}, message={}",
                 errorCode.getStatus().value(),
-                errorCode.getCode(),
+                errorCode.getErrorCode(),
                 errorCode.getMessage());
         return ResponseFactory.error(errorCode);
     }
@@ -24,7 +24,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception e) {
         log.error("[UnhandledException] message={}, exception={}",
                 e.getMessage(), e.getClass().getSimpleName(), e);
-        return ResponseFactory.error(ErrorCode.INTERNAL_SERVER_ERROR);
+        return ResponseFactory.error(GlobalErrorCode.INTERNAL_SERVER_ERROR);
     }
-
 }

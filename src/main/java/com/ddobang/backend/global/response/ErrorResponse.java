@@ -1,20 +1,13 @@
 package com.ddobang.backend.global.response;
 
 import com.ddobang.backend.global.exception.ErrorCode;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
-@AllArgsConstructor
-@Getter
-public class ErrorResponse {
-    private final String code;
-    private final String message;
-
+public record ErrorResponse(String errorCode, String message) {
     public static ErrorResponse of(ErrorCode errorCode) {
-        return new ErrorResponse(errorCode.getCode(), errorCode.getMessage());
+        return new ErrorResponse(errorCode.getErrorCode(), errorCode.getMessage());
     }
 
-    public static ErrorResponse of(String code, String message) {
-        return new ErrorResponse(code, message);
+    public static ErrorResponse of(String errorCode, String message) {
+        return new ErrorResponse(errorCode, message);
     }
 }

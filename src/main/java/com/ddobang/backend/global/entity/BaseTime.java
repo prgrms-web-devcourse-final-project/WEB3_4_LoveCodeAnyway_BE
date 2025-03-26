@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-public class BaseTime extends BaseEntity {
+public class BaseTime {
     @CreatedDate
     @Setter(AccessLevel.PRIVATE)
     private LocalDateTime createdAt;
