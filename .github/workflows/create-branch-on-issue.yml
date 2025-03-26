@@ -16,23 +16,43 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          echo "▶️ 이슈 기반 브랜치 자동 생성 시작"
+
           ISSUE_TITLE="${{ github.event.issue.title }}"
           ISSUE_NUMBER="${{ github.event.issue.number }}"
           ISSUE_BODY="${{ github.event.issue.body }}"
 
-          # 도메인 추출 (ex: 인증 (auth) → auth)
+          echo "🧾 이슈 제목: $ISSUE_TITLE"
+          echo "🧾 이슈 번호: $ISSUE_NUMBER"
+          echo "🧾 이슈 본문: $ISSUE_BODY"
+
+          # 도메인 라인 추출
           DOMAIN_LINE=$(echo "$ISSUE_BODY" | grep -A 1 "🗂 도메인" | tail -n 1 | xargs)
           DOMAIN=$(echo "$DOMAIN_LINE" | sed -n 's/.*(\(.*\)).*/\1/p' | tr '[:upper:]' '[:lower:]')
 
-          # 브랜치 이름 생성
-          BRANCH_NAME="feature/${DOMAIN}-${ISSUE_NUMBER}"
+          echo "🔎 DOMAIN_LINE: $DOMAIN_LINE"
+          echo "🔎 DOMAIN 추출 결과: $DOMAIN"
+
+          if [ -z "$DOMAIN" ]; then
+            echo "❌ 도메인 값을 추출할 수 없습니다. 브랜치를 생성하지 않습니다."
+            exit 1
+          fi
+
+          # 브랜치 이름 생성 (공백, 특수문자 제거)
+          SANITIZED_DOMAIN=$(echo "$DOMAIN" | tr -cd '[:alnum:]-')
+          BRANCH_NAME="feature/${SANITIZED_DOMAIN}-${ISSUE_NUMBER}"
           echo "📌 브랜치 이름: $BRANCH_NAME"
 
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
 
+          echo "📥 저장소 클론 중..."
           git clone https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} repo
-          cd repo
 
+          cd repo
           git checkout -b "$BRANCH_NAME"
+
+          echo "🚀 브랜치 푸시 시작..."
           git push origin "$BRANCH_NAME"
+
+          echo "✅ 브랜치 생성 완료: $BRANCH_NAME"
