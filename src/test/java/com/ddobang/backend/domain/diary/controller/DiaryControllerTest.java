@@ -1,5 +1,6 @@
 package com.ddobang.backend.domain.diary.controller;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
+import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.diary.service.DiaryService;
 
 @SpringBootTest
@@ -275,5 +277,37 @@ public class DiaryControllerTest {
 			.andExpect(jsonPath("$.message").value("입력값이 올바르지 않습니다."))
 			.andExpect(jsonPath("$.errors[0].field").value("themeId"))
 			.andExpect(jsonPath("$.errors[0].message").value("테마를 선택해주세요."));
+	}
+
+	@Test
+	@DisplayName("탈출일지 삭제")
+	void t4() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(delete("/diaries/1"))
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("delete"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("1번 탈출일지 삭제에 성공했습니다."));
+
+		assertThatThrownBy(() -> diaryService.findById(1))
+			.isInstanceOf(DiaryException.class)
+			.hasMessage("탈출일지를 찾을 수 없습니다.");
+	}
+
+	@Test
+	@DisplayName("탈출일지 삭제, 존재하지 않는 번호의 탈출일지 삭제")
+	void t4_1() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(delete("/diaries/99999999"))
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("delete"))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("탈출일지를 찾을 수 없습니다."));
 	}
 }

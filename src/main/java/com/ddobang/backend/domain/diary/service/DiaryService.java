@@ -125,4 +125,11 @@ public class DiaryService {
 
 		return DiaryDto.of(diary);
 	}
+
+	@Transactional
+	public void delete(long id) {
+		Diary diary = findById(id);
+
+		diaryRepository.delete(diary);
+	}
 }

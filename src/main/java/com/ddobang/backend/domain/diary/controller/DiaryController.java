@@ -1,6 +1,7 @@
 package com.ddobang.backend.domain.diary.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,5 +63,15 @@ public class DiaryController {
 			"%d번 탈출일지 수정에 성공했습니다.".formatted(id),
 			diaryDto
 		);
+	}
+
+	@Operation(summary = "탈출일지 삭제", description = "탈출일지 id를 기준으로 특정 탈출일지를 가져와 삭제합니다.")
+	@DeleteMapping("/{id}")
+	public ResponseEntity<SuccessResponse<Void>> delete(
+		@PathVariable long id
+	) {
+		diaryService.delete(id);
+
+		return ResponseFactory.ok("%d번 탈출일지 삭제에 성공했습니다.".formatted(id));
 	}
 }
