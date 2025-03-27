@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 
 import com.ddobang.backend.domain.region.dto.SubRegionsResponse;
 import com.ddobang.backend.domain.region.entity.Region;
@@ -69,10 +70,11 @@ public class RegionServiceTest {
 		RegionErrorCode errorCode = RegionErrorCode.REGION_NOT_FOUND;
 
 		// then
+		assertThat(exception.getErrorCode()).isEqualTo(RegionErrorCode.REGION_NOT_FOUND);
+		assertThat(exception.getErrorCode().getErrorCode()).isEqualTo("REGION_001");
+		assertThat(exception.getErrorCode().getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(exception.getMessage()).isEqualTo("지역 정보를 찾을 수 없습니다.");
 		assertThat(exception.getErrorCode()).isEqualTo(errorCode);
-		assertThat(exception.getErrorCode().getErrorCode()).isEqualTo(errorCode.getErrorCode());
-		assertThat(exception.getErrorCode().getStatus()).isEqualTo(errorCode.getStatus());
-		assertThat(exception.getMessage()).isEqualTo(errorCode.getMessage());
 	}
 
 	@Test
