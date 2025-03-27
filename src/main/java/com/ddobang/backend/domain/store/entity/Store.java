@@ -1,12 +1,19 @@
 package com.ddobang.backend.domain.store.entity;
 
+import com.ddobang.backend.domain.region.entity.Region;
+import com.ddobang.backend.domain.store.dto.StoreRequest;
 import com.ddobang.backend.global.entity.BaseTime;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,5 +23,45 @@ import lombok.NoArgsConstructor;
 public class Store extends BaseTime {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	Long id;
+	private Long id;
+
+	@NotBlank
+	private String name;
+
+	private String address;
+
+	private String phoneNumber;
+
+	private String siteUrl;
+
+	@Enumerated(EnumType.STRING)
+	private Status status;
+
+	public enum Status {
+		OPEN, CLOSE, INACTIVE
+	}
+
+	@ManyToOne
+	private Region region;
+
+	@Builder
+	public Store(String name, String address, String phoneNumber, String siteUrl, Status status, Region region) {
+		this.name = name;
+		this.address = address;
+		this.phoneNumber = phoneNumber;
+		this.siteUrl = siteUrl;
+		this.status = status;
+		this.region = region;
+	}
+
+	public static Store of(StoreRequest storeRequest, Region region) {
+		return Store.builder()
+			.name(storeRequest.name())
+			.address(storeRequest.address())
+			.phoneNumber(storeRequest.phoneNumber())
+			.siteUrl(storeRequest.siteUrl())
+			.status(storeRequest.status())
+			.region(region)
+			.build();
+	}
 }
