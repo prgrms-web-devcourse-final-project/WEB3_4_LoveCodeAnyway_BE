@@ -9,7 +9,7 @@ import com.ddobang.backend.domain.region.entity.Region;
  */
 public record SubRegionsResponse(
 	Long id,
-	String subRegions) {
+	String subRegion) {
 
 	public static SubRegionsResponse of(Region region) {
 		return new SubRegionsResponse(region.getId(), region.getSubRegion());
