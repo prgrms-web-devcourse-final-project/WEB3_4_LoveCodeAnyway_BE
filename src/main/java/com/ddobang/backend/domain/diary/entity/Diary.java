@@ -59,4 +59,44 @@ public class Diary extends BaseTime {
 	public void setDiaryStats(DiaryStats diaryStats) {
 		this.diaryStats = diaryStats;
 	}
+
+	public void modify(
+		//Theme theme,
+		LocalDate escapeDate,
+		String imageUrl,
+		String participants,
+		int difficulty,
+		int fear,
+		int activity,
+		int satisfaction,
+		int production,
+		int story,
+		int question,
+		int interior,
+		int deviceRatio,
+		int hintCount,
+		boolean escapeResult,
+		int elapsedTime,
+		String review
+	) {
+		//this.theme = theme;
+		this.escapeDate = escapeDate;
+		this.imageUrl = imageUrl;
+		this.participants = participants;
+		this.diaryStats.modify(
+			difficulty,
+			fear,
+			activity,
+			satisfaction,
+			production,
+			story,
+			question,
+			interior,
+			deviceRatio,
+			hintCount,
+			escapeResult,
+			elapsedTime
+		);
+		this.review = review;
+	}
 }

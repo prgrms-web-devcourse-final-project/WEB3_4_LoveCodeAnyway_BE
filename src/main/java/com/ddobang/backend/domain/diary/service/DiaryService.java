@@ -57,7 +57,7 @@ public class DiaryService {
 				.hintCount(diaryRequestDto.hintCount())
 				.escapeResult(diaryRequestDto.escapeResult())
 				// .elapsedTime(
-				// 	diaryRequestDto.timeType.equals("remaining")
+				// 	diaryRequestDto.timeType().equals("remaining")
 				// 		? theme.getRuntime() * 60 - diaryRequestDto.elapsedTime()
 				// 		: diaryRequestDto.elapsedTime()
 				// )
@@ -67,7 +67,7 @@ public class DiaryService {
 
 		diary.setDiaryStats(diaryStats);
 
-		return DiaryDto.from(diary);
+		return DiaryDto.of(diary);
 	}
 
 	public long count() {
@@ -79,7 +79,7 @@ public class DiaryService {
 		Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Order.desc("id")));
 
 		return diaryRepository.findAll(pageable)
-			.map(DiaryDto::from);
+			.map(DiaryDto::of);
 	}
 
 	public Diary findById(long id) {
@@ -90,6 +90,39 @@ public class DiaryService {
 
 	@Transactional(readOnly = true)
 	public DiaryDto getItem(long id) {
-		return DiaryDto.from(findById(id));
+		return DiaryDto.of(findById(id));
+	}
+
+	@Transactional
+	public DiaryDto modify(long id, DiaryRequestDto diaryRequestDto) {
+		Diary diary = findById(id);
+		// Theme theme = themeRepository.findById(diaryRequestDto.themeId()).orElseThrow(
+		// 	() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
+		// );
+
+		diary.modify(
+			//theme,
+			diaryRequestDto.escapeDate(),
+			diaryRequestDto.image(),
+			diaryRequestDto.participants(),
+			diaryRequestDto.difficulty(),
+			diaryRequestDto.fear(),
+			diaryRequestDto.activity(),
+			diaryRequestDto.satisfaction(),
+			diaryRequestDto.production(),
+			diaryRequestDto.story(),
+			diaryRequestDto.question(),
+			diaryRequestDto.interior(),
+			diaryRequestDto.deviceRatio(),
+			diaryRequestDto.hintCount(),
+			diaryRequestDto.escapeResult(),
+			// diaryRequestDto.timeType().equals("remaining")
+			// 	? theme.getRuntime() * 60 - diaryRequestDto.elapsedTime()
+			// 	: diaryRequestDto.elapsedTime(),
+			diaryRequestDto.elapsedTime(),
+			diaryRequestDto.review()
+		);
+
+		return DiaryDto.of(diary);
 	}
 }

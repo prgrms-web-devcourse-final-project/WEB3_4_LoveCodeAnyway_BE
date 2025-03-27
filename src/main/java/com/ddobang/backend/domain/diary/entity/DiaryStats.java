@@ -69,4 +69,32 @@ public class DiaryStats {
 		this.escapeResult = escapeResult;
 		this.elapsedTime = elapsedTime;
 	}
+
+	public void modify(
+		int difficulty,
+		int fear,
+		int activity,
+		int satisfaction,
+		int production,
+		int story,
+		int question,
+		int interior,
+		int deviceRatio,
+		int hintCount,
+		boolean escapeResult,
+		int elapsedTime
+	) {
+		this.difficulty = difficulty;
+		this.fear = fear;
+		this.activity = activity;
+		this.satisfaction = satisfaction;
+		this.production = production;
+		this.story = story;
+		this.question = question;
+		this.interior = interior;
+		this.deviceRatio = deviceRatio;
+		this.hintCount = hintCount;
+		this.escapeResult = escapeResult;
+		this.elapsedTime = elapsedTime;
+	}
 }

@@ -36,26 +36,26 @@ public class DiaryInitData {
 			return;
 		}
 
-		DiaryRequestDto diaryRequestDto = new DiaryRequestDto(
-			1L,
-			"https://placehold.co/640x640?text=:P",
-			LocalDate.of(2025, 2, 20),
-			"지인1, 지인2",
-			3,
-			3,
-			3,
-			3,
-			3,
-			3,
-			3,
-			3,
-			70,
-			1,
-			true,
-			"elapsed",
-			3600,
-			"너무 재밌었다!!"
-		);
+		DiaryRequestDto diaryRequestDto = DiaryRequestDto.builder()
+			.themeId(1L)
+			.image("https://placehold.co/640x640?text=:P")
+			.escapeDate(LocalDate.of(2025, 2, 20))
+			.participants("지인1, 지인2")
+			.difficulty(3)
+			.fear(3)
+			.activity(3)
+			.satisfaction(3)
+			.production(3)
+			.story(3)
+			.question(3)
+			.interior(3)
+			.deviceRatio(70)
+			.hintCount(1)
+			.escapeResult(true)
+			.timeType("elapsed")
+			.elapsedTime(3600)
+			.review("너무 재밌었다!!")
+			.build();
 
 		diaryService.write(diaryRequestDto);
 	}

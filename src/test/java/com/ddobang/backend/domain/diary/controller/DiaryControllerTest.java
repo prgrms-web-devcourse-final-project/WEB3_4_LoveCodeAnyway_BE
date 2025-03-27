@@ -146,4 +146,134 @@ public class DiaryControllerTest {
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.message").value("탈출일지를 찾을 수 없습니다."));
 	}
+
+	@Test
+	@DisplayName("탈출일지 수정")
+	void t3() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(put("/diaries/1")
+				.content("""
+					{
+						"themeId": 1,
+						"image": "https://placehold.co/320x320?text=o_o",
+						"escapeDate": "2025-02-20",
+						"participants": "내 칭구1, 내 칭구2",
+						"difficulty": 5,
+						"fear": 1,
+						"activity": 3,
+						"satisfaction": 4,
+						"production": 3,
+						"story": 3,
+						"question": 4,
+						"interior": 4,
+						"deviceRatio": 50,
+						"hintCount": 0,
+						"escapeResult": true,
+						"timeType": "elapsed",
+						"elapsedTime": 34500,
+						"review": "완전 완전 재밌었다!!"
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("modify"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("1번 탈출일지 수정에 성공했습니다."))
+			.andExpect(jsonPath("$.data.id").value(1))
+			.andExpect(jsonPath("$.data.image").value("https://placehold.co/320x320?text=o_o"))
+			.andExpect(jsonPath("$.data.escapeDate").value("2025-02-20"))
+			.andExpect(jsonPath("$.data.participants").value("내 칭구1, 내 칭구2"))
+			.andExpect(jsonPath("$.data.difficulty").value(5))
+			.andExpect(jsonPath("$.data.fear").value(1))
+			.andExpect(jsonPath("$.data.activity").value(3))
+			.andExpect(jsonPath("$.data.satisfaction").value(4))
+			.andExpect(jsonPath("$.data.production").value(3))
+			.andExpect(jsonPath("$.data.story").value(3))
+			.andExpect(jsonPath("$.data.question").value(4))
+			.andExpect(jsonPath("$.data.interior").value(4))
+			.andExpect(jsonPath("$.data.deviceRatio").value(50))
+			.andExpect(jsonPath("$.data.hintCount").value(0))
+			.andExpect(jsonPath("$.data.escapeResult").value(true))
+			.andExpect(jsonPath("$.data.elapsedTime").value(34500))
+			.andExpect(jsonPath("$.data.review").value("완전 완전 재밌었다!!"))
+			.andExpect(jsonPath("$.data.createdAt").exists())
+			.andExpect(jsonPath("$.data.modifiedAt").exists());
+	}
+
+	@Test
+	@DisplayName("탈출일지 수정, 존재하지 않는 번호의 탈출일지 수정")
+	void t3_1() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(put("/diaries/99999999")
+				.content("""
+					{
+						"themeId": 1,
+						"image": "https://placehold.co/320x320?text=o_o",
+						"escapeDate": "2025-02-20",
+						"participants": "내 칭구1, 내 칭구2",
+						"difficulty": 5,
+						"fear": 1,
+						"activity": 3,
+						"satisfaction": 4,
+						"production": 3,
+						"story": 3,
+						"question": 4,
+						"interior": 4,
+						"deviceRatio": 50,
+						"hintCount": 0,
+						"escapeResult": true,
+						"timeType": "elapsed",
+						"elapsedTime": 34500,
+						"review": "완전 완전 재밌었다!!"
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("modify"))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("탈출일지를 찾을 수 없습니다."));
+	}
+
+	@Test
+	@DisplayName("탈출일지 수정, theme id가 없을 때")
+	void t3_2() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(put("/diaries/1")
+				.content("""
+					{
+						"image": "https://placehold.co/320x320?text=o_o",
+						"escapeDate": "2025-02-20",
+						"hintCount": 0,
+						"escapeResult": true,
+						"timeType": "elapsed",
+						"elapsedTime": 34500,
+						"review": "완전 완전 재밌었다!!"
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("modify"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("입력값이 올바르지 않습니다."))
+			.andExpect(jsonPath("$.errors[0].field").value("themeId"))
+			.andExpect(jsonPath("$.errors[0].message").value("테마를 선택해주세요."));
+	}
 }

@@ -3,7 +3,9 @@ package com.ddobang.backend.domain.diary.dto.request;
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
+@Builder
 public record DiaryRequestDto(
 	@NotNull(message = "테마를 선택해주세요.")
 	Long themeId,

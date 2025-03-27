@@ -29,7 +29,7 @@ public record DiaryDto(
 	LocalDateTime createdAt,
 	LocalDateTime modifiedAt
 ) {
-	public static DiaryDto from(Diary diary) {
+	public static DiaryDto of(Diary diary) {
 		return new DiaryDto(
 			diary.getId(),
 			//diary.getTheme().getId(),
