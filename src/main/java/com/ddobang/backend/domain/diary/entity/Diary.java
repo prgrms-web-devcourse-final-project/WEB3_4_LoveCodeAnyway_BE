@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -40,6 +41,7 @@ public class Diary extends BaseTime {
 	@Column(columnDefinition = "TEXT")
 	private String review;
 
+	@Builder
 	public Diary(
 		//Theme theme,
 		LocalDate escapeDate,

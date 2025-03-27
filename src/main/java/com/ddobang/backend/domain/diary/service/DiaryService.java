@@ -33,39 +33,41 @@ public class DiaryService {
 		// );
 
 		Diary diary = diaryRepository.save(
-			new Diary(
-				//theme,
-				diaryRequestDto.escapeDate(),
-				diaryRequestDto.image(),
-				diaryRequestDto.participants(),
-				diaryRequestDto.review()
-			)
+			Diary.builder()
+				//.theme(theme)
+				.escapeDate(diaryRequestDto.escapeDate())
+				.imageUrl(diaryRequestDto.image())
+				.participants(diaryRequestDto.participants())
+				.review(diaryRequestDto.review())
+				.build()
 		);
 
 		DiaryStats diaryStats = diaryStatsRepository.save(
-			new DiaryStats(
-				diary,
-				diaryRequestDto.difficulty(),
-				diaryRequestDto.fear(),
-				diaryRequestDto.activity(),
-				diaryRequestDto.satisfaction(),
-				diaryRequestDto.production(),
-				diaryRequestDto.story(),
-				diaryRequestDto.question(),
-				diaryRequestDto.interior(),
-				diaryRequestDto.deviceRatio(),
-				diaryRequestDto.hintCount(),
-				diaryRequestDto.escapeResult(),
-				// diaryRequestDto.timeType.equals("remaining")
-				// 	? theme.getRuntime() * 60 - diaryRequestDto.elapsedTime()
-				// 	: diaryRequestDto.elapsedTime()
-				diaryRequestDto.elapsedTime()
-			)
+			DiaryStats.builder()
+				.diary(diary)
+				.difficulty(diaryRequestDto.difficulty())
+				.fear(diaryRequestDto.fear())
+				.activity(diaryRequestDto.activity())
+				.satisfaction(diaryRequestDto.satisfaction())
+				.production(diaryRequestDto.production())
+				.story(diaryRequestDto.story())
+				.question(diaryRequestDto.question())
+				.interior(diaryRequestDto.interior())
+				.deviceRatio(diaryRequestDto.deviceRatio())
+				.hintCount(diaryRequestDto.hintCount())
+				.escapeResult(diaryRequestDto.escapeResult())
+				// .elapsedTime(
+				// 	diaryRequestDto.timeType.equals("remaining")
+				// 		? theme.getRuntime() * 60 - diaryRequestDto.elapsedTime()
+				// 		: diaryRequestDto.elapsedTime()
+				// )
+				.elapsedTime(diaryRequestDto.elapsedTime())
+				.build()
 		);
 
 		diary.setDiaryStats(diaryStats);
 
-		return new DiaryDto(diary);
+		return DiaryDto.from(diary);
 	}
 
 	public long count() {
@@ -77,7 +79,7 @@ public class DiaryService {
 		Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Order.desc("id")));
 
 		return diaryRepository.findAll(pageable)
-			.map(DiaryDto::new);
+			.map(DiaryDto::from);
 	}
 
 	public Diary findById(long id) {
@@ -88,6 +90,6 @@ public class DiaryService {
 
 	@Transactional(readOnly = true)
 	public DiaryDto getItem(long id) {
-		return new DiaryDto(findById(id));
+		return DiaryDto.from(findById(id));
 	}
 }

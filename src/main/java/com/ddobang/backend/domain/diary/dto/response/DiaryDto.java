@@ -29,8 +29,8 @@ public record DiaryDto(
 	LocalDateTime createdAt,
 	LocalDateTime modifiedAt
 ) {
-	public DiaryDto(Diary diary) {
-		this(
+	public static DiaryDto from(Diary diary) {
+		return new DiaryDto(
 			diary.getId(),
 			//diary.getTheme().getId(),
 			//diary.getTheme().getThumbnail,
