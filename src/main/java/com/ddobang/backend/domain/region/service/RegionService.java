@@ -40,7 +40,7 @@ public class RegionService {
 	}
 
 	public Region findById(Long id) {
-		
+
 		return regionRepository.findById(id)
 			.orElseThrow(() -> new RegionException(RegionErrorCode.REGION_NOT_FOUND));
 	}
