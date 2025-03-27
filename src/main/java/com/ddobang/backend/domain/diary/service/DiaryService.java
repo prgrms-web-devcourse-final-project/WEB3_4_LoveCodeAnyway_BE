@@ -11,6 +11,8 @@ import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.entity.DiaryStats;
+import com.ddobang.backend.domain.diary.exception.DiaryErrorCode;
+import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.repository.DiaryStatsRepository;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
@@ -76,5 +78,16 @@ public class DiaryService {
 
 		return diaryRepository.findAll(pageable)
 			.map(DiaryDto::new);
+	}
+
+	public Diary findById(long id) {
+		return diaryRepository.findById(id).orElseThrow(
+			() -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND)
+		);
+	}
+
+	@Transactional(readOnly = true)
+	public DiaryDto getItem(long id) {
+		return new DiaryDto(findById(id));
 	}
 }
