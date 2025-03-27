@@ -2,7 +2,7 @@ name: 🪄 Create Branch on Issue
 
 on:
   issues:
-    types: [opened]
+    types: [ opened ]
 
 jobs:
   create-branch:
@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: dev
 
       - name: Create branch for new issue
         env:
@@ -27,8 +29,7 @@ jobs:
           echo "🧾 이슈 본문: $ISSUE_BODY"
 
           # 빈 줄 무시하고 도메인 추출 (🗂 도메인 다음 줄 중 실제 값)
-          DOMAIN=$(echo "$ISSUE_BODY" | awk '/🗂 도메인/{getline; while ($0 ~ /^$/) {getline}; print}' | sed -n 's/.*(\(.*\)).*/\1/p' | tr '[:upper:]' '[:lower:]')
-
+          DOMAIN=$(echo "$ISSUE_BODY" | tr -d '\r' | awk '/🗂 도메인/{found=1; next} found && NF {print; exit}' | grep -o '([^)]+)' | tr -d '()' | tr '[:upper:]' '[:lower:]')
           echo "🔎 DOMAIN 추출 결과: $DOMAIN"
 
           if [ -z "$DOMAIN" ]; then

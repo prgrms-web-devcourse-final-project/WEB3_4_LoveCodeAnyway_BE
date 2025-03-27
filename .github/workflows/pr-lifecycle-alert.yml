@@ -1,0 +1,123 @@
+name: PR Lifecycle Notifier
+
+on:
+  pull_request:
+    types:
+      - opened
+      - review_requested
+      - review_submitted
+      - closed
+      - reopened
+      - synchronize
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install jq
+        run: sudo apt-get install jq
+
+      - name: Send PR Event Notification
+        env:
+          DISCORD_WEBHOOK_ALL: ${{ secrets.DISCORD_WEBHOOK_ALL }}
+
+          DISCORD_WEBHOOK_GYUJIN: ${{ secrets.DISCORD_WEBHOOK_GYUJIN }}
+          DISCORD_ID_GYUJIN: ${{ secrets.DISCORD_ID_GYUJIN }}
+
+          DISCORD_WEBHOOK_MINHA: ${{ secrets.DISCORD_WEBHOOK_MINHA }}
+          DISCORD_ID_MINHA: ${{ secrets.DISCORD_ID_MINHA }}
+
+          DISCORD_WEBHOOK_JAEYOUNG: ${{ secrets.DISCORD_WEBHOOK_JAEYOUNG }}
+          DISCORD_ID_JAEYOUNG: ${{ secrets.DISCORD_ID_JAEYOUNG }}
+
+          DISCORD_WEBHOOK_SOLJI: ${{ secrets.DISCORD_WEBHOOK_SOLJI }}
+          DISCORD_ID_SOLJI: ${{ secrets.DISCORD_ID_SOLJI }}
+
+          DISCORD_WEBHOOK_WOOJOO: ${{ secrets.DISCORD_WEBHOOK_WOOJOO }}
+          DISCORD_ID_WOOJOO: ${{ secrets.DISCORD_ID_WOOJOO }}
+        run: |
+          REVIEWER=$(jq -r '.requested_reviewer.login // empty' "$GITHUB_EVENT_PATH")
+          AUTHOR=$(jq -r '.pull_request.user.login' "$GITHUB_EVENT_PATH")
+          PR_TITLE=$(jq -r '.pull_request.title' "$GITHUB_EVENT_PATH")
+          PR_URL=$(jq -r '.pull_request.html_url' "$GITHUB_EVENT_PATH")
+          ACTION=$(jq -r '.action' "$GITHUB_EVENT_PATH")
+          MERGED=$(jq -r '.pull_request.merged // false' "$GITHUB_EVENT_PATH")
+
+          echo "🎯 이벤트: $ACTION / 병합 여부: $MERGED"
+          echo "작성자: $AUTHOR / 리뷰어: $REVIEWER"
+
+          getUserInfo() {
+            case "$1" in
+              "notmybussiness") echo "$DISCORD_ID_GYUJIN|$DISCORD_WEBHOOK_GYUJIN" ;;
+              "100gammmit") echo "$DISCORD_ID_MINHA|$DISCORD_WEBHOOK_MINHA" ;;
+              "BeigeBearDev") echo "$DISCORD_ID_JAEYOUNG|$DISCORD_WEBHOOK_JAEYOUNG" ;;
+              "solji-choi") echo "$DISCORD_ID_SOLJI|$DISCORD_WEBHOOK_SOLJI" ;;
+              "universechoi") echo "$DISCORD_ID_WOOJOO|$DISCORD_WEBHOOK_WOOJOO" ;;
+              *) echo "|";;
+            esac
+          }
+
+          sendMessage() {
+            WEBHOOK_URL="$1"
+            CONTENT="$2"
+            curl -X POST -H "Content-Type: application/json" \
+              -d "{\"content\": \"$CONTENT\"}" "$WEBHOOK_URL"
+          }
+
+          COMMON_MESSAGE=""
+          case "$ACTION" in
+            "opened")
+              COMMON_MESSAGE="📌 **[PR 생성]**\n👤 작성자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
+              ;;
+            "review_requested")
+              COMMON_MESSAGE="📝 **[리뷰 요청]**\n👤 요청자: \`$AUTHOR\` → 🧑‍💻 리뷰어: \`$REVIEWER\`\n\n🔗 [$PR_TITLE]($PR_URL)"
+              ;;
+            "review_submitted")
+              STATE=$(jq -r '.review.state' "$GITHUB_EVENT_PATH")
+              REVIEWER_NAME=$(jq -r '.review.user.login' "$GITHUB_EVENT_PATH")
+              COMMON_MESSAGE="✅ **[리뷰 완료]**\n🧑‍💻 리뷰어: \`$REVIEWER_NAME\` → 상태: **$STATE**\n\n🔗 [$PR_TITLE]($PR_URL)"
+              ;;
+            "closed")
+              if [ "$MERGED" = "true" ]; then
+                COMMON_MESSAGE="🎉 **[PR 머지됨]**\n👤 작성자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
+              else
+                COMMON_MESSAGE="❌ **[PR 닫힘] (병합되지 않음)**\n👤 작성자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
+              fi
+              ;;
+            "synchronize")
+              COMMON_MESSAGE="🔄 **[PR 업데이트됨]**\n👤 작성자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
+              ;;
+          esac
+
+          if [ -n "$COMMON_MESSAGE" ]; then
+            sendMessage "$DISCORD_WEBHOOK_ALL" "$COMMON_MESSAGE"
+          fi
+
+          if [ "$ACTION" = "review_requested" ]; then
+            IFS='|' read -r DISCORD_ID WEBHOOK <<< "$(getUserInfo "$REVIEWER")"
+            if [ -n "$DISCORD_ID" ]; then
+              MESSAGE="📝 **리뷰 요청 알림**\n👤 요청자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
+              sendMessage "$WEBHOOK" "<@$DISCORD_ID> $MESSAGE"
+            fi
+          fi
+
+          if [[ "$ACTION" = "review_submitted" || "$ACTION" = "closed" ]]; then
+            IFS='|' read -r DISCORD_ID WEBHOOK <<< "$(getUserInfo "$AUTHOR")"
+
+            if [ -n "$DISCORD_ID" ]; then
+              if [ "$ACTION" = "review_submitted" ]; then
+                STATE=$(jq -r '.review.state' "$GITHUB_EVENT_PATH")
+                REVIEWER_NAME=$(jq -r '.review.user.login' "$GITHUB_EVENT_PATH")
+
+                MESSAGE="✅ **리뷰 완료 알림**\n🧑‍💻 리뷰어: \`$REVIEWER_NAME\`\n📋 상태: **$STATE**\n\n🔗 [$PR_TITLE]($PR_URL)"
+                sendMessage "$WEBHOOK" "<@$DISCORD_ID> $MESSAGE"
+              elif [ "$ACTION" = "closed" ]; then
+                if [ "$MERGED" = "true" ]; then
+                  MESSAGE="🎉 **PR 머지 완료!**\n🙌 정말 고생하셨습니다!\n\n🔗 [$PR_TITLE]($PR_URL)"
+                else
+                  MESSAGE="⚠️ **PR이 닫혔습니다 (병합되지 않음)**\n👤 작성자: \`$AUTHOR\`\n\n🔗 [$PR_TITLE]($PR_URL)"
+                fi
+                sendMessage "$WEBHOOK" "<@$DISCORD_ID> $MESSAGE"
+              fi
+            fi
+          fi
