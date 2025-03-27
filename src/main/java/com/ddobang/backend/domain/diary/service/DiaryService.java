@@ -9,9 +9,6 @@ import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.entity.DiaryStats;
 import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.repository.DiaryStatsRepository;
-import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
-import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -25,13 +22,13 @@ public class DiaryService {
 
 	@Transactional
 	public DiaryDto write(DiaryRequestDto diaryRequestDto) {
-		Theme theme = themeRepository.findById(diaryRequestDto.theme_id()).orElseThrow(
-			() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
-		);
+		// Theme theme = themeRepository.findById(diaryRequestDto.theme_id()).orElseThrow(
+		// 	() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
+		// );
 
 		Diary diary = diaryRepository.save(
 			new Diary(
-				theme,
+				//theme,
 				diaryRequestDto.escapeDate(),
 				diaryRequestDto.image(),
 				diaryRequestDto.participants(),
@@ -63,5 +60,9 @@ public class DiaryService {
 		diary.setDiaryStats(diaryStats);
 
 		return new DiaryDto(diary);
+	}
+
+	public long count() {
+		return diaryRepository.count();
 	}
 }

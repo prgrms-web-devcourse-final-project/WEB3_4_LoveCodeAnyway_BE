@@ -1,6 +1,6 @@
 package com.ddobang.backend.domain.diary.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotBlank;
 
@@ -8,7 +8,7 @@ public record DiaryRequestDto(
 	@NotBlank
 	long theme_id,
 	String image,
-	LocalDateTime escapeDate,
+	LocalDate escapeDate,
 	String participants,
 	int difficulty,
 	int fear,

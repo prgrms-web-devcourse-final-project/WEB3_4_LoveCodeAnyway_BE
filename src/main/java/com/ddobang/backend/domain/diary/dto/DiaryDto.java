@@ -1,5 +1,6 @@
 package com.ddobang.backend.domain.diary.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.ddobang.backend.domain.diary.entity.Diary;
@@ -10,7 +11,7 @@ public record DiaryDto(
 	//String thumbnail,
 	//String storeName,
 	String image,
-	LocalDateTime escapeDate,
+	LocalDate escapeDate,
 	String participants,
 	int difficulty,
 	int fear,
