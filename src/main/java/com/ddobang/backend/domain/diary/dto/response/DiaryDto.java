@@ -1,4 +1,4 @@
-package com.ddobang.backend.domain.diary.dto;
+package com.ddobang.backend.domain.diary.dto.response;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +24,7 @@ public record DiaryDto(
 	int deviceRatio,
 	int hintCount,
 	boolean escapeResult,
-	int elapsed_time,
+	int elapsedTime,
 	String review,
 	LocalDateTime createdAt,
 	LocalDateTime modifiedAt

@@ -1,12 +1,12 @@
-package com.ddobang.backend.domain.diary.dto;
+package com.ddobang.backend.domain.diary.dto.request;
 
 import java.time.LocalDate;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record DiaryRequestDto(
-	@NotBlank
-	long theme_id,
+	@NotNull(message = "테마를 선택해주세요.")
+	Long themeId,
 	String image,
 	LocalDate escapeDate,
 	String participants,

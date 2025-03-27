@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ddobang.backend.domain.diary.dto.DiaryDto;
-import com.ddobang.backend.domain.diary.dto.DiaryRequestDto;
+import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
 import com.ddobang.backend.domain.diary.service.DiaryService;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SuccessResponse;
@@ -32,7 +32,7 @@ public class DiaryController {
 		DiaryDto diaryDto = diaryService.write(diaryRequestDto);
 
 		return ResponseFactory.created(
-			"탈출일지 등록에 성공했습니다.”",
+			"탈출일지 등록에 성공했습니다.",
 			diaryDto
 		);
 	}

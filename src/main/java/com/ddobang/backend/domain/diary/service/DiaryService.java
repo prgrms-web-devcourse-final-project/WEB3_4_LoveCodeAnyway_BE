@@ -1,10 +1,14 @@
 package com.ddobang.backend.domain.diary.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.diary.dto.DiaryDto;
-import com.ddobang.backend.domain.diary.dto.DiaryRequestDto;
+import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.entity.DiaryStats;
 import com.ddobang.backend.domain.diary.repository.DiaryRepository;
@@ -22,7 +26,7 @@ public class DiaryService {
 
 	@Transactional
 	public DiaryDto write(DiaryRequestDto diaryRequestDto) {
-		// Theme theme = themeRepository.findById(diaryRequestDto.theme_id()).orElseThrow(
+		// Theme theme = themeRepository.findById(diaryRequestDto.themeId()).orElseThrow(
 		// 	() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
 		// );
 
@@ -64,5 +68,13 @@ public class DiaryService {
 
 	public long count() {
 		return diaryRepository.count();
+	}
+
+	@Transactional(readOnly = true)
+	public Page<DiaryDto> getItemsAll(int page, int pageSize) {
+		Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Order.desc("id")));
+
+		return diaryRepository.findAll(pageable)
+			.map(DiaryDto::new);
 	}
 }

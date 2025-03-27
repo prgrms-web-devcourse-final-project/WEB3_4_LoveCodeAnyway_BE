@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.diary.dto.DiaryRequestDto;
+import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.service.DiaryService;
 
 import lombok.RequiredArgsConstructor;
