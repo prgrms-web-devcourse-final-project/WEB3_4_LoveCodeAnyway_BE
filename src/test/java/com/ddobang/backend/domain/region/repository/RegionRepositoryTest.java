@@ -3,6 +3,7 @@ package com.ddobang.backend.domain.region.repository;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -84,5 +85,34 @@ public class RegionRepositoryTest {
 
 		// then
 		assertThat(regions.isEmpty()).isTrue();
+	}
+
+	@Test
+	@DisplayName("id로 지역 조회 성공 테스트")
+	public void findByIdTest() {
+		//given
+		Long id = 1L;
+
+		// when
+		Region region = regionRepository.findById(id).orElse(null);
+
+		// then
+		assertThat(region).isNotNull();
+		assertThat(region.getId()).isEqualTo(id);
+		assertThat(region.getMajorRegion()).isEqualTo(majorRegion);
+		assertThat(region.getSubRegion()).isEqualTo(region1.getSubRegion());
+	}
+
+	@Test
+	@DisplayName("데이터에 없는 id로 지역 조회 테스트")
+	public void findByIdFailWhenNotExistTest() {
+		//given
+		Long notExistId = 3L;
+
+		// when
+		Optional<Region> region = regionRepository.findById(notExistId);
+
+		// then
+		assertThat(region.isPresent()).isFalse();
 	}
 }
