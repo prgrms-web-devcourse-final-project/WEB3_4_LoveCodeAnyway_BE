@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 
 import com.ddobang.backend.domain.region.dto.SubRegionsResponse;
 import com.ddobang.backend.domain.region.entity.Region;
@@ -64,14 +64,15 @@ public class RegionServiceTest {
 		// when
 		RegionException exception = assertThrows(
 			RegionException.class,
-			() -> regionService.findByMajorRegion("NOT_EXIST_REGION")
+			() -> regionService.findByMajorRegion("NOT_EXIST")
 		);
+		RegionErrorCode errorCode = RegionErrorCode.REGION_NOT_FOUND;
 
 		// then
-		assertThat(exception.getErrorCode()).isEqualTo(RegionErrorCode.REGION_NOT_FOUND);
-		assertThat(exception.getErrorCode().getErrorCode()).isEqualTo("REGION_001");
-		assertThat(exception.getErrorCode().getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
-		assertThat(exception.getMessage()).isEqualTo("지역 정보를 찾을 수 없습니다.");
+		assertThat(exception.getErrorCode()).isEqualTo(errorCode);
+		assertThat(exception.getErrorCode().getErrorCode()).isEqualTo(errorCode.getErrorCode());
+		assertThat(exception.getErrorCode().getStatus()).isEqualTo(errorCode.getStatus());
+		assertThat(exception.getMessage()).isEqualTo(errorCode.getMessage());
 	}
 
 	@Test
@@ -102,4 +103,37 @@ public class RegionServiceTest {
 		assertThat(result.isEmpty()).isTrue();
 	}
 
+	@Test
+	@DisplayName("id로 지역 조회 성공 테스트")
+	public void findByIdTest() {
+		// given
+		when(regionRepository.findById(anyLong())).thenReturn(Optional.of(region1));
+
+		// when
+		Region region = regionService.findById(1L);
+
+		// then
+		assertThat(region.getMajorRegion()).isEqualTo(majorRegion);
+		assertThat(region.getSubRegion()).isEqualTo("홍대");
+	}
+
+	@Test
+	@DisplayName("id로 지역 조회 실패 테스트")
+	public void findByIdFailTest() {
+		// given
+		when(regionRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+		// when
+		RegionException exception = assertThrows(
+			RegionException.class,
+			() -> regionService.findById(3L)
+		);
+		RegionErrorCode errorCode = RegionErrorCode.REGION_NOT_FOUND;
+
+		// then
+		assertThat(exception.getErrorCode()).isEqualTo(errorCode);
+		assertThat(exception.getErrorCode().getErrorCode()).isEqualTo(errorCode.getErrorCode());
+		assertThat(exception.getErrorCode().getStatus()).isEqualTo(errorCode.getStatus());
+		assertThat(exception.getMessage()).isEqualTo(errorCode.getMessage());
+	}
 }
