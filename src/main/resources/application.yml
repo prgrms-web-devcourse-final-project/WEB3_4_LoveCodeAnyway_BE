@@ -8,6 +8,9 @@ spring:
   profiles:
     active: dev
 
+  config:
+    import: optional:application-secret.yml
+
   mvc:
     servlet:
       path: /api/v1
