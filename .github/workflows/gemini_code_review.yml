@@ -6,7 +6,6 @@ on:
     branches: [ dev ]
     types: [ opened, synchronize, reopened ]
 
-
 jobs:
   code-review:
     runs-on: ubuntu-latest
@@ -33,10 +32,9 @@ jobs:
           git fetch origin "${{ github.event.pull_request.base.ref }}"
           git fetch origin "${{ github.event.pull_request.head.ref }}"
           git diff --unified=0 "origin/${{ github.event.pull_request.base.ref }}" > "diff.txt"
-          echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
 
       # Gemini를 사용한 코드 분석
-      - name: Run Gemini-1.5-flash
+      - name: Run Gemini-1.5-flash for Code Review
         id: gemini_review
         uses: actions/github-script@v7
         with:
@@ -48,65 +46,199 @@ jobs:
             const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});            
 
-            // Pull Request 전용 프롬프트
-            const prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to calculate the exact line number by referring to the "@@ -0,0 +0,0 @@" part. The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment }, "side": "RIGHT"}\] format must be respected.\n<git diff>${diff_output}</git diff>`;
+            // Gemini API 호출 - 영어로 결과 요청
+            const prompt = `You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to calculate the exact line number by referring to the "@@ -0,0 +0,0 @@" part. The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment in English only }, "side": "RIGHT"}\] and this format must be strictly respected. Do not add any explanations before or after the JSON array.\n<git diff>${diff_output}</git diff>`;
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
             const text = response.text();
             
-            // 원본 응답 저장
+            // 응답 저장
             fs.writeFileSync('review_result_original.txt', text);
             
-            // JSON 배열만 추출하여 정제
-            let cleanedText = text;
+            try {
+              // JSON 파싱 시도
+              let jsonData;
             
-            // 코드 블록 마커 제거
-            cleanedText = cleanedText.replace(/```json/g, '').replace(/```/g, '');
+              // 코드 블록 제거 시도
+              const cleanedText = text.replace(/```json\n|\n```|```/g, '');
             
-            // 앞뒤 텍스트 제거 시도 (JSON 배열만 남기기)
-            const jsonMatch = cleanedText.match(/\[\s*\{.*\}\s*\]/s);
-            if (jsonMatch) {
-              cleanedText = jsonMatch[0];
+              try {
+                // 직접 파싱 시도
+                jsonData = JSON.parse(cleanedText);
+              } catch (e) {
+                // 실패 시 정규 표현식으로 JSON 배열 찾기
+                const match = cleanedText.match(/\[[\s\S]*\]/);
+                if (match) {
+                  jsonData = JSON.parse(match[0]);
+                } else {
+                  throw new Error("Could not extract JSON array from response");
+                }
+              }
+            
+              // 유효성 검사: 배열이고 항목이 필요한 필드를 가지고 있는지
+              if (!Array.isArray(jsonData)) {
+                throw new Error("Response is not a JSON array");
+              }
+            
+              // 필수 필드 확인 및 형식 검증
+              jsonData = jsonData.map(item => {
+                if (!item.path || typeof item.line !== 'number' || !item.text || !item.side) {
+                  throw new Error(`Invalid item format: ${JSON.stringify(item)}`);
+                }
+            
+                return {
+                  path: item.path,
+                  line: item.line,
+                  text: item.text,
+                  side: item.side
+                };
+              });
+            
+              // 정제된 JSON 저장
+              fs.writeFileSync('review_result_en.json', JSON.stringify(jsonData, null, 2));
+              console.log("Successfully parsed and validated the review result.");
+            
+              return jsonData;
+            } catch (error) {
+              console.error("Error parsing Gemini response:", error);
+              fs.writeFileSync('error.txt', error.toString());
+              return [];
             }
-            
-            // 정제된 응답 저장
-            fs.writeFileSync('review_result.txt', cleanedText);
-            console.log('Review results saved!');
-      # 디버그 출력
-      - name: Debug review result
-        run: |
-          echo "===== ORIGINAL REVIEW RESULT ====="
-          cat review_result_original.txt
-          echo "===== CLEANED REVIEW RESULT ====="
-          cat review_result.txt
-      # 라인별 리뷰 코멘트 추가
-      - name: Format and add PR review comments
-        id: store
-        run: |
-          # JSON 형식 확인
-           REVIEW_CONTENT=$(cat review_result.txt)
-           echo "Raw content: $REVIEW_CONTENT"
-          
-           # JSON 유효성 검사
-           echo "$REVIEW_CONTENT" | jq . > /dev/null 2>&1
-           if [ $? -ne 0 ]; then
-             echo "Error: Invalid JSON format in the review result"
-             echo "$REVIEW_CONTENT"
-             exit 1
-           fi
-          
-           # 이스케이프 처리
-           COMMENT=$(echo "$REVIEW_CONTENT" | jq -c .)
-           echo "Formatted comment: $COMMENT"
-           echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
-      - name: Add Pull Request Review Comment
-        uses: nbaztec/add-pr-review-comment@v1.0.7
+      # 영어로 된 리뷰 코멘트를 한국어로 번역
+      - name: Translate review comments to Korean
+        if: success()
+        uses: actions/github-script@v7
         with:
-          comments: ${{ steps.store.outputs.comment }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          repo-token-user-login: 'github-actions[bot]'
-          allow-repeats: false
-        env:
-          EVENT_TYPE: pull_request
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const reviewCommentsJson = fs.readFileSync('review_result_en.json', 'utf8');
+              const comments = JSON.parse(reviewCommentsJson);
+            
+              if (!comments || comments.length === 0) {
+                console.log("No review comments to translate.");
+                return [];
+              }
+            
+              console.log(`Translating ${comments.length} review comments to Korean...`);
+            
+              const { GoogleGenerativeAI } = require("@google/generative-ai");
+              const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
+              const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+            
+              // 모든 코멘트 텍스트를 추출
+              const textsToTranslate = comments.map(comment => comment.text);
+            
+              // 번역을 위한 프롬프트 구성
+              const translationPrompt = `
+              Translate the following English code review comments to Korean accurately. 
+              Maintain the technical terms as is when appropriate. Return only the translated text in the same array format.
+            
+              ${JSON.stringify(textsToTranslate)}
+              `;
+            
+              // 번역 요청
+              const translationResult = await model.generateContent(translationPrompt);
+              const translationResponse = await translationResult.response;
+              const translationText = translationResponse.text();
+            
+              // 번역 결과 저장
+              fs.writeFileSync('translation_result.txt', translationText);
+            
+              let translatedTexts;
+              try {
+                // 번역된 결과에서 JSON 배열 추출 시도
+                const match = translationText.match(/\[[\s\S]*\]/);
+                if (match) {
+                  translatedTexts = JSON.parse(match[0]);
+                } else {
+                  // JSON 배열 형식이 아니라면 직접 파싱 시도
+                  translatedTexts = JSON.parse(translationText);
+                }
+            
+                // 배열이 아닌 경우 오류
+                if (!Array.isArray(translatedTexts)) {
+                  throw new Error("Translation result is not an array");
+                }
+            
+                // 번역된 텍스트 개수가 원본과 일치하는지 확인
+                if (translatedTexts.length !== comments.length) {
+                  throw new Error(`Translation count mismatch: got ${translatedTexts.length}, expected ${comments.length}`);
+                }
+            
+                // 번역된 텍스트를 원본 코멘트에 적용
+                const translatedComments = comments.map((comment, index) => ({
+                  ...comment,
+                  text: translatedTexts[index]
+                }));
+            
+                // 번역된 코멘트 저장
+                fs.writeFileSync('review_result_ko.json', JSON.stringify(translatedComments, null, 2));
+                console.log("Successfully translated all comments.");
+            
+                return translatedComments;
+              } catch (error) {
+                console.error("Error processing translation:", error);
+                console.log("Using original English comments due to translation error.");
+                return comments;
+              }
+            } catch (error) {
+              console.error("Error loading review comments:", error);
+              return [];
+            }
+
+      # 번역된 코멘트로 PR 리뷰 추가
+      - name: Add PR review comments
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            
+            try {
+              // 번역된 코멘트가 있으면 사용, 없으면 영어 코멘트 사용
+              let reviewCommentsFile = 'review_result_ko.json';
+              if (!fs.existsSync(reviewCommentsFile)) {
+                reviewCommentsFile = 'review_result_en.json';
+                console.log("Using original English comments as Korean translation not available.");
+              }
+            
+              const reviewCommentsJson = fs.readFileSync(reviewCommentsFile, 'utf8');
+              const comments = JSON.parse(reviewCommentsJson);
+            
+              if (!comments || comments.length === 0) {
+                console.log("No review comments to add.");
+                return;
+              }
+            
+              console.log(`Adding ${comments.length} review comments...`);
+            
+              // Pull Request 정보
+              const prNumber = context.payload.pull_request.number;
+              const owner = context.repo.owner;
+              const repo = context.repo.repo;
+            
+              // 전체 리뷰를 생성하고 개별 코멘트 추가
+              const review = await github.rest.pulls.createReview({
+                owner,
+                repo,
+                pull_number: prNumber,
+                event: 'COMMENT', // 'APPROVE', 'REQUEST_CHANGES'도 가능
+                body: '🤖 Gemini Code Review - 자동 코드 리뷰 결과입니다.',
+                comments: comments.map(comment => ({
+                  path: comment.path,
+                  line: comment.line,
+                  body: comment.text,
+                  side: comment.side.toLowerCase()
+                }))
+              });
+            
+              console.log(`Review created with ID: ${review.data.id}`);
+            } catch (error) {
+              console.error("Error creating PR review:", error);
+              core.setFailed(`Failed to create PR review: ${error.message}`);
+            }
