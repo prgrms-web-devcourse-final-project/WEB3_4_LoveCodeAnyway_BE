@@ -5,7 +5,8 @@ on:
   pull_request:
     branches: [ dev ]
     types: [ opened, synchronize, reopened ]
-
+  push:
+    branches: [ 'feature/**' ]
 
 jobs:
   code-review:
@@ -48,62 +49,99 @@ jobs:
             const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});            
 
-             // 코드 리뷰 프롬프트 개선
+            // 개선된 프롬프트 - 로컬 테스트에서 성공한 버전
             const prompt = `너는 시니어 소프트웨어 엔지니어로서 git diff 결과를 기반으로 코드 리뷰를 수행해야 합니다.
             
             변경된 코드를 다양한 관점에서 검토하고 개선이 필요한 부분이 있는지 알려주세요.
             git diff 결과에서 수정이 필요한 코드를 발견하면 "@@ -0,0 +0,0 @@" 부분을 참조하여 정확한 줄 번호를 계산해야 합니다.
-            
-            중요: 출력은 반드시 아래와 같은 유효한 JSON 배열 형식이어야 합니다. 다른 설명이나 마크다운 코드 블록(```)을 포함하지 마세요.
-            
-            [
-              {"path":"파일경로", "line": 줄번호, "text": "리뷰 코멘트", "side": "RIGHT"},
-              {"path":"파일경로", "line": 줄번호, "text": "리뷰 코멘트", "side": "RIGHT"}
-            ]
-            
-            줄번호는 정수 값이어야 하고, JSON 형식이 정확해야 합니다. 코멘트는 한국어로 작성해 주세요. 전체 코드 변경 흐름을 파악하여 리뷰해주세요.
-            
-            <git diff>${diff_output}</git diff>`;
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
-            
-            fs.writeFileSync('review_result.txt', text);
-            console.log('Review results saved!');
+매우 중요한 지침:
+  1. 응답은 반드시 유효한 JSON 배열 형식이어야 합니다.
+  2. 마크다운 코드 블록(\`\`\`)을 포함하지 마세요.
+  3. 다른 설명이나 문장을 포함하지 마세요.
+4. 오직 다음 형식의 JSON 배열만 반환하세요:
 
-      # JSON 검증 및 정제 단계 추가
-      - name: Validate and clean JSON response
-        id: validate
-        run: |
-          # 응답 디버깅
-          echo "Original response:" 
-          cat review_result.txt
-          
-          # 마크다운 백틱 블록과 같은 요소 제거하고 JSON만 추출
-          CLEANED_RESPONSE=$(cat review_result.txt | sed -E 's/^```(json)?//g' | sed -E 's/```$//g' | sed -E 's/^[^[]*(\[)/\1/g' | sed -E 's/(\]).*$/\1/g')
-          echo "Cleaned response:"
-          echo "$CLEANED_RESPONSE"
-          
-          # 유효한 JSON인지 확인
-          echo "$CLEANED_RESPONSE" | jq . > /dev/null || {
-            echo "Invalid JSON detected. Creating empty comment array."
-            echo '[]' > validated_response.json
-          }
-          
-          # 유효한 JSON이면 그대로 사용
-          if [ $? -eq 0 ]; then
-            echo "$CLEANED_RESPONSE" > validated_response.json
-          fi
-          
-          # GitHub 출력용으로 이스케이프 처리
-          COMMENT=$(cat validated_response.json | jq -c .)
-          echo "comment=$COMMENT" >> $GITHUB_OUTPUT
+  [
+    { "path": "파일경로", "line": 줄번호, "text": "리뷰 코멘트", "side": "RIGHT" }
+  ]
 
-      - name: Add Pull Request Review Comment
-        uses: nbaztec/add-pr-review-comment@v1.0.7
-        with:
-          comments: ${{ steps.store.outputs.comment }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          repo-token-user-login: 'github-actions[bot]'
-          allow-repeats: false
+    줄번호는 정수 값이어야 하고, 코멘트는 한국어로 작성해 주세요.
+    전체 코드 변경 흐름을 파악하여 리뷰해주세요.
+    
+    <git diff>${diff_output}</git diff>`;
+    
+    try {
+    console.log("Gemini API 호출 중...");
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    // 응답 디버깅을 위해 저장
+    fs.writeFileSync('raw_response.txt', text);
+    console.log("원본 응답 저장됨");
+    
+    // 개선된 정제 로직
+    let cleanedText = text;
+    
+    // 1. 마크다운 코드 블록 제거
+    cleanedText = cleanedText.replace(/^```(json)?/m, '').replace(/```$/m, '');
+    
+    // 2. 앞뒤 공백 제거
+    cleanedText = cleanedText.trim();
+    
+    // 3. JSON 시작과 끝 부분만 남기기
+    const jsonStartIndex = cleanedText.indexOf('[');
+    const jsonEndIndex = cleanedText.lastIndexOf(']') + 1;
+    
+    if (jsonStartIndex >= 0 && jsonEndIndex > jsonStartIndex) {
+    cleanedText = cleanedText.substring(jsonStartIndex, jsonEndIndex);}
+    
+    fs.writeFileSync('cleaned_response.txt', cleanedText);
+    console.log("정제된 응답 저장됨");
+    
+    // JSON 파싱 시도
+    try {
+    const jsonResponse = JSON.parse(cleanedText);
+    fs.writeFileSync('review_result.txt', JSON.stringify(jsonResponse));
+    console.log("유효한 JSON으로 파싱 성공");}
+    catch (parseError) {
+    console.log('JSON 파싱 실패:', parseError.message);
+    // 파싱 실패시 빈 배열 사용
+    fs.writeFileSync('review_result.txt', '[]');
+    console.log("파싱 실패로 빈 배열 사용");}} catch (error) {
+    console.error('Gemini API 호출 오류:', error);
+    fs.writeFileSync('review_result.txt', '[]');
+    console.log("API 오류로 빈 배열 사용");}
+
+    # 최종 검증 단계
+    - name: Validate final JSON
+      id: validate
+      run: |
+        echo "Response validation:"
+        cat review_result.txt
+        
+        # 최종 검증 및 jq로 압축
+        VALID_JSON=$(cat review_result.txt | jq -c . 2>/dev/null || echo "[]")
+        echo "comment=$VALID_JSON" >> $GITHUB_OUTPUT
+        echo "최종 JSON 검증 완료"
+
+    # 리뷰 코멘트 추가 (빈 배열이 아닌 경우에만)
+    - name: Add Pull Request Review Comment
+      if: ${{ steps.validate.outputs.comment != '[]' }}
+      uses: nbaztec/add-pr-review-comment@v1.0.7
+      with:
+        comments: ${{ steps.validate.outputs.comment }}
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        repo-token-user-login: 'github-actions[bot]'
+        allow-repeats: false
+
+    # 처리 결과 요약
+    - name: Summary
+      run: |
+        echo "### Gemini 코드 리뷰 완료" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.validate.outputs.comment }}" == "[]" ]; then
+          echo "✅ 리뷰 코멘트가 없습니다." >> $GITHUB_STEP_SUMMARY
+        else
+          COMMENTS_COUNT=$(echo '${{ steps.validate.outputs.comment }}' | jq '. | length')
+          echo "🔍 $COMMENTS_COUNT 개의 리뷰 코멘트가 생성되었습니다." >> $GITHUB_STEP_SUMMARY
+        fi
