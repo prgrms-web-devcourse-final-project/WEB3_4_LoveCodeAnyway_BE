@@ -1,4 +1,4 @@
-name: 🪄 Create Branch on Issue
+name: 🪄 이슈 기반 접두어 감지 브랜치 자동 생성
 
 on:
   issues:
@@ -28,8 +28,24 @@ jobs:
           echo "🧾 이슈 번호: $ISSUE_NUMBER"
           echo "🧾 이슈 본문: $ISSUE_BODY"
 
-          # 빈 줄 무시하고 도메인 추출 (🗂 도메인 다음 줄 중 실제 값)
-          DOMAIN=$(echo "$ISSUE_BODY" | tr -d '\r' | awk '/🗂 도메인/{found=1; next} found && NF {print; exit}' | grep -o '([^)]+)' | tr -d '()' | tr '[:upper:]' '[:lower:]')
+          # ✅ 브랜치 접두어 결정
+          if [[ "$ISSUE_TITLE" == feat:* ]]; then
+            BRANCH_PREFIX="feature"
+          elif [[ "$ISSUE_TITLE" == fix:* ]]; then
+            BRANCH_PREFIX="fix"
+          elif [[ "$ISSUE_TITLE" == refactor:* ]]; then
+            BRANCH_PREFIX="refactor"
+          elif [[ "$ISSUE_TITLE" == hotfix:* ]]; then
+            BRANCH_PREFIX="hotfix"
+          elif [[ "$ISSUE_TITLE" == test:* ]]; then
+            BRANCH_PREFIX="test"
+          else
+            echo "ℹ️ 브랜치 자동 생성을 건너뜁니다. 대상 이슈 타입이 아닙니다."
+            exit 0
+          fi
+
+          # 🗂 도메인 파싱 (괄호 안 값만)
+          DOMAIN=$(echo "$ISSUE_BODY" | tr -d '\r' | awk '/🗂 도메인/{found=1; next} found && NF {match($0, /\(([^)]+)\)/, arr); print tolower(arr[1]); exit}')
           echo "🔎 DOMAIN 추출 결과: $DOMAIN"
 
           if [ -z "$DOMAIN" ]; then
@@ -37,9 +53,8 @@ jobs:
             exit 1
           fi
 
-          # 브랜치 이름 생성 (공백, 특수문자 제거)
           SANITIZED_DOMAIN=$(echo "$DOMAIN" | tr -cd '[:alnum:]-')
-          BRANCH_NAME="feature/${SANITIZED_DOMAIN}-${ISSUE_NUMBER}"
+          BRANCH_NAME="${BRANCH_PREFIX}/${SANITIZED_DOMAIN}-${ISSUE_NUMBER}"
           echo "📌 브랜치 이름: $BRANCH_NAME"
 
           git config --global user.email "action@github.com"
@@ -47,9 +62,9 @@ jobs:
 
           echo "📥 저장소 클론 중..."
           git clone https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} repo
-
           cd repo
-          git checkout -b "$BRANCH_NAME"
+
+          git checkout -b "$BRANCH_NAME" origin/dev
 
           echo "🚀 브랜치 푸시 시작..."
           git push origin "$BRANCH_NAME"
