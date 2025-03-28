@@ -35,7 +35,6 @@ jobs:
           git diff --unified=0 "origin/${{ github.event.pull_request.base.ref }}" > "diff.txt"
           echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
 
-      # Gemini를 사용한 코드 분석
       - name: Run Gemini-1.5-flash
         id: gemini_review
         uses: actions/github-script@v7
@@ -43,60 +42,41 @@ jobs:
           script: |
             const fs = require("fs");
             const diff_output = fs.readFileSync("diff.txt",'utf8');
-
+            
             const { GoogleGenerativeAI } = require("@google/generative-ai");
             const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});            
+            
+            const prompt = `당신은 시니어 소프트웨어 엔지니어입니다. git diff 결과를 분석하여 코드 리뷰를 수행하세요. 응답은 마크다운이나 백틱없이 순수 JSON 배열만 제공하세요. 형식: [{"path":"파일경로", "line": 라인번호, "text": "리뷰 내용", "side": "RIGHT"}]. git diff의 '@@ -0,0 +0,0 @@' 부분을 참고해 정확한 라인 번호를 계산하세요. <git diff>${diff_output}</git diff>`;
+            
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+            
+            fs.writeFileSync('review_result.txt', text);
+            console.log('Review results saved!');
 
-            // Pull Request 전용 프롬프트
-            const prompt = `당신은 시니어 소프트웨어 엔지니어로서 코드 리뷰를 수행해야 합니다. 주어진 git diff 결과를 기반으로 코드를 검토하고 개선이 필요한 부분을 지적해주세요.
-중요: 답변은 어떠한 마크다운 형식이나 백틱(```) 없이 순수한 JSON 배열 형태로만 제공해야 합니다.
-  
-  git diff의 "@@ -0,0 +0,0 @@" 부분을 참고하여 정확한 라인 번호를 계산하세요.
+      # 라인별 리뷰 코멘트 추가
+      - name: Format and add PR review comments
+        id: store
+        run: |
+          # JSON 배열만 추출하여 처리
+           COMMENT=$(cat review_result.txt | grep -v '```' | grep -v '^$' | tr -d '\n' | sed -E 's/.*(\[.*\]).*/\1/')
+          
+          # JSON 유효성 검사
+          echo "$COMMENT" | jq . > /dev/null 2>&1
+          if [ $? -ne 0 ]; then
+          echo "Error: Invalid JSON format in the review result"
+          echo "$COMMENT"
+          exit 1
+          fi
+          
+          echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
-출력 형식은 반드시 다음과 같은 JSON 배열이어야 합니다:
-  [
-    {
-      "path": "파일경로",
-      "line": 라인번호,
-      "text": "리뷰 코멘트",
-      "side": "RIGHT"
-    },
-    ...
-  ]
-
-    어떤 설명이나 부연 설명도 추가하지 말고 오직 위의 JSON 형식만 반환하세요.
-    
-    <git diff>${diff_output}</git diff>`;
-    
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    
-    fs.writeFileSync('review_result.txt', text);
-    console.log('Review results saved!');
-
-    # 라인별 리뷰 코멘트 추가
-    - name: Format and add PR review comments
-      id: store
-      run: |
-        # JSON 배열만 추출하여 처리
-         COMMENT=$(cat review_result.txt | grep -v '```' | grep -v '^$' | tr -d '\n' | sed -E 's/.*(\[.*\]).*/\1/')
-        
-        # JSON 유효성 검사
-        echo "$COMMENT" | jq . > /dev/null 2>&1
-        if [ $? -ne 0 ]; then
-        echo "Error: Invalid JSON format in the review result"
-        echo "$COMMENT"
-        exit 1
-        fi
-
-        echo "comment=$COMMENT" >> $GITHUB_OUTPUT
-
-    - name: Add Pull Request Review Comment
-      uses: nbaztec/add-pr-review-comment@v1.0.7
-      with:
-        comments: ${{ steps.store.outputs.comment }}
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        repo-token-user-login: 'github-actions[bot]'
-        allow-repeats: false
+      - name: Add Pull Request Review Comment
+        uses: nbaztec/add-pr-review-comment@v1.0.7
+        with:
+          comments: ${{ steps.store.outputs.comment }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token-user-login: 'github-actions[bot]'
+          allow-repeats: false
