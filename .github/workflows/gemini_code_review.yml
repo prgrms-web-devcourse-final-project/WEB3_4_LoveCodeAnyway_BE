@@ -48,8 +48,22 @@ jobs:
             const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});            
 
-            // Pull Request 전용 프롬프트
-            const prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to calculate the exact line number by referring to the "@@ -0,0 +0,0 @@" part. The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment }, "side": "RIGHT"}\] format must be respected.\n<git diff>${diff_output}</git diff>`;
+             // 코드 리뷰 프롬프트 개선
+            const prompt = `너는 시니어 소프트웨어 엔지니어로서 git diff 결과를 기반으로 코드 리뷰를 수행해야 합니다.
+            
+            변경된 코드를 다양한 관점에서 검토하고 개선이 필요한 부분이 있는지 알려주세요.
+            git diff 결과에서 수정이 필요한 코드를 발견하면 "@@ -0,0 +0,0 @@" 부분을 참조하여 정확한 줄 번호를 계산해야 합니다.
+            
+            중요: 출력은 반드시 아래와 같은 유효한 JSON 배열 형식이어야 합니다. 다른 설명이나 마크다운 코드 블록(```)을 포함하지 마세요.
+            
+            [
+              {"path":"파일경로", "line": 줄번호, "text": "리뷰 코멘트", "side": "RIGHT"},
+              {"path":"파일경로", "line": 줄번호, "text": "리뷰 코멘트", "side": "RIGHT"}
+            ]
+            
+            줄번호는 정수 값이어야 하고, JSON 형식이 정확해야 합니다. 코멘트는 한국어로 작성해 주세요. 전체 코드 변경 흐름을 파악하여 리뷰해주세요.
+            
+            <git diff>${diff_output}</git diff>`;
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
@@ -58,12 +72,32 @@ jobs:
             fs.writeFileSync('review_result.txt', text);
             console.log('Review results saved!');
 
-      # 라인별 리뷰 코멘트 추가
-      - name: Format and add PR review comments
-        id: store
+      # JSON 검증 및 정제 단계 추가
+      - name: Validate and clean JSON response
+        id: validate
         run: |
-          # 백틱(```)으로 감싸진 블록 제거 후 JSON 파싱이 가능하도록 처리
-          COMMENT=$(sed '/^```/d' review_result.txt | jq -c .)
+          # 응답 디버깅
+          echo "Original response:" 
+          cat review_result.txt
+          
+          # 마크다운 백틱 블록과 같은 요소 제거하고 JSON만 추출
+          CLEANED_RESPONSE=$(cat review_result.txt | sed -E 's/^```(json)?//g' | sed -E 's/```$//g' | sed -E 's/^[^[]*(\[)/\1/g' | sed -E 's/(\]).*$/\1/g')
+          echo "Cleaned response:"
+          echo "$CLEANED_RESPONSE"
+          
+          # 유효한 JSON인지 확인
+          echo "$CLEANED_RESPONSE" | jq . > /dev/null || {
+            echo "Invalid JSON detected. Creating empty comment array."
+            echo '[]' > validated_response.json
+          }
+          
+          # 유효한 JSON이면 그대로 사용
+          if [ $? -eq 0 ]; then
+            echo "$CLEANED_RESPONSE" > validated_response.json
+          fi
+          
+          # GitHub 출력용으로 이스케이프 처리
+          COMMENT=$(cat validated_response.json | jq -c .)
           echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
       - name: Add Pull Request Review Comment
