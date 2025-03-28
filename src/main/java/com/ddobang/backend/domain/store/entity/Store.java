@@ -32,24 +32,21 @@ public class Store extends BaseTime {
 
 	private String phoneNumber;
 
-	private String siteUrl;
-
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
 	public enum Status {
-		OPEN, CLOSE, INACTIVE
+		OPENED, CLOSED, INACTIVE, DELETED
 	}
 
 	@ManyToOne
 	private Region region;
 
 	@Builder
-	public Store(String name, String address, String phoneNumber, String siteUrl, Status status, Region region) {
+	public Store(String name, String address, String phoneNumber, Status status, Region region) {
 		this.name = name;
 		this.address = address;
 		this.phoneNumber = phoneNumber;
-		this.siteUrl = siteUrl;
 		this.status = status;
 		this.region = region;
 	}
@@ -59,9 +56,20 @@ public class Store extends BaseTime {
 			.name(storeRequest.name())
 			.address(storeRequest.address())
 			.phoneNumber(storeRequest.phoneNumber())
-			.siteUrl(storeRequest.siteUrl())
-			.status(storeRequest.status())
+			.status(Store.Status.valueOf(storeRequest.status()))
 			.region(region)
 			.build();
+	}
+
+	public void modify(StoreRequest storeRequest, Region region) {
+		this.name = storeRequest.name();
+		this.address = storeRequest.address();
+		this.phoneNumber = storeRequest.phoneNumber();
+		this.status = Store.Status.valueOf(storeRequest.status());
+		this.region = region;
+	}
+
+	public void delete() {
+		this.status = Status.DELETED;
 	}
 }
