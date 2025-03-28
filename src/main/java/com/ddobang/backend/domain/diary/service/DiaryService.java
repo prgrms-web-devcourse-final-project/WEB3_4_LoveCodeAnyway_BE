@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ddobang.backend.domain.diary.converter.DiaryConverter;
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
@@ -33,36 +34,11 @@ public class DiaryService {
 		// );
 
 		Diary diary = diaryRepository.save(
-			Diary.builder()
-				//.theme(theme)
-				.escapeDate(diaryRequestDto.escapeDate())
-				.imageUrl(diaryRequestDto.image())
-				.participants(diaryRequestDto.participants())
-				.review(diaryRequestDto.review())
-				.build()
+			DiaryConverter.toDiary(diaryRequestDto)
 		);
 
 		DiaryStats diaryStats = diaryStatsRepository.save(
-			DiaryStats.builder()
-				.diary(diary)
-				.difficulty(diaryRequestDto.difficulty())
-				.fear(diaryRequestDto.fear())
-				.activity(diaryRequestDto.activity())
-				.satisfaction(diaryRequestDto.satisfaction())
-				.production(diaryRequestDto.production())
-				.story(diaryRequestDto.story())
-				.question(diaryRequestDto.question())
-				.interior(diaryRequestDto.interior())
-				.deviceRatio(diaryRequestDto.deviceRatio())
-				.hintCount(diaryRequestDto.hintCount())
-				.escapeResult(diaryRequestDto.escapeResult())
-				// .elapsedTime(
-				// 	diaryRequestDto.timeType().equals("remaining")
-				// 		? theme.getRuntime() * 60 - diaryRequestDto.elapsedTime()
-				// 		: diaryRequestDto.elapsedTime()
-				// )
-				.elapsedTime(diaryRequestDto.elapsedTime())
-				.build()
+			DiaryConverter.toDiaryStats(diary, diaryRequestDto)
 		);
 
 		diary.setDiaryStats(diaryStats);
@@ -100,28 +76,12 @@ public class DiaryService {
 		// 	() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
 		// );
 
-		diary.modify(
-			//theme,
-			diaryRequestDto.escapeDate(),
-			diaryRequestDto.image(),
-			diaryRequestDto.participants(),
-			diaryRequestDto.difficulty(),
-			diaryRequestDto.fear(),
-			diaryRequestDto.activity(),
-			diaryRequestDto.satisfaction(),
-			diaryRequestDto.production(),
-			diaryRequestDto.story(),
-			diaryRequestDto.question(),
-			diaryRequestDto.interior(),
-			diaryRequestDto.deviceRatio(),
-			diaryRequestDto.hintCount(),
-			diaryRequestDto.escapeResult(),
-			// diaryRequestDto.timeType().equals("remaining")
-			// 	? theme.getRuntime() * 60 - diaryRequestDto.elapsedTime()
-			// 	: diaryRequestDto.elapsedTime(),
-			diaryRequestDto.elapsedTime(),
-			diaryRequestDto.review()
-		);
+		// int elapsedTime = diaryRequestDto.timeType().equals("remaining")
+		// 	? theme.getRuntime() * 60 - diaryRequestDto.elapsedTime()
+		// 	: diaryRequestDto.elapsedTime();
+		int elapsedTime = diaryRequestDto.elapsedTime();
+
+		DiaryConverter.updateDiary(diary, diaryRequestDto, elapsedTime);
 
 		return DiaryDto.of(diary);
 	}

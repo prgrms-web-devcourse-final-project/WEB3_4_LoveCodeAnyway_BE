@@ -10,7 +10,7 @@ public record DiaryDto(
 	//String themeName,
 	//String thumbnail,
 	//String storeName,
-	String image,
+	String imageUrl,
 	LocalDate escapeDate,
 	String participants,
 	int difficulty,

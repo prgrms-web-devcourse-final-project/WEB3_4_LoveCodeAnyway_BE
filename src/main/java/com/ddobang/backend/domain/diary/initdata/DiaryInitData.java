@@ -38,7 +38,7 @@ public class DiaryInitData {
 
 		DiaryRequestDto diaryRequestDto = DiaryRequestDto.builder()
 			.themeId(1L)
-			.image("https://placehold.co/640x640?text=:P")
+			.imageUrl("https://placehold.co/640x640?text=:P")
 			.escapeDate(LocalDate.of(2025, 2, 20))
 			.participants("지인1, 지인2")
 			.difficulty(3)

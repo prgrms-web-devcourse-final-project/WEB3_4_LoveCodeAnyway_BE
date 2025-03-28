@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.nio.charset.StandardCharsets;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +59,7 @@ public class DiaryControllerTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.message").value("탈출일지 등록에 성공했습니다."))
 			.andExpect(jsonPath("$.data.id").value(lastDiary.id()))
-			.andExpect(jsonPath("$.data.image").value(lastDiary.image()))
+			.andExpect(jsonPath("$.data.imageUrl").value(lastDiary.imageUrl()))
 			.andExpect(jsonPath("$.data.escapeDate").value(lastDiary.escapeDate()))
 			.andExpect(jsonPath("$.data.participants").value(lastDiary.participants()))
 			.andExpect(jsonPath("$.data.difficulty").value(lastDiary.difficulty()))
@@ -102,6 +103,56 @@ public class DiaryControllerTest {
 	}
 
 	@Test
+	@DisplayName("탈출일지 등록, 테마 평가 항목이 정해진 범위의 값이 아닐 때")
+	void t1_2() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries")
+				.content("""
+					{
+						"themeId": 1,
+						"difficulty": 6,
+						"fear": 6,
+						"activity": 6,
+						"satisfaction": 6,
+						"production": 6,
+						"story": 6,
+						"question": 6,
+						"interior": 6,
+						"deviceRatio": 200
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("write"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("입력값이 올바르지 않습니다."))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("difficulty")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("난이도는 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("fear")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("공포도는 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("activity")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("활동성은 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("satisfaction")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("만족도는 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("production")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("연출은 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("story")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("스토리는 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("question")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("문제 구성은 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("interior")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("인테리어는 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("deviceRatio")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("장치 비율은 최대 100% 이하여야 합니다.")));
+	}
+
+	@Test
 	@DisplayName("탈출일지 단건 조회")
 	void t2() throws Exception {
 		ResultActions resultActions = mvc
@@ -115,7 +166,7 @@ public class DiaryControllerTest {
 			.andExpect(handler().methodName("getItem"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.id").value(diary.getId()))
-			.andExpect(jsonPath("$.data.image").value(diary.getImageUrl()))
+			.andExpect(jsonPath("$.data.imageUrl").value(diary.getImageUrl()))
 			.andExpect(jsonPath("$.data.escapeDate").value(diary.getEscapeDate().toString()))
 			.andExpect(jsonPath("$.data.participants").value(diary.getParticipants()))
 			.andExpect(jsonPath("$.data.difficulty").value(diary.getDiaryStats().getDifficulty()))
@@ -157,7 +208,7 @@ public class DiaryControllerTest {
 				.content("""
 					{
 						"themeId": 1,
-						"image": "https://placehold.co/320x320?text=o_o",
+						"imageUrl": "https://placehold.co/320x320?text=o_o",
 						"escapeDate": "2025-02-20",
 						"participants": "내 칭구1, 내 칭구2",
 						"difficulty": 5,
@@ -188,7 +239,7 @@ public class DiaryControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("1번 탈출일지 수정에 성공했습니다."))
 			.andExpect(jsonPath("$.data.id").value(1))
-			.andExpect(jsonPath("$.data.image").value("https://placehold.co/320x320?text=o_o"))
+			.andExpect(jsonPath("$.data.imageUrl").value("https://placehold.co/320x320?text=o_o"))
 			.andExpect(jsonPath("$.data.escapeDate").value("2025-02-20"))
 			.andExpect(jsonPath("$.data.participants").value("내 칭구1, 내 칭구2"))
 			.andExpect(jsonPath("$.data.difficulty").value(5))
@@ -216,7 +267,7 @@ public class DiaryControllerTest {
 				.content("""
 					{
 						"themeId": 1,
-						"image": "https://placehold.co/320x320?text=o_o",
+						"imageUrl": "https://placehold.co/320x320?text=o_o",
 						"escapeDate": "2025-02-20",
 						"participants": "내 칭구1, 내 칭구2",
 						"difficulty": 5,
@@ -255,7 +306,7 @@ public class DiaryControllerTest {
 			.perform(put("/diaries/1")
 				.content("""
 					{
-						"image": "https://placehold.co/320x320?text=o_o",
+						"imageUrl": "https://placehold.co/320x320?text=o_o",
 						"escapeDate": "2025-02-20",
 						"hintCount": 0,
 						"escapeResult": true,
@@ -277,6 +328,56 @@ public class DiaryControllerTest {
 			.andExpect(jsonPath("$.message").value("입력값이 올바르지 않습니다."))
 			.andExpect(jsonPath("$.errors[0].field").value("themeId"))
 			.andExpect(jsonPath("$.errors[0].message").value("테마를 선택해주세요."));
+	}
+
+	@Test
+	@DisplayName("탈출일지 수정, 테마 평가 항목이 정해진 범위의 값이 아닐 때")
+	void t3_3() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(put("/diaries/1")
+				.content("""
+					{
+						"themeId": 1,
+						"difficulty": 6,
+						"fear": 6,
+						"activity": 6,
+						"satisfaction": 6,
+						"production": 6,
+						"story": 6,
+						"question": 6,
+						"interior": 6,
+						"deviceRatio": 200
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("modify"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("입력값이 올바르지 않습니다."))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("difficulty")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("난이도는 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("fear")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("공포도는 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("activity")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("활동성은 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("satisfaction")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("만족도는 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("production")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("연출은 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("story")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("스토리는 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("question")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("문제 구성은 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("interior")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("인테리어는 최대 5 이하여야 합니다.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("deviceRatio")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("장치 비율은 최대 100% 이하여야 합니다.")));
 	}
 
 	@Test

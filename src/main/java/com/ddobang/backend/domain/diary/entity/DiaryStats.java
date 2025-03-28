@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.diary.entity;
 
+import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapsId;
@@ -71,30 +73,20 @@ public class DiaryStats {
 	}
 
 	public void modify(
-		int difficulty,
-		int fear,
-		int activity,
-		int satisfaction,
-		int production,
-		int story,
-		int question,
-		int interior,
-		int deviceRatio,
-		int hintCount,
-		boolean escapeResult,
+		DiaryRequestDto diaryRequestDto,
 		int elapsedTime
 	) {
-		this.difficulty = difficulty;
-		this.fear = fear;
-		this.activity = activity;
-		this.satisfaction = satisfaction;
-		this.production = production;
-		this.story = story;
-		this.question = question;
-		this.interior = interior;
-		this.deviceRatio = deviceRatio;
-		this.hintCount = hintCount;
-		this.escapeResult = escapeResult;
+		this.difficulty = diaryRequestDto.difficulty();
+		this.fear = diaryRequestDto.fear();
+		this.activity = diaryRequestDto.activity();
+		this.satisfaction = diaryRequestDto.satisfaction();
+		this.production = diaryRequestDto.production();
+		this.story = diaryRequestDto.story();
+		this.question = diaryRequestDto.question();
+		this.interior = diaryRequestDto.interior();
+		this.deviceRatio = diaryRequestDto.deviceRatio();
+		this.hintCount = diaryRequestDto.hintCount();
+		this.escapeResult = diaryRequestDto.escapeResult();
 		this.elapsedTime = elapsedTime;
 	}
 }

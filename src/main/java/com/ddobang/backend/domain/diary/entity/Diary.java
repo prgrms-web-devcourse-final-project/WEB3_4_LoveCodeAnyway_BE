@@ -2,6 +2,7 @@ package com.ddobang.backend.domain.diary.entity;
 
 import java.time.LocalDate;
 
+import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.global.entity.BaseTime;
 
 import jakarta.persistence.CascadeType;
@@ -62,41 +63,12 @@ public class Diary extends BaseTime {
 
 	public void modify(
 		//Theme theme,
-		LocalDate escapeDate,
-		String imageUrl,
-		String participants,
-		int difficulty,
-		int fear,
-		int activity,
-		int satisfaction,
-		int production,
-		int story,
-		int question,
-		int interior,
-		int deviceRatio,
-		int hintCount,
-		boolean escapeResult,
-		int elapsedTime,
-		String review
+		DiaryRequestDto diaryRequestDto
 	) {
 		//this.theme = theme;
-		this.escapeDate = escapeDate;
-		this.imageUrl = imageUrl;
-		this.participants = participants;
-		this.diaryStats.modify(
-			difficulty,
-			fear,
-			activity,
-			satisfaction,
-			production,
-			story,
-			question,
-			interior,
-			deviceRatio,
-			hintCount,
-			escapeResult,
-			elapsedTime
-		);
-		this.review = review;
+		this.escapeDate = diaryRequestDto.escapeDate();
+		this.imageUrl = diaryRequestDto.imageUrl();
+		this.participants = diaryRequestDto.participants();
+		this.review = diaryRequestDto.review();
 	}
 }
