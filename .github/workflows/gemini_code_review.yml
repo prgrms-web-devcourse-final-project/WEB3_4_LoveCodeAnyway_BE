@@ -55,25 +55,51 @@ jobs:
             const response = await result.response;
             const text = response.text();
             
-            fs.writeFileSync('review_result.txt', text);
+            // 원본 응답 저장
+            fs.writeFileSync('review_result_original.txt', text);
+            
+            // JSON 배열만 추출하여 정제
+            let cleanedText = text;
+            
+            // 코드 블록 마커 제거
+            cleanedText = cleanedText.replace(/```json/g, '').replace(/```/g, '');
+            
+            // 앞뒤 텍스트 제거 시도 (JSON 배열만 남기기)
+            const jsonMatch = cleanedText.match(/\[\s*\{.*\}\s*\]/s);
+            if (jsonMatch) {
+              cleanedText = jsonMatch[0];
+            }
+            
+            // 정제된 응답 저장
+            fs.writeFileSync('review_result.txt', cleanedText);
             console.log('Review results saved!');
-
+      # 디버그 출력
+      - name: Debug review result
+        run: |
+          echo "===== ORIGINAL REVIEW RESULT ====="
+          cat review_result_original.txt
+          echo "===== CLEANED REVIEW RESULT ====="
+          cat review_result.txt
       # 라인별 리뷰 코멘트 추가
       - name: Format and add PR review comments
         id: store
         run: |
-          # JSON 배열만 추출하여 처리
-          COMMENT=$(cat review_result.txt | grep -v '```' | grep -v '^$' | tr -d '\n' | sed -E 's/.*(\[.*\]).*/\1/')
+          # JSON 형식 확인
+           REVIEW_CONTENT=$(cat review_result.txt)
+           echo "Raw content: $REVIEW_CONTENT"
           
-          # JSON 유효성 검사
-          echo "$COMMENT" | jq . > /dev/null 2>&1
-          if [ $? -ne 0 ]; then
-            echo "Error: Invalid JSON format in the review result"
-            echo "$COMMENT"
-            exit 1
-          fi
+           # JSON 유효성 검사
+           echo "$REVIEW_CONTENT" | jq . > /dev/null 2>&1
+           if [ $? -ne 0 ]; then
+             echo "Error: Invalid JSON format in the review result"
+             echo "$REVIEW_CONTENT"
+             exit 1
+           fi
           
-          echo "comment=$COMMENT" >> $GITHUB_OUTPUT
+           # 이스케이프 처리
+           COMMENT=$(echo "$REVIEW_CONTENT" | jq -c .)
+           echo "Formatted comment: $COMMENT"
+           echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
       - name: Add Pull Request Review Comment
         uses: nbaztec/add-pr-review-comment@v1.0.7
@@ -82,3 +108,5 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           repo-token-user-login: 'github-actions[bot]'
           allow-repeats: false
+        env:
+          EVENT_TYPE: pull_request
