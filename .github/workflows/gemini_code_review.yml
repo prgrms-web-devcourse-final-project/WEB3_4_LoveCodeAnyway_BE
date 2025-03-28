@@ -62,7 +62,17 @@ jobs:
       - name: Format and add PR review comments
         id: store
         run: |
-          COMMENT=$(sed '/^```/d' review_result.txt | jq -c .)
+          # JSON 배열만 추출하여 처리
+          COMMENT=$(cat review_result.txt | grep -v '```' | grep -v '^$' | tr -d '\n' | sed -E 's/.*(\[.*\]).*/\1/')
+          
+          # JSON 유효성 검사
+          echo "$COMMENT" | jq . > /dev/null 2>&1
+          if [ $? -ne 0 ]; then
+            echo "Error: Invalid JSON format in the review result"
+            echo "$COMMENT"
+            exit 1
+          fi
+          
           echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
       - name: Add Pull Request Review Comment
