@@ -20,7 +20,7 @@ public class ResponseFactory {
 	/*
 	메세지 포함 (200 OK)
 	 */
-	public static ResponseEntity<SuccessResponse<String>> ok(String message) {
+	public static ResponseEntity<SuccessResponse<Void>> ok(String message) {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(SuccessResponse.of(message));
 	}
@@ -44,7 +44,7 @@ public class ResponseFactory {
 	/*
 	메세지 포함 (201 Created)
 	 */
-	public static ResponseEntity<SuccessResponse<String>> created(String message) {
+	public static ResponseEntity<SuccessResponse<Void>> created(String message) {
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(SuccessResponse.of(message));
 	}
