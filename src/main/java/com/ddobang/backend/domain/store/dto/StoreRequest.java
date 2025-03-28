@@ -1,6 +1,7 @@
 package com.ddobang.backend.domain.store.dto;
 
 import com.ddobang.backend.domain.store.entity.Store;
+import com.ddobang.backend.global.validator.ValidEnum;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -16,7 +17,7 @@ public record StoreRequest(
 	String name,
 	String address,
 	String phoneNumber,
-	String siteUrl,
-	Store.Status status
+	@ValidEnum(enumClass = Store.Status.class, message = "유효하지 않은 status 입력입니다.")
+	String status
 ) {
 }
