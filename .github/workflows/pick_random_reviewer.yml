@@ -1,74 +1,61 @@
-name: Gemini Code Review
+name: "Pick Random Reviewer"
 
 on:
-  # dev 브랜치로 들어오는 Pull Request 시에만 실행
   pull_request:
-    branches: [ dev ]
-    types: [ opened, synchronize, reopened ]
+    types:
+      - opened
+    branches:
+      - dev
 
 jobs:
-  code-review:
+  pick-random-reviewer:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # 1. Repository 체크아웃
+      - uses: actions/checkout@v2
+
+      # 2. JavaScript로 무작위 2명의 리뷰어 선택 (PR 작성자 제외)
+      - name: pick_random_reviewer
+        id: pick_random_reviewer
+        uses: actions/github-script@v3
         with:
-          fetch-depth: 0
-
-      - name: Set up Node
-        uses: actions/setup-node@v3
-
-      - name: Install GoogleGenerativeAI
-        run: |
-          npm install @google/generative-ai
-
-      # PR 이벤트에서의 변경사항 처리
-      - name: Get git diff for PR
-        run: |
-          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-${{ github.event.pull_request.number }}
-          git fetch origin ${{ github.event.pull_request.base.ref }}:base
-          git diff --unified=0 base pr-${{ github.event.pull_request.number }} > "diff.txt"
-          echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
-
-      # Gemini를 사용한 코드 분석
-      - name: Run Gemini-1.5-flash
-        id: gemini_review
-        uses: actions/github-script@v7
-        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs = require("fs");
-            const diff_output = fs.readFileSync("diff.txt",'utf8');
-
-            const { GoogleGenerativeAI } = require("@google/generative-ai");
-            const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});            
-
-            // Pull Request 전용 프롬프트 (한국어 설명, 형식은 원래대로 유지)
-            const prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to calculate the exact line number by referring to the "@@ -0,0 +0,0 @@" part. The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment }, "side": "RIGHT"}\] format must be respected. Avoid using markdown code blocks in your response.\n<git diff>${diff_output}</git diff>`;
-
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
+            const prAuthor = context.payload.pull_request.user.login;
+            const candidate = ['100gammmit', 'BeigeBearDev', 'universechoi', 'notmybussiness', 'solji-choi'];
+            const filteredCandidates = candidate.filter(username => username !== prAuthor);
             
-            fs.writeFileSync('review_result.txt', text);
-            console.log('Review results saved!');
+            if (filteredCandidates.length < 2) {
+              const comment = `선택할 수 있는 리뷰어가 충분하지 않습니다.`;
+              core.setOutput('comment', comment);
+              core.setOutput('reviewers', '');
+            } else {
+              function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                  const j = Math.floor(Math.random() * (i + 1));
+                  [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+              }
+            
+              const shuffledCandidates = shuffle(filteredCandidates);
+              const selectedReviewers = shuffledCandidates.slice(0, 2);
+              const comment = `🎉 @${selectedReviewers.join(', @')} 님 랜덤 리뷰어로 선정되셨습니다! 리뷰를 부탁드립니다. 🙏`;
+              core.setOutput('comment', comment);
+              core.setOutput('reviewers', selectedReviewers.join(','));
+            }
 
-      # 라인별 리뷰 코멘트 추가
-      - name: Format and add PR review comments
-        id: store
-        run: |
-          # 백틱으로 감싸진 블록 제거 후 JSON 파싱이 가능하도록 처리
-          COMMENT=$(sed '/^```/d' review_result.txt | jq -c .)
-          echo "comment=$COMMENT" >> $GITHUB_OUTPUT
-
-      - name: Add Pull Request Review Comment
-        uses: nbaztec/add-pr-review-comment@v1.0.7
+      # 3. PR에 댓글 추가
+      - name: comment PR
+        uses: mshick/add-pr-comment@v1
         with:
-          comments: ${{ steps.store.outputs.comment }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          message: ${{ steps.pick_random_reviewer.outputs.comment }}
+          repo-token: ${{ secrets.GH_TOKEN }}
           repo-token-user-login: 'github-actions[bot]'
-          allow-repeats: false
+
+      # 4. 선택된 리뷰어를 PR 리뷰어로 추가
+      - name: Add Pull Request Reviewer
+        uses: madrapps/add-reviewers@v1
+        with:
+          reviewers: ${{ steps.pick_random_reviewer.outputs.reviewers }}
+          token: ${{ secrets.GH_TOKEN }}
