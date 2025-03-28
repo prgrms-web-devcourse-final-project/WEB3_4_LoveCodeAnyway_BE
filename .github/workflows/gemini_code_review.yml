@@ -1,19 +1,18 @@
 name: Gemini Code Review
 
 on:
-  # dev 브랜치로 들어오는 Pull Request와 특정 브랜치로의 push에 반응
+  # dev 브랜치로 들어오는 Pull Request 시에만 실행
   pull_request:
     branches: [ dev ]
     types: [ opened, synchronize, reopened ]
-  push:
-    branches: [ 'feature/**', 'fix/**', 'bugfix/**' ] # feature/, fix/, bugfix/ 로 시작하는 모든 브랜치
+
 
 jobs:
   code-review:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write  # PR 코멘트를 위해 필요
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -28,25 +27,13 @@ jobs:
         run: |
           npm install @google/generative-ai
 
-      # 이벤트 타입에 따라 다른 처리
-      - name: Get changes for analysis
+      # PR 이벤트에서의 변경사항 처리
+      - name: Get git diff for PR
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
-            # PR 이벤트에서의 변경사항 처리
-            git fetch origin "${{ github.event.pull_request.base.ref }}"
-            git diff --unified=0 "origin/${{ github.event.pull_request.base.ref }}" > "diff.txt"
-          else
-            echo "EVENT_TYPE=push" >> $GITHUB_ENV
-            # push 이벤트에서의 변경사항 처리
-            git fetch origin
-            # 직전 커밋과 현재 커밋의 차이를 분석
-            git diff --unified=0 HEAD^ HEAD > "diff.txt"
-          fi
-          # diff 결과 디버깅 정보
-          echo "Diff size: $(stat --format=%s diff.txt) bytes"
-          echo "Diff preview (first 300 chars):"
-          head -c 300 diff.txt
+          git fetch origin "${{ github.event.pull_request.base.ref }}"
+          git fetch origin "${{ github.event.pull_request.head.ref }}"
+          git diff --unified=0 "origin/${{ github.event.pull_request.base.ref }}" > "diff.txt"
+          echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
 
       # Gemini를 사용한 코드 분석
       - name: Run Gemini-1.5-flash
@@ -61,133 +48,55 @@ jobs:
             const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});            
 
-            // 개선된 프롬프트 - 로컬 테스트에서 성공한 버전
-            const prompt = `너는 시니어 소프트웨어 엔지니어로서 git diff 결과를 기반으로 코드 리뷰를 수행해야 합니다.
+            // Pull Request 전용 프롬프트
+            const prompt = `당신은 시니어 소프트웨어 엔지니어로서 코드 리뷰를 수행해야 합니다. 주어진 git diff 결과를 기반으로 코드를 검토하고 개선이 필요한 부분을 지적해주세요.
+중요: 답변은 어떠한 마크다운 형식이나 백틱(```) 없이 순수한 JSON 배열 형태로만 제공해야 합니다.
+  
+  git diff의 "@@ -0,0 +0,0 @@" 부분을 참고하여 정확한 라인 번호를 계산하세요.
 
-  변경된 코드를 다양한 관점에서 검토하고 개선이 필요한 부분이 있는지 알려주세요.
-  git diff 결과에서 수정이 필요한 코드를 발견하면 "@@ -0,0 +0,0 @@" 부분을 참조하여 정확한 줄 번호를 계산해야 합니다.
-
-매우 중요한 지침:
-  1. 응답은 반드시 유효한 JSON 배열 형식이어야 합니다.
-  2. 마크다운 코드 블록(\`\`\`)을 포함하지 마세요.
-  3. 다른 설명이나 문장을 포함하지 마세요.
-4. 오직 다음 형식의 JSON 배열만 반환하세요:
-
+출력 형식은 반드시 다음과 같은 JSON 배열이어야 합니다:
   [
-    { "path": "파일경로", "line": 줄번호, "text": "리뷰 코멘트", "side": "RIGHT" }
+    {
+      "path": "파일경로",
+      "line": 라인번호,
+      "text": "리뷰 코멘트",
+      "side": "RIGHT"
+    },
+    ...
   ]
 
-    줄번호는 정수 값이어야 하고, 코멘트는 한국어로 작성해 주세요.
-    전체 코드 변경 흐름을 파악하여 리뷰해주세요.
+    어떤 설명이나 부연 설명도 추가하지 말고 오직 위의 JSON 형식만 반환하세요.
     
     <git diff>${diff_output}</git diff>`;
     
-    try {
-    console.log("Gemini API 호출 중...");
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
     
-    // 응답 디버깅을 위해 저장
-    fs.writeFileSync('raw_response.txt', text);
-    console.log("원본 응답 저장됨");
-    
-    // 개선된 정제 로직
-    let cleanedText = text;
-    
-    // 1. 마크다운 코드 블록 제거
-    cleanedText = cleanedText.replace(/^```(json)?/m, '').replace(/```$/m, '');
-    
-    // 2. 앞뒤 공백 제거
-    cleanedText = cleanedText.trim();
-    
-    // 3. JSON 시작과 끝 부분만 남기기
-    const jsonStartIndex = cleanedText.indexOf('[');
-    const jsonEndIndex = cleanedText.lastIndexOf(']') + 1;
-    
-    if (jsonStartIndex >= 0 && jsonEndIndex > jsonStartIndex) {
-    cleanedText = cleanedText.substring(jsonStartIndex, jsonEndIndex);
-}
+    fs.writeFileSync('review_result.txt', text);
+    console.log('Review results saved!');
 
-  fs.writeFileSync('cleaned_response.txt', cleanedText);
-  console.log("정제된 응답 저장됨");
-  
-  // JSON 파싱 시도
-  try {
-  const jsonResponse = JSON.parse(cleanedText);
-  fs.writeFileSync('review_result.txt', JSON.stringify(jsonResponse));
-  console.log("유효한 JSON으로 파싱 성공");
-} catch (parseError) {
-  console.log('JSON 파싱 실패:', parseError.message);
-  // 파싱 실패시 빈 배열 사용
-  fs.writeFileSync('review_result.txt', '[]');
-  console.log("파싱 실패로 빈 배열 사용");
-}
-} catch (error) {
-  console.error('Gemini API 호출 오류:', error);
-  fs.writeFileSync('review_result.txt', '[]');
-  console.log("API 오류로 빈 배열 사용");
-}
+    # 라인별 리뷰 코멘트 추가
+    - name: Format and add PR review comments
+      id: store
+      run: |
+        # JSON 배열만 추출하여 처리
+         COMMENT=$(cat review_result.txt | grep -v '```' | grep -v '^$' | tr -d '\n' | sed -E 's/.*(\[.*\]).*/\1/')
+        
+        # JSON 유효성 검사
+        echo "$COMMENT" | jq . > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+        echo "Error: Invalid JSON format in the review result"
+        echo "$COMMENT"
+        exit 1
+        fi
 
-# 최종 검증 단계
-- name: Validate final JSON
-  id: validate
-  run: |
-    echo "Response validation:"
-    cat review_result.txt
-    
-    # 최종 검증 및 jq로 압축
-    VALID_JSON=$(cat review_result.txt | jq -c . 2>/dev/null || echo "[]")
-    echo "comment=$VALID_JSON" >> $GITHUB_OUTPUT
-    echo "최종 JSON 검증 완료"
+        echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
-# PR 이벤트인 경우에만 코멘트 추가
-- name: Add Pull Request Review Comment
-  if: ${{ github.event_name == 'pull_request' && steps.validate.outputs.comment != '[]' }}
-  uses: nbaztec/add-pr-review-comment@v1.0.7
-  with:
-    comments: ${{ steps.validate.outputs.comment }}
-    repo-token: ${{ secrets.GITHUB_TOKEN }}
-    repo-token-user-login: 'github-actions[bot]'
-    allow-repeats: false
-
-# Push 이벤트인 경우 요약 리포트 생성
-- name: Create review summary for push event
-  if: ${{ github.event_name == 'push' }}
-  run: |
-    echo "# 🔍 Gemini 코드 리뷰 결과" > review_summary.md
-    echo "" >> review_summary.md
-    echo "커밋: ${{ github.sha }}" >> review_summary.md
-    echo "브랜치: ${{ github.ref_name }}" >> review_summary.md
-    echo "" >> review_summary.md
-    
-    REVIEW_CONTENT=$(cat review_result.txt)
-    if [ "$REVIEW_CONTENT" == "[]" ]; then
-      echo "✅ 코드 리뷰 결과 특별한 문제점이 발견되지 않았습니다." >> review_summary.md
-    else
-      echo "## 리뷰 내용" >> review_summary.md
-      echo "" >> review_summary.md
-    
-      # JSON을 더 읽기 쉬운 형태로 변환
-      jq -r '.[] | "### " + .path + " (줄 " + (.line|tostring) + ")\n\n" + .text + "\n"' review_result.txt >> review_summary.md
-    fi
-    
-    cat review_summary.md
-
-# 결과 요약 (GitHub Actions UI에 표시)
-- name: Summary
-  run: |
-    echo "### Gemini 코드 리뷰 완료" >> $GITHUB_STEP_SUMMARY
-    if [ "${{ steps.validate.outputs.comment }}" == "[]" ]; then
-      echo "✅ 리뷰 코멘트가 없습니다." >> $GITHUB_STEP_SUMMARY
-    else
-      COMMENTS_COUNT=$(echo '${{ steps.validate.outputs.comment }}' | jq '. | length')
-      echo "🔍 $COMMENTS_COUNT 개의 리뷰 코멘트가 생성되었습니다." >> $GITHUB_STEP_SUMMARY
-    
-      # 실행 타입에 따른 안내
-      if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-        echo "* 리뷰 코멘트는 PR에 직접 추가되었습니다." >> $GITHUB_STEP_SUMMARY
-      else
-        echo "* 자세한 리뷰 내용은 GitHub Action 실행 로그에서 확인할 수 있습니다." >> $GITHUB_STEP_SUMMARY
-      fi
-    fi
+    - name: Add Pull Request Review Comment
+      uses: nbaztec/add-pr-review-comment@v1.0.7
+      with:
+        comments: ${{ steps.store.outputs.comment }}
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        repo-token-user-login: 'github-actions[bot]'
+        allow-repeats: false
