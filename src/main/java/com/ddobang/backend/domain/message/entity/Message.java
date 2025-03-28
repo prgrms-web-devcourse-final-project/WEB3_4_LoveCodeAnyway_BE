@@ -2,6 +2,8 @@ package com.ddobang.backend.domain.message.entity;
 
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.global.entity.BaseTime;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
