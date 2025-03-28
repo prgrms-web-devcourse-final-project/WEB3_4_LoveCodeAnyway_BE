@@ -37,16 +37,14 @@ public class StoreRepositoryTest {
 		.name("매장1")
 		.address("서울시 마포구")
 		.phoneNumber("1234-1234")
-		.siteUrl("https://store1.com")
-		.status(Store.Status.OPEN)
+		.status(Store.Status.OPENED)
 		.region(region1)
 		.build();
 	private final Store store2 = Store.builder()
 		.name("매장2")
 		.address("서울시 강남구")
 		.phoneNumber("5678-5678")
-		.siteUrl("https://store2.com")
-		.status(Store.Status.CLOSE)
+		.status(Store.Status.CLOSED)
 		.region(region2)
 		.build();
 
@@ -63,7 +61,7 @@ public class StoreRepositoryTest {
 
 	@Test
 	@DisplayName("매장 ID로 매장 조회 성공 테스트")
-	public void findByIdTest() {
+	void findByIdTest() {
 		// given
 		Long id = 1L;
 
@@ -74,7 +72,6 @@ public class StoreRepositoryTest {
 		assertThat(store.getName()).isEqualTo(store1.getName());
 		assertThat(store.getAddress()).isEqualTo(store1.getAddress());
 		assertThat(store.getPhoneNumber()).isEqualTo(store1.getPhoneNumber());
-		assertThat(store.getSiteUrl()).isEqualTo(store1.getSiteUrl());
 		assertThat(store.getStatus()).isEqualTo(store1.getStatus());
 		assertThat(store.getRegion().getMajorRegion()).isEqualTo(region1.getMajorRegion());
 		assertThat(store.getRegion().getSubRegion()).isEqualTo(region1.getSubRegion());
@@ -82,7 +79,7 @@ public class StoreRepositoryTest {
 
 	@Test
 	@DisplayName("매장 ID로 매장 조회 실패 테스트")
-	public void findByIdFailTest() {
+	void findByIdFailTest() {
 		// given
 		Long id = 3L;
 
