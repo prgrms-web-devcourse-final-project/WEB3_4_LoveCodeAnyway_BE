@@ -1,12 +1,10 @@
 name: Gemini Code Review
 
 on:
-  # dev 브랜치로 들어오는 Pull Request와 모든 푸시에 실행
+  # dev 브랜치로 들어오는 Pull Request 시에만 실행
   pull_request:
     branches: [ dev ]
     types: [ opened, synchronize, reopened ]
-  push:
-    branches: [ dev ]
 
 jobs:
   code-review:
@@ -28,30 +26,13 @@ jobs:
         run: |
           npm install @google/generative-ai
 
-      # 이벤트 타입 확인
-      - name: Set event type
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
-          else
-            echo "EVENT_TYPE=push" >> $GITHUB_ENV
-          fi
-
       # PR 이벤트에서의 변경사항 처리
       - name: Get git diff for PR
-        if: env.EVENT_TYPE == 'pull_request'
         run: |
           git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-${{ github.event.pull_request.number }}
           git fetch origin ${{ github.event.pull_request.base.ref }}:base
           git diff --unified=0 base pr-${{ github.event.pull_request.number }} > "diff.txt"
-
-      # 푸시 이벤트에서의 변경사항 처리
-      - name: Get git diff for Push
-        if: env.EVENT_TYPE == 'push'
-        run: |
-          git fetch origin ${{ github.event.before }}:before
-          git fetch origin ${{ github.event.after }}:after
-          git diff --unified=0 before after > "diff.txt"
+          echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
 
       # Gemini를 사용한 코드 분석
       - name: Run Gemini-1.5-flash
@@ -66,8 +47,8 @@ jobs:
             const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});            
 
-            // Pull Request 전용 프롬프트
-            const prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to calculate the exact line number by referring to the "@@ -0,0 +0,0 @@" part. The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment }, "side": "RIGHT"}\] format must be respected.\n<git diff>${diff_output}</git diff>`;
+            // Pull Request 전용 프롬프트 (한국어 설명, 형식은 원래대로 유지)
+            const prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to calculate the exact line number by referring to the "@@ -0,0 +0,0 @@" part. The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment }, "side": "RIGHT"}\] format must be respected. Avoid using markdown code blocks in your response.\n<git diff>${diff_output}</git diff>`;
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
@@ -76,9 +57,8 @@ jobs:
             fs.writeFileSync('review_result.txt', text);
             console.log('Review results saved!');
 
-      # 라인별 리뷰 코멘트 추가 (PR인 경우에만)
+      # 라인별 리뷰 코멘트 추가
       - name: Format and add PR review comments
-        if: env.EVENT_TYPE == 'pull_request'
         id: store
         run: |
           # 백틱으로 감싸진 블록 제거 후 JSON 파싱이 가능하도록 처리
@@ -86,23 +66,9 @@ jobs:
           echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
       - name: Add Pull Request Review Comment
-        if: env.EVENT_TYPE == 'pull_request'
         uses: nbaztec/add-pr-review-comment@v1.0.7
         with:
           comments: ${{ steps.store.outputs.comment }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           repo-token-user-login: 'github-actions[bot]'
           allow-repeats: false
-
-      # 푸시 이벤트일 때 결과 확인
-      - name: Show review result for Push
-        if: env.EVENT_TYPE == 'push'
-        run: |
-          echo "Gemini 코드 리뷰 결과:"
-          cat review_result.txt
-          
-          # 결과를 GitHub에서 확인할 수 있도록 요약
-          echo "::group::코드 리뷰 결과"
-          COMMENT=$(sed '/^```/d' review_result.txt | jq -c .)
-          echo "$COMMENT" | jq .
-          echo "::endgroup::"
