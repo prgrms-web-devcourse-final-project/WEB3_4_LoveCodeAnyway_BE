@@ -1,7 +1,10 @@
 package com.ddobang.backend.domain.store.service;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,8 @@ import com.ddobang.backend.domain.region.entity.Region;
 import com.ddobang.backend.domain.region.service.RegionService;
 import com.ddobang.backend.domain.store.dto.StoreRequest;
 import com.ddobang.backend.domain.store.entity.Store;
+import com.ddobang.backend.domain.store.exception.StoreErrorCode;
+import com.ddobang.backend.domain.store.exception.StoreException;
 import com.ddobang.backend.domain.store.repository.StoreRepository;
 
 /**
@@ -39,22 +44,20 @@ public class StoreServiceTest {
 		.name("매장1")
 		.address("서울시 마포구")
 		.phoneNumber("1234-1234")
-		.siteUrl("https://store1.com")
-		.status(Store.Status.OPEN)
+		.status("OPENED")
 		.regionId(1L)
 		.build();
 	private final Store store = Store.builder()
 		.name("매장2")
 		.address("서울시 강남구")
 		.phoneNumber("5678-5678")
-		.siteUrl("https://store2.com")
-		.status(Store.Status.CLOSE)
+		.status(Store.Status.CLOSED)
 		.region(region2)
 		.build();
 
 	@Test
-	@DisplayName("관리자 전용 매장 저장 성공 테스트")
-	public void saveForAdminTest() {
+	@DisplayName("관리자 전용 매장 저장 테스트")
+	void saveForAdminTest() {
 		// given
 		ArgumentCaptor<Store> storeCaptor = ArgumentCaptor.forClass(Store.class);
 		when(regionService.findById(anyLong())).thenReturn(region1);
@@ -69,8 +72,75 @@ public class StoreServiceTest {
 		assertThat(savedStore.getName()).isEqualTo(storeRequest.name());
 		assertThat(savedStore.getAddress()).isEqualTo(storeRequest.address());
 		assertThat(savedStore.getPhoneNumber()).isEqualTo(storeRequest.phoneNumber());
-		assertThat(savedStore.getSiteUrl()).isEqualTo(storeRequest.siteUrl());
-		assertThat(savedStore.getStatus()).isEqualTo(storeRequest.status());
+		assertThat(savedStore.getStatus()).isEqualTo(Store.Status.valueOf(storeRequest.status()));
 		assertThat(savedStore.getRegion()).isEqualTo(region1);
+	}
+
+	@Test
+	@DisplayName("매장 ID로 매장 조회 성공 테스트")
+	void findByIdTest() {
+		// given
+		Long id = 1L;
+		when(storeRepository.findById(id)).thenReturn(Optional.of(store));
+
+		// when
+		Store result = storeService.findById(id);
+
+		// then
+		assertThat(result).isEqualTo(store);
+	}
+
+	@Test
+	@DisplayName("매장 ID로 매장 조회 실패 테스트")
+	void findByIdFailTest() {
+		// given
+		Long id = 3L;
+		when(storeRepository.findById(id)).thenReturn(Optional.empty());
+
+		// when
+		StoreException exception = assertThrows(
+			StoreException.class,
+			() -> storeService.findById(3L)
+		);
+		StoreErrorCode errorCode = StoreErrorCode.STORE_NOT_FOUND;
+
+		// then
+		assertThat(exception.getErrorCode()).isEqualTo(errorCode);
+		assertThat(exception.getErrorCode().getErrorCode()).isEqualTo(errorCode.getErrorCode());
+		assertThat(exception.getErrorCode().getStatus()).isEqualTo(errorCode.getStatus());
+		assertThat(exception.getErrorCode().getMessage()).isEqualTo(errorCode.getMessage());
+	}
+
+	@Test
+	@DisplayName("매장 수정 성공 테스트")
+	void modifyTest() {
+		// given
+		Long id = 1L;
+		when(storeRepository.findById(id)).thenReturn(Optional.of(store));
+		when(regionService.findById(anyLong())).thenReturn(region1);
+
+		// when
+		storeService.modify(id, storeRequest);
+
+		// then
+		assertThat(store.getName()).isEqualTo(storeRequest.name());
+		assertThat(store.getAddress()).isEqualTo(storeRequest.address());
+		assertThat(store.getPhoneNumber()).isEqualTo(storeRequest.phoneNumber());
+		assertThat(store.getStatus()).isEqualTo(Store.Status.valueOf(storeRequest.status()));
+		assertThat(store.getRegion()).isEqualTo(region1);
+	}
+
+	@Test
+	@DisplayName("매장 삭제 성공 테스트")
+	void deleteTest() {
+		// given
+		Long id = 1L;
+		when(storeRepository.findById(id)).thenReturn(Optional.of(store));
+
+		// when
+		storeService.delete(id);
+
+		// then
+		assertThat(store.getStatus()).isEqualTo(Store.Status.DELETED);
 	}
 }
