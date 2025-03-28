@@ -47,6 +47,28 @@ dependencies {
 
     // OpenAPI (Swagger) 추가
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1")
+
+    // querydsl
+    implementation("com.querydsl:querydsl-jpa:5.1.0:jakarta")
+    annotationProcessor("com.querydsl:querydsl-apt:5.1.0:jakarta")
+    annotationProcessor("jakarta.annotation:jakarta.annotation-api")
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+}
+
+def querydslDir = "build/generated/querydsl"
+
+// Q클래스가 생성될 디렉토리 지정
+sourceSets {
+    main {
+        java {
+            srcDirs += querydslDir
+        }
+    }
+}
+
+// Q클래스를 생성할 디렉토리 지정
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ["-Aquerydsl.sourcedir=${querydslDir}"]
 }
 
 tasks.named('test') {
