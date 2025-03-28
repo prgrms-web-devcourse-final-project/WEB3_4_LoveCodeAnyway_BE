@@ -31,14 +31,32 @@ jobs:
         run: |
           npm install @google/generative-ai
 
+      # 이벤트 타입 확인
+      - name: Set event type
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
+          else
+            echo "EVENT_TYPE=push" >> $GITHUB_ENV
+          fi
+
       # PR 이벤트에서의 변경사항 처리
       - name: Get git diff for PR
+        if: env.EVENT_TYPE == 'pull_request'
         run: |
-          git fetch origin "${{ github.event.pull_request.base.ref }}"
-          git fetch origin "${{ github.event.pull_request.head.ref }}"
-          git diff --unified=0 "origin/${{ github.event.pull_request.base.ref }}" > "diff.txt"
-          echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-${{ github.event.pull_request.number }}
+          git fetch origin ${{ github.event.pull_request.base.ref }}:base
+          git diff --unified=0 base pr-${{ github.event.pull_request.number }} > "diff.txt"
 
+      # 푸시 이벤트에서의 변경사항 처리
+      - name: Get git diff for Push
+        if: env.EVENT_TYPE == 'push'
+        run: |
+          git fetch origin ${{ github.event.before }}:before
+          git fetch origin ${{ github.event.after }}:after
+          git diff --unified=0 before after > "diff.txt"
+
+      # Gemini를 사용한 코드 분석
       - name: Run Gemini-1.5-flash
         id: gemini_review
         uses: actions/github-script@v7
@@ -46,13 +64,13 @@ jobs:
           script: |
             const fs = require("fs");
             const diff_output = fs.readFileSync("diff.txt",'utf8');
-            
+
             const { GoogleGenerativeAI } = require("@google/generative-ai");
             const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});            
-            
+
             const prompt = `당신은 시니어 소프트웨어 엔지니어입니다. git diff 결과를 분석하여 코드 리뷰를 수행하세요. 응답은 마크다운이나 백틱없이 순수 JSON 배열만 제공하세요. 형식: [{"path":"파일경로", "line": 라인번호, "text": "리뷰 내용", "side": "RIGHT"}]. git diff의 '@@ -0,0 +0,0 @@' 부분을 참고해 정확한 라인 번호를 계산하세요. <git diff>${diff_output}</git diff>`;
-            
+
             const result = await model.generateContent(prompt);
             const response = await result.response;
             const text = response.text();
@@ -60,27 +78,30 @@ jobs:
             fs.writeFileSync('review_result.txt', text);
             console.log('Review results saved!');
 
-      # 라인별 리뷰 코멘트 추가
+      # 라인별 리뷰 코멘트 추가 (PR인 경우에만)
       - name: Format and add PR review comments
+        if: env.EVENT_TYPE == 'pull_request'
         id: store
-        run: |
-          # JSON 배열만 추출하여 처리
-           COMMENT=$(cat review_result.txt | grep -v '```' | grep -v '^$' | tr -d '\n' | sed -E 's/.*(\[.*\]).*/\1/')
-          
-          # JSON 유효성 검사
-          echo "$COMMENT" | jq . > /dev/null 2>&1
-          if [ $? -ne 0 ]; then
-          echo "Error: Invalid JSON format in the review result"
-          echo "$COMMENT"
-          exit 1
-          fi
-          
-          echo "comment=$COMMENT" >> $GITHUB_OUTPUT
+        run: cat review_result.txt | grep -v '```' | grep -v '^$' | tr -d '\n' | sed -E 's/.*(\[.*\]).*/\1/' > temp.json && jq -c . temp.json > /dev/null 2>&1 && COMMENT=$(cat temp.json) && echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
       - name: Add Pull Request Review Comment
+        if: env.EVENT_TYPE == 'pull_request'
         uses: nbaztec/add-pr-review-comment@v1.0.7
         with:
           comments: ${{ steps.store.outputs.comment }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           repo-token-user-login: 'github-actions[bot]'
           allow-repeats: false
+
+      # 푸시 이벤트일 때 결과 확인
+      - name: Show review result for Push
+        if: env.EVENT_TYPE == 'push'
+        run: |
+          echo "Gemini 코드 리뷰 결과:"
+          cat review_result.txt
+          
+          # 결과를 GitHub에서 확인할 수 있도록 요약
+          echo "::group::코드 리뷰 결과"
+          cat review_result.txt | grep -v '```' | grep -v '^$' | tr -d '\n' | sed -E 's/.*(\[.*\]).*/\1/' > temp.json
+          jq . temp.json || echo "JSON 파싱 실패"
+          echo "::endgroup::"
