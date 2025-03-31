@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-public class DiaryStats {
+public class DiaryStat {
 	@Id
 	private Long id;
 
@@ -42,7 +42,7 @@ public class DiaryStats {
 	private int elapsedTime;
 
 	@Builder
-	public DiaryStats(
+	public DiaryStat(
 		Diary diary,
 		int difficulty,
 		int fear,
