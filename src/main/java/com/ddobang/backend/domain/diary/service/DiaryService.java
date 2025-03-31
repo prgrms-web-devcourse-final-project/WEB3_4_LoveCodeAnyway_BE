@@ -11,11 +11,11 @@ import com.ddobang.backend.domain.diary.converter.DiaryConverter;
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
-import com.ddobang.backend.domain.diary.entity.DiaryStats;
+import com.ddobang.backend.domain.diary.entity.DiaryStat;
 import com.ddobang.backend.domain.diary.exception.DiaryErrorCode;
 import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.diary.repository.DiaryRepository;
-import com.ddobang.backend.domain.diary.repository.DiaryStatsRepository;
+import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DiaryService {
 	private final DiaryRepository diaryRepository;
-	private final DiaryStatsRepository diaryStatsRepository;
+	private final DiaryStatRepository diaryStatRepository;
 	private final ThemeRepository themeRepository;
 
 	@Transactional
@@ -37,8 +37,8 @@ public class DiaryService {
 			DiaryConverter.toDiary(diaryRequestDto)
 		);
 
-		DiaryStats diaryStats = diaryStatsRepository.save(
-			DiaryConverter.toDiaryStats(diary, diaryRequestDto)
+		DiaryStat diaryStats = diaryStatRepository.save(
+			DiaryConverter.toDiaryStat(diary, diaryRequestDto)
 		);
 
 		diary.setDiaryStats(diaryStats);

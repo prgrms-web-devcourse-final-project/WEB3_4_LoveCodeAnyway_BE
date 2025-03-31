@@ -2,7 +2,7 @@ package com.ddobang.backend.domain.diary.converter;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
-import com.ddobang.backend.domain.diary.entity.DiaryStats;
+import com.ddobang.backend.domain.diary.entity.DiaryStat;
 
 public class DiaryConverter {
 	public static Diary toDiary(DiaryRequestDto dto) {
@@ -14,8 +14,8 @@ public class DiaryConverter {
 			.build();
 	}
 
-	public static DiaryStats toDiaryStats(Diary diary, DiaryRequestDto dto) {
-		return DiaryStats.builder()
+	public static DiaryStat toDiaryStat(Diary diary, DiaryRequestDto dto) {
+		return DiaryStat.builder()
 			.diary(diary)
 			.difficulty(dto.difficulty())
 			.fear(dto.fear())
