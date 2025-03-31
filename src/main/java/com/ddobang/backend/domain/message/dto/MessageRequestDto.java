@@ -3,7 +3,9 @@ package com.ddobang.backend.domain.message.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 @Getter
 public class MessageRequestDto {
 
