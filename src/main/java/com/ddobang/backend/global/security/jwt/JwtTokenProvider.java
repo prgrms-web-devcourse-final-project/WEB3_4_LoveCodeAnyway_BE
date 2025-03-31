@@ -6,6 +6,9 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -49,5 +52,32 @@ public class JwtTokenProvider {
 			.setExpiration(expiry) // 만료일
 			.signWith(key, SignatureAlgorithm.HS256) // 알고리즘, 키 적용
 			.compact(); // 생성
+	}
+
+	// 토큰 유효성 검사
+	public String getSubject(String token) {
+		return parseClaims(token).getBody().getSubject();
+	}
+
+	public Claims getClaims(String token) {
+		return parseClaims(token).getBody();
+	}
+
+	// 토큰 파싱
+	private Jws<Claims> parseClaims(String token) {
+		return Jwts.parserBuilder()
+			.setSigningKey(key)
+			.build()
+			.parseClaimsJws(token);
+	}
+
+	// 토큰 유효성 검사 (예외 처리)
+	public boolean validateToken(String token) {
+		try {
+			parseClaims(token);
+			return true;
+		} catch (JwtException | IllegalArgumentException e) { // JWT 예외ㅣ잘못된 인자 예외 처리
+			return false;
+		}
 	}
 }
