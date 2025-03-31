@@ -17,6 +17,7 @@ body:
         - 문의 (board)
         - 쪽지 (message)
         - 알림 (noti)
+        - 기타 (etc)
     validations:
       required: true
 
