@@ -1,6 +1,6 @@
-package com.ddobang.backend.domain.notification.entity;
+package com.ddobang.backend.domain.alarm.entity;
 
-public enum NotificationType {
+public enum AlarmType {
 	SYSTEM,       // 시스템 알림
 	COMMENT,      // 댓글 알림
 	MENTION,      // 언급 알림
