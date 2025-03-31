@@ -40,6 +40,8 @@ out/
 ### Custom ###
 db_dev.mv.db
 db_dev.trace.db
+/application-local.yml
+/update-dev.sh
 
 # 민감정보
 application-secret.yml
