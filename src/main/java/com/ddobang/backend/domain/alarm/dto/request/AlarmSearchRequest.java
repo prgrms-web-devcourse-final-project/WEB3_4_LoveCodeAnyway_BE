@@ -11,7 +11,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-class AlarmSearchRequest { // 알림 종류별로 조회시 분류용
+public class AlarmSearchRequest { // 알림 종류별로 조회시 분류용
 	private AlarmType alarmType;
 	private Boolean readStatus;
 

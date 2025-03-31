@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ddobang.backend.domain.alarm.dto.request.AlarmCreateRequest;
+import com.ddobang.backend.domain.alarm.dto.response.AlarmCountResponse;
 import com.ddobang.backend.domain.alarm.dto.response.AlarmResponse;
 import com.ddobang.backend.domain.alarm.service.AlarmService;
 import com.ddobang.backend.global.response.PageDto;
@@ -53,6 +54,15 @@ public class AlarmController {
 		Long userId = TEMP_USER_ID;
 		AlarmResponse alarm = alarmService.getAlarm(alarmId, userId);
 		return ResponseFactory.ok("알림 상세 조회 성공", alarm);
+	}
+
+	@Operation(summary = "알림 개수 조회", description = "사용자의 전체 및 읽지 않은 알림 개수를 조회합니다.")
+	@GetMapping("/count")
+	public ResponseEntity<SuccessResponse<AlarmCountResponse>> getAlarmCounts() {
+		// TODO: 실제 구현 시 인증된 사용자 ID를 사용
+		Long userId = TEMP_USER_ID;
+		AlarmCountResponse counts = alarmService.getAlarmCounts(userId);
+		return ResponseFactory.ok("알림 개수 조회 성공", counts);
 	}
 
 	@Operation(summary = "알림 생성", description = "새로운 알림을 생성합니다. (관리자 또는 시스템용)")

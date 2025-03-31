@@ -22,7 +22,8 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
 	// 특정알림 조회
 	Optional<Alarm> findByIdAndReceiverId(Long id, Long receiverId);
 
-	// TODO?: 읽지 않은 알림 개수 조회
+	// 읽지 않은 알림 개수 조회
+	long countByReceiverIdAndReadStatus(Long receiverId, boolean readStatus);
 
 	// 전부 읽음 처리
 	@Modifying
