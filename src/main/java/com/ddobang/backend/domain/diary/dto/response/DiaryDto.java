@@ -7,8 +7,9 @@ import com.ddobang.backend.domain.diary.entity.Diary;
 
 public record DiaryDto(
 	long id,
-	//String themeName,
-	//String thumbnail,
+	long themeId,
+	String themeName,
+	String thumbnailUrl,
 	//String storeName,
 	String imageUrl,
 	LocalDate escapeDate,
@@ -32,8 +33,9 @@ public record DiaryDto(
 	public static DiaryDto of(Diary diary) {
 		return new DiaryDto(
 			diary.getId(),
-			//diary.getTheme().getId(),
-			//diary.getTheme().getThumbnail,
+			diary.getTheme().getId(),
+			diary.getTheme().getName(),
+			diary.getTheme().getThumbnailUrl(),
 			//diary.getTheme().getStore().getName(),
 			diary.getImageUrl(),
 			diary.getEscapeDate(),
