@@ -2,10 +2,13 @@ package com.ddobang.backend.domain.theme.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,33 +22,49 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ThemeStats {
+public class ThemeStat {
 	@Id
 	@Column(name = "theme_id")
 	private Long id;
 
 	@MapsId
-	@OneToOne
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "theme_id")
 	private Theme theme;
 
+	@PositiveOrZero
+	@Max(5)
 	private float difficulty;
+	@PositiveOrZero
+	@Max(5)
 	private float fear;
+	@PositiveOrZero
+	@Max(5)
 	private float activity;
+	@PositiveOrZero
+	@Max(5)
 	private float satisfaction;
+	@PositiveOrZero
+	@Max(5)
 	private float production;
+	@PositiveOrZero
+	@Max(5)
 	private float story;
+	@PositiveOrZero
+	@Max(5)
 	private float question;
+	@PositiveOrZero
+	@Max(5)
 	private float interior;
 	private float deviceRatio;
-	private float noHintEscapeRate;
-	private float escapeResult;
-	private float escapeTimeAvg;
+	private int noHintEscapeRate;
+	private int escapeResult;
+	private int escapeTimeAvg;
 
 	@Builder
-	public ThemeStats(Theme theme, float difficulty, float fear, float activity, float satisfaction, float production,
-		float story, float question, float interior, float deviceRatio, float noHintEscapeRate, float escapeResult,
-		float escapeTimeAvg) {
+	public ThemeStat(Theme theme, float difficulty, float fear, float activity, float satisfaction, float production,
+		float story, float question, float interior, float deviceRatio, int noHintEscapeRate, int escapeResult,
+		int escapeTimeAvg) {
 		this.theme = theme;
 		this.difficulty = difficulty;
 		this.fear = fear;
