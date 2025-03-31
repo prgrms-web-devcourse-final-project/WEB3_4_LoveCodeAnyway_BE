@@ -1,7 +1,7 @@
 package com.ddobang.backend.domain.store.dto;
 
 import com.ddobang.backend.domain.store.entity.Store;
-import com.ddobang.backend.global.validator.ValidEnum;
+import com.ddobang.backend.global.validation.annotation.ValidEnum;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;

@@ -1,30 +1,6 @@
 package com.ddobang.backend.domain.message.controller;
 
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.service.MemberService;
-import com.ddobang.backend.domain.message.dto.MessageDto;
-import com.ddobang.backend.domain.message.dto.MessageRequestDto;
-import com.ddobang.backend.domain.message.service.MessageService;
-import com.ddobang.backend.global.response.ResponseFactory;
-import com.ddobang.backend.global.response.SuccessResponse;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-
+/*
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/messages")
@@ -116,4 +92,4 @@ public class MessageController {
 
 		return ResponseFactory.ok("쪽지 삭제 성공", null);
 	}
-}
+}*/
