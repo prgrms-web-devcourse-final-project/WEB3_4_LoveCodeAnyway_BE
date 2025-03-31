@@ -3,9 +3,11 @@ package com.ddobang.backend.domain.party.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.exception.PartyErrorCode;
 import com.ddobang.backend.domain.party.exception.PartyException;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
@@ -30,22 +32,15 @@ import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
 public class Party extends BaseTime {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Setter(AccessLevel.NONE)
 	private Long id;
 
 	@NotBlank
@@ -61,7 +56,6 @@ public class Party extends BaseTime {
 	@Column(name = "scheduled_at", nullable = false)
 	private LocalDateTime scheduledAt;
 
-	@Builder.Default
 	@NotNull
 	@Column(name = "participants_needed", nullable = false)
 	private Integer participantsNeeded = 1;
@@ -74,33 +68,94 @@ public class Party extends BaseTime {
 	@Column(name = "rookie_available", nullable = false)
 	private Boolean rookieAvailable;
 
-	@Builder.Default
 	@NotNull
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
-	private PartyStatus status = PartyStatus.RECRUITING; // RECRUITING, CLOSED, COMPLETED, CANCELLED
+	private PartyStatus status; // RECRUITING, CLOSED, COMPLETED, CANCELLED
 
-	@Builder.Default
 	@NotNull
 	@Column(name = "is_deleted", nullable = false)
-	private Boolean isDeleted = false;
+	private Boolean isDeleted;
 
-	@Builder.Default
 	@OneToMany(mappedBy = "party", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<PartyMember> partyMembers = new ArrayList<>();
+	private List<PartyMember> partyMembers;
 
 	@ManyToOne
 	@JoinColumn(name = "theme_id", nullable = false)
 	private Theme theme;
 
-	@PrePersist
-	@PreUpdate
-	private void validateParticipants() {
-		if (participantsNeeded != null && totalParticipants != null) {
-			if (participantsNeeded > totalParticipants) {
-				throw new PartyException(PartyErrorCode.PARTY_INVALID_PARTICIPANTS);
-			}
+	private Party(PartyRequest request, Theme theme) {
+		this.title = request.title();
+		this.content = request.content();
+		this.scheduledAt = request.scheduledAt();
+		this.participantsNeeded = request.participantsNeeded();
+		this.totalParticipants = request.totalParticipants();
+		this.rookieAvailable = request.rookieAvailable();
+		this.status = PartyStatus.RECRUITING;
+		this.partyMembers = new ArrayList<>();
+		this.isDeleted = false;
+		this.theme = theme;
+	}
+
+	public static Party of(PartyRequest request, Theme theme) {
+		return new Party(request, theme);
+	}
+
+	public void modifyParty(PartyRequest request, Theme theme) {
+		this.title = request.title();
+		this.content = request.content();
+		this.scheduledAt = request.scheduledAt();
+		this.participantsNeeded = request.participantsNeeded();
+		this.totalParticipants = request.totalParticipants();
+		this.rookieAvailable = request.rookieAvailable();
+		this.theme = theme;
+	}
+
+	private boolean canTransitionTo(PartyStatus status) {
+		return switch (this.status) {
+			case RECRUITING ->
+				List.of(PartyStatus.CLOSED, PartyStatus.CANCELLED, PartyStatus.COMPLETED).contains(status);
+			case CLOSED -> Objects.equals(PartyStatus.COMPLETED, status);
+			case CANCELLED, COMPLETED -> false;
+		};
+	}
+
+	public void updatePartyStatus(PartyStatus status) {
+		if (!canTransitionTo(status)) {
+			throw new PartyException(
+				PartyErrorCode.PARTY_INVALID_STATUS_TRANSITION,
+				String.format("현재 상태에서는 %s 상태로 변경할 수 없습니다.", status));
 		}
+		this.status = status;
+	}
+
+	public void addPartyMember(Member member) {
+		PartyMember partyMember = PartyMember.of(this, member);
+		this.partyMembers.add(partyMember);
+	}
+
+	private PartyMember findPartyMember(Member member) {
+		return partyMembers.stream()
+			.filter(pm -> pm.getMember().equals(member))
+			.findFirst()
+			.orElseThrow(() -> new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_FOUND));
+	}
+
+	public PartyMemberStatus getPartyMemberStatus(Member member) {
+		PartyMember partyMember = findPartyMember(member);
+		return partyMember.getStatus();
+	}
+
+	public void updatePartyMemberStatus(Member member, PartyMemberStatus status) {
+		PartyMember partyMember = findPartyMember(member);
+		partyMember.changeStatus(status);
+	}
+
+	public void delete() {
+		if (isDeleted) {
+			throw new PartyException(PartyErrorCode.PARTY_ALREADY_DELETED);
+		}
+		this.isDeleted = true;
 	}
 
 	public Member getHost() {
@@ -121,5 +176,15 @@ public class Party extends BaseTime {
 		return partyMembers.stream()
 			.filter(pm -> pm.getStatus() == PartyMemberStatus.ACCEPTED)
 			.collect(Collectors.toList());
+	}
+
+	@PrePersist
+	@PreUpdate
+	private void validateParticipants() {
+		if (participantsNeeded != null && totalParticipants != null) {
+			if (participantsNeeded > totalParticipants) {
+				throw new PartyException(PartyErrorCode.PARTY_INVALID_PARTICIPANTS);
+			}
+		}
 	}
 }

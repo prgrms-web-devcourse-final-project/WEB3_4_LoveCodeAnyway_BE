@@ -13,18 +13,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@Setter
 public class PartyMember {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,4 +37,18 @@ public class PartyMember {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	private PartyMemberStatus status; // HOST, APPLICANT. ACCEPTED, REJECTED, CANCELLED
+
+	private PartyMember(Party party, Member member) {
+		this.party = party;
+		this.member = member;
+		this.status = PartyMemberStatus.APPLICANT;
+	}
+
+	public static PartyMember of(Party party, Member member) {
+		return new PartyMember(party, member);
+	}
+
+	public void changeStatus(PartyMemberStatus status) {
+		this.status = status;
+	}
 }
