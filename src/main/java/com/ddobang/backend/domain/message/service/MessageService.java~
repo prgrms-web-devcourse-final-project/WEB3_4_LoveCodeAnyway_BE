@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class MessageService {
 	private final MessageRepository messageRepository;
 
-	// 쪽지 보내기
+	// 메세지 보내기
 	public MessageDto sendMessage(Member sender, Member receiver, String content) {
 		if (sender == null || receiver == null) {
 			throw new MessageException(MessageErrorCode.MESSAGE_SEND_FAILED);

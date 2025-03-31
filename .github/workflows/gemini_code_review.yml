@@ -62,7 +62,7 @@ jobs:
       - name: Format and add PR review comments
         id: store
         run: |
-          # 백틱(```)으로 감싸진 블록 제거 후 JSON 파싱이 가능하도록 처리
+          # JSON 파싱이 가능하도록 처리
           COMMENT=$(sed '/^```/d' review_result.txt | jq -c .)
           echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
