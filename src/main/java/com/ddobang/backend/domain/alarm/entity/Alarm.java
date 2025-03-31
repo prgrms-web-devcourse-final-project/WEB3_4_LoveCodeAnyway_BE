@@ -1,9 +1,11 @@
-package com.ddobang.backend.domain.notification.entity;
+package com.ddobang.backend.domain.alarm.entity;
 
 import com.ddobang.backend.global.entity.BaseTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,17 +16,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Entity
-public class Notification extends BaseTime {
+public class Alarm extends BaseTime {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "notification_id")
+	@Column(name = "alarm_id")
 	private Long id;
 
 	@Column(name = "receiver_id", nullable = false)
 	private Long receiverId;
 
-	@Column(name = "name", nullable = false)
-	private String name;
+	// 추가 - 알림은 보통 관련사항이 요약적으로 들어가기 때문에 필요하다고 판단
+	@Column(name = "title", nullable = false)
+	private String title;
 
 	@Column(name = "content", nullable = false)
 	private String content;
@@ -35,12 +38,18 @@ public class Notification extends BaseTime {
 	@Column(name = "rel_id")
 	private Long relId;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "alarm_type", nullable = false)
+	private AlarmType alarmType;
+
 	@Builder
-	public Notification(Long receiverId, String name, String content, Long relId) {
+	public Alarm(Long receiverId, String name, String content, String title,
+		AlarmType alarmType, Long relId) {
 		this.receiverId = receiverId;
-		this.name = name;
+		this.titel = title;
 		this.content = content;
 		this.readStatus = false; // 기본값 읽지 않음(false)
+		this.alarmType = alarmType;
 		this.relId = relId;
 	}
 
