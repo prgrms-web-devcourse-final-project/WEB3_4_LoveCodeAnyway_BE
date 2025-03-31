@@ -1,38 +1,60 @@
 package com.ddobang.backend.domain.theme.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.validator.constraints.Length;
+
+import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.global.entity.BaseTime;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Getter
+@ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Theme extends BaseTime {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@NotBlank
+	@Length(max = 100)
 	private String name;
 
 	private String description;
 
+	@PositiveOrZero
+	@Max(5)
 	private float officialDifficulty;
 
 	private int runtime;
 
-	private String recommendedParticipants;
-
+	@Min(1)
+	@Max(8)
 	private int minParticipants;
+	@Min(1)
+	@Max(8)
 	private int maxParticipants;
-
+	@PositiveOrZero
+	@Max(9_999_999)
 	private int price;
 
 	private Status status;
@@ -45,20 +67,30 @@ public class Theme extends BaseTime {
 
 	private String thumbnailUrl;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "store_id")
+	private Store store;
+
+	@OneToMany(mappedBy = "theme", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ThemeTagMapping> themeTagMappings = new ArrayList<>();
+
 	@Builder
-	public Theme(String name, String description, float officialDifficulty, int runtime, String recommendedParticipants,
+	public Theme(String name, String description, float officialDifficulty, int runtime,
 		int minParticipants, int maxParticipants, int price, Status status, String reservationUrl,
-		String thumbnailUrl) {
+		String thumbnailUrl, Store store, List<ThemeTag> themeTags) {
 		this.name = name;
 		this.description = description;
 		this.officialDifficulty = officialDifficulty;
 		this.runtime = runtime;
-		this.recommendedParticipants = recommendedParticipants;
 		this.minParticipants = minParticipants;
 		this.maxParticipants = maxParticipants;
 		this.price = price;
 		this.status = status;
 		this.reservationUrl = reservationUrl;
 		this.thumbnailUrl = thumbnailUrl;
+		this.store = store;
+		themeTags.forEach(themeTag ->
+			themeTagMappings.add(new ThemeTagMapping(this, themeTag)));
 	}
+
 }
