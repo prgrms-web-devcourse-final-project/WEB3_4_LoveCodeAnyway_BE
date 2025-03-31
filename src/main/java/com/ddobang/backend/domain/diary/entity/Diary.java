@@ -3,14 +3,18 @@ package com.ddobang.backend.domain.diary.entity;
 import java.time.LocalDate;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.global.entity.BaseTime;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,9 +28,9 @@ public class Diary extends BaseTime {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// @ManyToOne(fetch = FetchType.LAZY)
-	// @JoinColumn(name = "theme_id", nullable = false)
-	// private Theme theme;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "theme_id", nullable = false)
+	private Theme theme;
 
 	// @ManyToOne(fetch = FetchType.LAZY)
 	// @JoinColumn(name = "member_id", nullable = false)
@@ -44,13 +48,13 @@ public class Diary extends BaseTime {
 
 	@Builder
 	public Diary(
-		//Theme theme,
+		Theme theme,
 		LocalDate escapeDate,
 		String imageUrl,
 		String participants,
 		String review
 	) {
-		//this.theme = theme;
+		this.theme = theme;
 		this.escapeDate = escapeDate;
 		this.imageUrl = imageUrl;
 		this.participants = participants;
@@ -62,10 +66,10 @@ public class Diary extends BaseTime {
 	}
 
 	public void modify(
-		//Theme theme,
+		Theme theme,
 		DiaryRequestDto diaryRequestDto
 	) {
-		//this.theme = theme;
+		this.theme = theme;
 		this.escapeDate = diaryRequestDto.escapeDate();
 		this.imageUrl = diaryRequestDto.imageUrl();
 		this.participants = diaryRequestDto.participants();

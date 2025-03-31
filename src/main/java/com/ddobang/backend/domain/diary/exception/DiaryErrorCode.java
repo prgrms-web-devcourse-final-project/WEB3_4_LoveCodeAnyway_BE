@@ -6,7 +6,9 @@ import com.ddobang.backend.global.exception.ErrorCode;
 
 public enum DiaryErrorCode implements ErrorCode {
 	// Diary
-	DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "DIARY_001", "탈출일지를 찾을 수 없습니다.");
+	DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "DIARY_001", "탈출일지를 찾을 수 없습니다."),
+	DIARY_INVALID_TIME_FORMAT(HttpStatus.BAD_REQUEST, "DIARY_002", "잘못 된 시간 형식입니다."),
+	DIARY_INVALID_TIME_TYPE(HttpStatus.BAD_REQUEST, "DIARY_003", "진행 시간인지, 남은 시간인지 확인해주세요.");
 
 	private final HttpStatus httpStatus;
 	private final String errorCode;

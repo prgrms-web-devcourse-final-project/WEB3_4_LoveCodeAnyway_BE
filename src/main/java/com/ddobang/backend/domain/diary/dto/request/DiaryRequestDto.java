@@ -44,7 +44,7 @@ public record DiaryRequestDto(
 	int hintCount,
 	boolean escapeResult,
 	String timeType,
-	int elapsedTime,
+	String elapsedTime,
 	String review
 ) {
 }

@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.diary.service;
 
+import java.util.regex.Pattern;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,9 @@ import com.ddobang.backend.domain.diary.exception.DiaryErrorCode;
 import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
+import com.ddobang.backend.domain.theme.entity.Theme;
+import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
+import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,16 +34,22 @@ public class DiaryService {
 
 	@Transactional
 	public DiaryDto write(DiaryRequestDto diaryRequestDto) {
-		// Theme theme = themeRepository.findById(diaryRequestDto.themeId()).orElseThrow(
-		// 	() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
-		// );
+		Theme theme = themeRepository.findById(diaryRequestDto.themeId()).orElseThrow(
+			() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
+		);
+
+		int elapsedTime = calculateElapsedTime(
+			diaryRequestDto.timeType(),
+			theme.getRuntime(),
+			diaryRequestDto.elapsedTime()
+		);
 
 		Diary diary = diaryRepository.save(
-			DiaryConverter.toDiary(diaryRequestDto)
+			DiaryConverter.toDiary(theme, diaryRequestDto)
 		);
 
 		DiaryStat diaryStats = diaryStatRepository.save(
-			DiaryConverter.toDiaryStat(diary, diaryRequestDto)
+			DiaryConverter.toDiaryStat(diary, diaryRequestDto, elapsedTime)
 		);
 
 		diary.setDiaryStats(diaryStats);
@@ -72,16 +83,17 @@ public class DiaryService {
 	@Transactional
 	public DiaryDto modify(long id, DiaryRequestDto diaryRequestDto) {
 		Diary diary = findById(id);
-		// Theme theme = themeRepository.findById(diaryRequestDto.themeId()).orElseThrow(
-		// 	() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
-		// );
+		Theme theme = themeRepository.findById(diaryRequestDto.themeId()).orElseThrow(
+			() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
+		);
 
-		// int elapsedTime = diaryRequestDto.timeType().equals("remaining")
-		// 	? theme.getRuntime() * 60 - diaryRequestDto.elapsedTime()
-		// 	: diaryRequestDto.elapsedTime();
-		int elapsedTime = diaryRequestDto.elapsedTime();
+		int elapsedTime = calculateElapsedTime(
+			diaryRequestDto.timeType(),
+			theme.getRuntime(),
+			diaryRequestDto.elapsedTime()
+		);
 
-		DiaryConverter.updateDiary(diary, diaryRequestDto, elapsedTime);
+		DiaryConverter.updateDiary(theme, diary, diaryRequestDto, elapsedTime);
 
 		return DiaryDto.of(diary);
 	}
@@ -91,5 +103,22 @@ public class DiaryService {
 		Diary diary = findById(id);
 
 		diaryRepository.delete(diary);
+	}
+
+	public int calculateElapsedTime(String timeType, int themeRuntime, String time) {
+		if (!Pattern.matches("^\\d{1,3}:\\d{1,2}$", time)) {
+			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_FORMAT);
+		}
+
+		if (!timeType.equals("remaining") && !timeType.equals("elapsed")) {
+			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_TYPE);
+		}
+
+		String[] timeBits = time.split(":");
+		int timeSeconds = Integer.parseInt(timeBits[0]) * 60 + Integer.parseInt(timeBits[1]);
+
+		return timeType.equals("remaining")
+			? themeRuntime * 60 - timeSeconds
+			: timeSeconds;
 	}
 }
