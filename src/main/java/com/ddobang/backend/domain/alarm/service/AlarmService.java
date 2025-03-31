@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.alarm.dto.request.AlarmCreateRequest;
+import com.ddobang.backend.domain.alarm.dto.response.AlarmCountResponse;
 import com.ddobang.backend.domain.alarm.dto.response.AlarmResponse;
 import com.ddobang.backend.domain.alarm.entity.Alarm;
 import com.ddobang.backend.domain.alarm.exception.AlarmErrorCode;
@@ -32,6 +33,15 @@ public class AlarmService {
 		Alarm alarm = alarmRepository.findByIdAndReceiverId(alarmId, userId)
 			.orElseThrow(() -> new AlarmException(AlarmErrorCode.ALARM_NOT_FOUND));
 		return AlarmResponse.from(alarm);
+	}
+
+	// 알림 개수 조회
+	public AlarmCountResponse getAlarmCounts(Long userId) {
+		long unreadCount = alarmRepository.countByReceiverIdAndReadStatus(userId, false);
+		long totalCount = alarmRepository.findByReceiverIdOrderByCreatedAtDesc(userId, Pageable.unpaged())
+			.getTotalElements();
+
+		return AlarmCountResponse.of(totalCount, unreadCount);
 	}
 
 	// 알림 생성

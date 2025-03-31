@@ -43,10 +43,10 @@ public class Alarm extends BaseTime {
 	private AlarmType alarmType;
 
 	@Builder
-	public Alarm(Long receiverId, String name, String content, String title,
+	public Alarm(Long receiverId, String title, String content, String title,
 		AlarmType alarmType, Long relId) {
 		this.receiverId = receiverId;
-		this.titel = title;
+		this.title = title;
 		this.content = content;
 		this.readStatus = false; // 기본값 읽지 않음(false)
 		this.alarmType = alarmType;
