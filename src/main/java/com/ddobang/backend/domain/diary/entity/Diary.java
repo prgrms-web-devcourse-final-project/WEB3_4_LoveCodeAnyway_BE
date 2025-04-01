@@ -38,7 +38,7 @@ public class Diary extends BaseTime {
 	private Member author;
 
 	@OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
-	private DiaryStat diaryStats;
+	private DiaryStat diaryStat;
 
 	private LocalDate escapeDate;
 	private String imageUrl;
