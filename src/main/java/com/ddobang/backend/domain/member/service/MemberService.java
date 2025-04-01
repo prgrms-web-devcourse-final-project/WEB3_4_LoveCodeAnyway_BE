@@ -4,10 +4,6 @@ import org.springframework.stereotype.Service;
 
 import com.ddobang.backend.domain.member.entity.Member;
 
-/**
- * 테스트용 MemberService 클래스
- * 실제 MemberService가 개발되기 전까지 임시로 사용
- */
 @Service
 public class MemberService {
 

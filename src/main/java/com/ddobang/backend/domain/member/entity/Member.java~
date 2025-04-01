@@ -17,6 +17,10 @@ import jakarta.persistence.ManyToMany;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 테스트용 Member 클래스
+ * 실제 Member 클래스가 개발되기 전까지 임시로 사용
+ */
 @Entity
 @Getter
 @NoArgsConstructor
