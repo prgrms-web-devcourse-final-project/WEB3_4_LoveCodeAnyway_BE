@@ -33,9 +33,16 @@ out/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
+# IntelliJ / VSCode
+.idea/
 .vscode/
 
 ### Custom ###
 db_dev.mv.db
 db_dev.trace.db
+application-local.yml
+/update-dev.sh
+
+# 민감정보
+application-secret.yml
+.env

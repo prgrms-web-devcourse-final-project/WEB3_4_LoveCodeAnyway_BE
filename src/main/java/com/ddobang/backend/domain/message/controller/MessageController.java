@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class MessageController {
 	private final MessageService messageService;
 	private final MemberService memberService;
-
+	
 	// 쪽지 전송
 	@PostMapping
 	public ResponseEntity<SuccessResponse<MessageDto>> sendMessage(

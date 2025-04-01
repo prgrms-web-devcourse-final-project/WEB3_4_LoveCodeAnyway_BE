@@ -9,11 +9,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.region.entity.Region;
 import com.ddobang.backend.domain.store.entity.Store;
+import com.ddobang.backend.global.config.QuerydslConfig;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -24,6 +26,7 @@ import jakarta.persistence.PersistenceContext;
  */
 @DataJpaTest
 @ActiveProfiles("test")
+@Import(QuerydslConfig.class)
 @Transactional
 public class StoreRepositoryTest {
 

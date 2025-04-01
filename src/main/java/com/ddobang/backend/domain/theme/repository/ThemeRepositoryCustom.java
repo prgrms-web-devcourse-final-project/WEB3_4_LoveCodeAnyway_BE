@@ -1,0 +1,15 @@
+package com.ddobang.backend.domain.theme.repository;
+
+import java.util.List;
+
+import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.entity.Theme;
+
+/**
+ * ThemeRepositoryCustom
+ * 쿼리 dsl 메서드 저장용 인터페이스
+ * @author 100minha
+ */
+public interface ThemeRepositoryCustom {
+	List<Theme> findThemesByFilter(ThemeFilterRequest request, int page, int size);
+}
