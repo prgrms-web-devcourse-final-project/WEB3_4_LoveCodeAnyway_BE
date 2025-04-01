@@ -40,7 +40,11 @@ public class RegionService {
 	}
 
 	public Region findById(Long id) {
+<<<<<<< HEAD
 
+=======
+		
+>>>>>>> fbcb9f3 (feat: RegionService에서  findById 메서드 작성)
 		return regionRepository.findById(id)
 			.orElseThrow(() -> new RegionException(RegionErrorCode.REGION_NOT_FOUND));
 	}
