@@ -9,6 +9,7 @@ import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.global.entity.BaseTime;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -41,6 +42,7 @@ public class Theme extends BaseTime {
 	@Length(max = 100)
 	private String name;
 
+	@Column(columnDefinition = "TEXT")
 	private String description;
 
 	@PositiveOrZero
