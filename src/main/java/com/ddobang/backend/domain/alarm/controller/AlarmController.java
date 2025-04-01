@@ -65,7 +65,7 @@ public class AlarmController {
 		return ResponseFactory.ok("알림 개수 조회 성공", counts);
 	}
 
-	@Operation(summary = "알림 생성", description = "새로운 알림을 생성합니다. (관리자 또는 시스템용)")
+	@Operation(summary = "알림 생성", description = "새로운 알림을 생성합니다. (관리자시스템용)")
 	@PostMapping
 	public ResponseEntity<SuccessResponse<AlarmResponse>> createAlarm(
 		@Valid @RequestBody AlarmCreateRequest request) {
