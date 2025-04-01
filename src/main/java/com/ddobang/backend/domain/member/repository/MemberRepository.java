@@ -9,5 +9,5 @@ import com.ddobang.backend.domain.member.entity.Member;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
-	Optional<Member> findByOauthId(String kakaoId);
+	Optional<Member> findByKakaoId(String kakaoId);
 }
