@@ -1,9 +1,11 @@
-package com.ddobang.backend.global.validator;
+package com.ddobang.backend.global.validation.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import com.ddobang.backend.global.validation.validator.EnumValidator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

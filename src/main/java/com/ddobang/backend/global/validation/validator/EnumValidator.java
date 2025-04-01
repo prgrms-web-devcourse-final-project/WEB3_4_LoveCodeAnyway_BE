@@ -1,8 +1,10 @@
-package com.ddobang.backend.global.validator;
+package com.ddobang.backend.global.validation.validator;
 
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.ddobang.backend.global.validation.annotation.ValidEnum;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
