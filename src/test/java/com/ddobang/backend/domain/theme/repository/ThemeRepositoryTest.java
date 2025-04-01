@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.repository.StoreRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
+import com.ddobang.backend.global.config.QuerydslConfig;
 
 /**
  * ThemeRepositoryTest
@@ -25,6 +27,7 @@ import com.ddobang.backend.domain.theme.entity.ThemeTag;
  */
 @DataJpaTest
 @ActiveProfiles("test")
+@Import(QuerydslConfig.class)
 @Transactional
 public class ThemeRepositoryTest {
 	@Autowired
