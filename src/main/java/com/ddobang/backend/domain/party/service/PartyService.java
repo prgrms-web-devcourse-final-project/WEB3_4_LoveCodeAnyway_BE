@@ -51,14 +51,14 @@ public class PartyService {
 	}
 
 	public PartyDto createParty(PartyRequest request, Member actor) {
-		Theme theme = themeService.getById(request.themeId());
+		Theme theme = themeService.getThemeById(request.themeId());
 		return PartyDto.toDto(Party.of(request, theme, actor));
 	}
 
 	public PartyDto modifyParty(Long id, PartyRequest request, Member actor) {
 		Party party = getPartyById(id);
 		partyValidationService.checkHost(party, actor);
-		Theme theme = themeService.getById(request.themeId());
+		Theme theme = themeService.getThemeById(request.themeId());
 		party.modifyParty(request, theme);
 		return PartyDto.toDto(party);
 	}
