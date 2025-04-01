@@ -43,7 +43,7 @@ public class Alarm extends BaseTime {
 	private AlarmType alarmType;
 
 	@Builder
-	public Alarm(Long receiverId, String title, String content, String title,
+	public Alarm(Long receiverId, String title, String content,
 		AlarmType alarmType, Long relId) {
 		this.receiverId = receiverId;
 		this.title = title;
