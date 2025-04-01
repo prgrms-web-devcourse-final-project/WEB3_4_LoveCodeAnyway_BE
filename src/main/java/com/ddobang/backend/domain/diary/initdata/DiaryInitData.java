@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.service.DiaryService;
-import com.ddobang.backend.domain.store.repository.StoreRepository;
-import com.ddobang.backend.domain.theme.repository.ThemeRepository;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,8 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DiaryInitData {
 	private final DiaryService diaryService;
-	private final StoreRepository storeRepository;
-	private final ThemeRepository themeRepository;
+	private final MemberRepository memberRepository;
 
 	@Autowired
 	@Lazy
@@ -30,8 +29,23 @@ public class DiaryInitData {
 	@Bean
 	public ApplicationRunner diaryInitDataApplicationRunner() {
 		return args -> {
+			self.memberInitData();
 			self.initData();
 		};
+	}
+
+	@Transactional
+	public void memberInitData() {
+		if (memberRepository.count() > 0) {
+			return;
+		}
+
+		//테스트용 회원 생성
+		Member member = Member.builder()
+			.nickname("testUser1")
+			.build();
+
+		memberRepository.save(member);
 	}
 
 	@Transactional

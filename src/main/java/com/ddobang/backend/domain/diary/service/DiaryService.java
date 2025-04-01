@@ -18,6 +18,8 @@ import com.ddobang.backend.domain.diary.exception.DiaryErrorCode;
 import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
 import com.ddobang.backend.domain.theme.exception.ThemeException;
@@ -31,12 +33,14 @@ public class DiaryService {
 	private final DiaryRepository diaryRepository;
 	private final DiaryStatRepository diaryStatRepository;
 	private final ThemeRepository themeRepository;
+	private final MemberRepository memberRepository;
 
 	@Transactional
 	public DiaryDto write(DiaryRequestDto diaryRequestDto) {
 		Theme theme = themeRepository.findById(diaryRequestDto.themeId()).orElseThrow(
 			() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
 		);
+		Member actor = memberRepository.findById(1L).get();
 
 		int elapsedTime = calculateElapsedTime(
 			diaryRequestDto.timeType(),
@@ -45,7 +49,7 @@ public class DiaryService {
 		);
 
 		Diary diary = diaryRepository.save(
-			DiaryConverter.toDiary(theme, diaryRequestDto)
+			DiaryConverter.toDiary(actor, theme, diaryRequestDto)
 		);
 
 		DiaryStat diaryStats = diaryStatRepository.save(
