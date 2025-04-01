@@ -62,6 +62,7 @@ public class DiaryControllerTest {
 			.andExpect(jsonPath("$.data.id").value(lastDiary.id()))
 			.andExpect(jsonPath("$.data.themeId").value(lastDiary.themeId()))
 			.andExpect(jsonPath("$.data.themeName").value(lastDiary.themeName()))
+			.andExpect(jsonPath("$.data.storeName").value(lastDiary.storeName()))
 			.andExpect(jsonPath("$.data.thumbnailUrl").value(lastDiary.thumbnailUrl()))
 			.andExpect(jsonPath("$.data.imageUrl").value(lastDiary.imageUrl()))
 			.andExpect(jsonPath("$.data.escapeDate").value(lastDiary.escapeDate()))
@@ -225,6 +226,7 @@ public class DiaryControllerTest {
 			.andExpect(jsonPath("$.data.id").value(diary.getId()))
 			.andExpect(jsonPath("$.data.themeId").value(diary.getTheme().getId()))
 			.andExpect(jsonPath("$.data.themeName").value(diary.getTheme().getName()))
+			.andExpect(jsonPath("$.data.storeName").value(diary.getTheme().getStore().getName()))
 			.andExpect(jsonPath("$.data.thumbnailUrl").value(diary.getTheme().getThumbnailUrl()))
 			.andExpect(jsonPath("$.data.imageUrl").value(diary.getImageUrl()))
 			.andExpect(jsonPath("$.data.escapeDate").value(diary.getEscapeDate().toString()))
@@ -293,6 +295,8 @@ public class DiaryControllerTest {
 			)
 			.andDo(print());
 
+		Diary diary = diaryService.findById(1L);
+
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
 			.andExpect(handler().methodName("modify"))
@@ -300,8 +304,9 @@ public class DiaryControllerTest {
 			.andExpect(jsonPath("$.message").value("1번 탈출일지 수정에 성공했습니다."))
 			.andExpect(jsonPath("$.data.id").value(1))
 			.andExpect(jsonPath("$.data.themeId").value(1))
-			.andExpect(jsonPath("$.data.themeName").value("꼬레아 우라"))
-			.andExpect(jsonPath("$.data.thumbnailUrl").value("http://www.code-k.co.kr/upload_file/thema/꼬레아 우라.jpg"))
+			.andExpect(jsonPath("$.data.themeName").value(diary.getTheme().getName()))
+			.andExpect(jsonPath("$.data.thumbnailUrl").value(diary.getTheme().getThumbnailUrl()))
+			.andExpect(jsonPath("$.data.storeName").value(diary.getTheme().getStore().getName()))
 			.andExpect(jsonPath("$.data.imageUrl").value("https://placehold.co/320x320?text=o_o"))
 			.andExpect(jsonPath("$.data.escapeDate").value("2025-02-20"))
 			.andExpect(jsonPath("$.data.participants").value("내 칭구1, 내 칭구2"))
