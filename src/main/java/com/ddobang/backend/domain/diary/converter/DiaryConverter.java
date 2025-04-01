@@ -3,12 +3,14 @@ package com.ddobang.backend.domain.diary.converter;
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.entity.DiaryStat;
+import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.theme.entity.Theme;
 
 public class DiaryConverter {
-	public static Diary toDiary(Theme theme, DiaryRequestDto dto) {
+	public static Diary toDiary(Member author, Theme theme, DiaryRequestDto dto) {
 		return Diary.builder()
 			.theme(theme)
+			.author(author)
 			.escapeDate(dto.escapeDate())
 			.imageUrl(dto.imageUrl())
 			.participants(dto.participants())

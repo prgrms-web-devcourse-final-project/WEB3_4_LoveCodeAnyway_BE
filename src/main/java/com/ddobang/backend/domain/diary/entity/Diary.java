@@ -3,6 +3,7 @@ package com.ddobang.backend.domain.diary.entity;
 import java.time.LocalDate;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.global.entity.BaseTime;
 
@@ -32,9 +33,9 @@ public class Diary extends BaseTime {
 	@JoinColumn(name = "theme_id", nullable = false)
 	private Theme theme;
 
-	// @ManyToOne(fetch = FetchType.LAZY)
-	// @JoinColumn(name = "member_id", nullable = false)
-	// private Member author;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id", nullable = false)
+	private Member author;
 
 	@OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
 	private DiaryStat diaryStats;
@@ -49,12 +50,14 @@ public class Diary extends BaseTime {
 	@Builder
 	public Diary(
 		Theme theme,
+		Member author,
 		LocalDate escapeDate,
 		String imageUrl,
 		String participants,
 		String review
 	) {
 		this.theme = theme;
+		this.author = author;
 		this.escapeDate = escapeDate;
 		this.imageUrl = imageUrl;
 		this.participants = participants;
