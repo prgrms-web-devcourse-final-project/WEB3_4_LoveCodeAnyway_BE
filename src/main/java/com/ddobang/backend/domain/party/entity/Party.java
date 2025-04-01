@@ -3,13 +3,13 @@ package com.ddobang.backend.domain.party.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.exception.PartyErrorCode;
 import com.ddobang.backend.domain.party.exception.PartyException;
+import com.ddobang.backend.domain.party.types.PartyMemberRole;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.theme.entity.Theme;
@@ -84,7 +84,7 @@ public class Party extends BaseTime {
 	@JoinColumn(name = "theme_id", nullable = false)
 	private Theme theme;
 
-	private Party(PartyRequest request, Theme theme) {
+	private Party(PartyRequest request, Theme theme, Member host) {
 		this.title = request.title();
 		this.content = request.content();
 		this.scheduledAt = request.scheduledAt();
@@ -95,10 +95,13 @@ public class Party extends BaseTime {
 		this.partyMembers = new ArrayList<>();
 		this.isDeleted = false;
 		this.theme = theme;
+
+		PartyMember partyMember = PartyMember.createHost(this, host);
+		this.partyMembers.add(partyMember);
 	}
 
-	public static Party of(PartyRequest request, Theme theme) {
-		return new Party(request, theme);
+	public static Party of(PartyRequest request, Theme theme, Member host) {
+		return new Party(request, theme, host);
 	}
 
 	public void modifyParty(PartyRequest request, Theme theme) {
@@ -111,21 +114,42 @@ public class Party extends BaseTime {
 		this.theme = theme;
 	}
 
-	private boolean canTransitionTo(PartyStatus status) {
-		return switch (this.status) {
-			case RECRUITING ->
-				List.of(PartyStatus.CLOSED, PartyStatus.CANCELLED, PartyStatus.COMPLETED).contains(status);
-			case CLOSED -> Objects.equals(PartyStatus.COMPLETED, status);
-			case CANCELLED, COMPLETED -> false;
-		};
+	public boolean isPartyMember(Member member) {
+		return partyMembers.stream()
+			.anyMatch(pm -> pm.getMember().equals(member));
 	}
 
-	public void updatePartyStatus(PartyStatus status) {
-		if (!canTransitionTo(status)) {
-			throw new PartyException(
-				PartyErrorCode.PARTY_INVALID_STATUS_TRANSITION,
-				String.format("현재 상태에서는 %s 상태로 변경할 수 없습니다.", status));
+	public boolean isRecruiting() {
+		if (this.getStatus() != PartyStatus.RECRUITING) {
+			return false;
 		}
+		return true;
+	}
+
+	public boolean isOpen() {
+		return this.status == PartyStatus.RECRUITING || this.status == PartyStatus.FULL;
+	}
+
+	public void updatePartyStatus() {
+		long acceptedCount = getAcceptedMembers().size();
+
+		if (this.status == PartyStatus.COMPLETED || this.status == PartyStatus.CANCELLED) {
+			return;
+		}
+
+		if (LocalDateTime.now().isAfter(scheduledAt)) {
+			this.status = PartyStatus.PENDING;
+			return;
+		}
+
+		if (acceptedCount >= participantsNeeded) {
+			this.status = PartyStatus.FULL;
+		} else {
+			this.status = PartyStatus.RECRUITING;
+		}
+	}
+
+	public void updateFinalStatus(PartyStatus status) {
 		this.status = status;
 	}
 
@@ -134,20 +158,25 @@ public class Party extends BaseTime {
 		this.partyMembers.add(partyMember);
 	}
 
-	private PartyMember findPartyMember(Member member) {
+	private PartyMember getPartyMember(Member member) {
 		return partyMembers.stream()
 			.filter(pm -> pm.getMember().equals(member))
 			.findFirst()
 			.orElseThrow(() -> new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_FOUND));
 	}
 
+	public PartyMemberRole getPartyMemberRole(Member member) {
+		PartyMember partyMember = getPartyMember(member);
+		return partyMember.getRole();
+	}
+
 	public PartyMemberStatus getPartyMemberStatus(Member member) {
-		PartyMember partyMember = findPartyMember(member);
+		PartyMember partyMember = getPartyMember(member);
 		return partyMember.getStatus();
 	}
 
 	public void updatePartyMemberStatus(Member member, PartyMemberStatus status) {
-		PartyMember partyMember = findPartyMember(member);
+		PartyMember partyMember = getPartyMember(member);
 		partyMember.changeStatus(status);
 	}
 
@@ -160,7 +189,7 @@ public class Party extends BaseTime {
 
 	public Member getHost() {
 		return partyMembers.stream()
-			.filter(pm -> pm.getStatus() == PartyMemberStatus.HOST)
+			.filter(pm -> pm.getRole() == PartyMemberRole.HOST)
 			.findFirst()
 			.map(PartyMember::getMember)
 			.orElseThrow(() -> new PartyException(PartyErrorCode.PARTY_HOST_NOT_FOUND));
