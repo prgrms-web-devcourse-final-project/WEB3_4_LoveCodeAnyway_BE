@@ -10,6 +10,8 @@ import com.ddobang.backend.global.entity.BaseTime;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -57,6 +59,7 @@ public class Theme extends BaseTime {
 	@Max(9_999_999)
 	private int price;
 
+	@Enumerated(EnumType.STRING)
 	private Status status;
 
 	public enum Status {
