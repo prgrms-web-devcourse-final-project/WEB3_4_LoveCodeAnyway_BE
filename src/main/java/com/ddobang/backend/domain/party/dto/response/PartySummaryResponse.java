@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.party.entity.Party;
+import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.entity.Theme;
 
 public record PartySummaryResponse(
@@ -17,7 +18,7 @@ public record PartySummaryResponse(
 
 	Boolean rookie_available,
 
-	// String store_name,
+	String store_name,
 
 	Long theme_id,
 	String theme_name,
@@ -30,7 +31,7 @@ public record PartySummaryResponse(
 	public static PartySummaryResponse from(Party party) {
 		Theme theme = party.getTheme();
 		Member host = party.getHost();
-		// Store store = theme.getStore();
+		Store store = theme.getStore();
 		return new PartySummaryResponse(
 			party.getId(),
 			party.getTitle(),
@@ -42,7 +43,7 @@ public record PartySummaryResponse(
 
 			party.getRookieAvailable(),
 
-			// store.getName(),
+			store.getName(),
 
 			theme.getId(),
 			theme.getName(),

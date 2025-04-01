@@ -13,9 +13,13 @@ public record PartyDto(
 	Integer participantsNeeded,
 	Integer totalParticipants,
 	Boolean rookieAvailable,
-	PartyStatus status
-	// MemberDto host,
-	// ThemeDto theme
+	PartyStatus status,
+
+	Long host_id,
+	String host_nickname,
+
+	Long theme_id,
+	String theme_name
 ) {
 	public static PartyDto toDto(Party party) {
 		return new PartyDto(
@@ -26,7 +30,13 @@ public record PartyDto(
 			party.getParticipantsNeeded(),
 			party.getTotalParticipants(),
 			party.getRookieAvailable(),
-			party.getStatus()
+			party.getStatus(),
+
+			party.getHost().getId(),
+			party.getHost().getNickname(),
+
+			party.getTheme().getId(),
+			party.getTheme().getName()
 		);
 	}
 }

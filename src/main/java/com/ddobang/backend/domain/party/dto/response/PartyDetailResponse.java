@@ -6,7 +6,9 @@ import java.util.List;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.party.types.PartyMemberRole;
+import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.entity.Theme;
+import com.ddobang.backend.domain.theme.entity.ThemeTagMapping;
 
 public record PartyDetailResponse(
 	Long id,
@@ -29,23 +31,23 @@ public record PartyDetailResponse(
 
 	Long theme_id,
 	String theme_name,
-	String theme_img_url
+	String theme_img_url,
 
-	// 	List<ThemeTagMapping> theme_tags,
+	List<ThemeTagMapping> theme_tag_mappings,
 
 	// float noHintEscapeRate,
-	// float escapeRate,
-	// float escapeTimeAvg
+	// float escapeResult,
+	// float escapeTimeAvg,
 
-	// 	String store_name,
-	// 	String store_address
+	String store_name,
+	String store_address
 ) {
 	public static PartyDetailResponse from(Party party, Member actor) {
 		boolean isHost = party.getPartyMemberRole(actor).equals(PartyMemberRole.HOST);
 		Theme theme = party.getTheme();
-		// ThemeStats themeStats = theme.getThemeStat();
+		// ThemeStat themeStats = theme.getThemeStat();
 		Member host = party.getHost();
-		// Store store = theme.getStore();
+		Store store = theme.getStore();
 		return new PartyDetailResponse(
 			party.getId(),
 			party.getTitle(),
@@ -71,7 +73,15 @@ public record PartyDetailResponse(
 
 			theme.getId(),
 			theme.getName(),
-			theme.getThumbnailUrl()
+			theme.getThumbnailUrl(),
+			theme.getThemeTagMappings(),
+
+			// themeStats.getNoHintEscapeRate(),
+			// themeStats.getEscapeResult(),
+			// themeStats.getEscapeTimeAvg(),
+
+			store.getName(),
+			store.getAddress()
 		);
 	}
 }
