@@ -105,7 +105,11 @@ public class DiaryService {
 		diaryRepository.delete(diary);
 	}
 
-	public int calculateElapsedTime(String timeType, int themeRuntime, String time) {
+	private int calculateElapsedTime(String timeType, int themeRuntime, String time) {
+		if (time == null) {
+			return 0;
+		}
+
 		if (!Pattern.matches("^\\d{1,3}:\\d{1,2}$", time)) {
 			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_FORMAT);
 		}

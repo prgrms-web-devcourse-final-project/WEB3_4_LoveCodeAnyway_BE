@@ -42,7 +42,8 @@ public class DiaryControllerTest {
 			.perform(post("/diaries")
 				.content("""
 					{
-						"themeId": 1
+						"themeId": 1,
+						"timeType": "elapsed"
 					}
 					""".stripIndent())
 				.contentType(
@@ -83,7 +84,7 @@ public class DiaryControllerTest {
 	}
 
 	@Test
-	@DisplayName("탈출일지 등록, theme id가 없을 때")
+	@DisplayName("탈출일지 등록, theme id, timeType이 없을 때")
 	void t1_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/diaries")
@@ -101,8 +102,10 @@ public class DiaryControllerTest {
 			.andExpect(handler().methodName("write"))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.message").value("입력값이 올바르지 않습니다."))
-			.andExpect(jsonPath("$.errors[0].field").value("themeId"))
-			.andExpect(jsonPath("$.errors[0].message").value("테마를 선택해주세요."));
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("themeId")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("테마를 선택해주세요.")))
+			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("timeType")))
+			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("탈출 시간 타입을 선택해주세요.")));
 	}
 
 	@Test
@@ -113,6 +116,7 @@ public class DiaryControllerTest {
 				.content("""
 					{
 						"themeId": 1,
+						"timeType": "elapsed",
 						"difficulty": 6,
 						"fear": 6,
 						"activity": 6,
@@ -153,6 +157,56 @@ public class DiaryControllerTest {
 			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("인테리어는 최대 5 이하여야 합니다.")))
 			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("deviceRatio")))
 			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("장치 비율은 최대 100% 이하여야 합니다.")));
+	}
+
+	@Test
+	@DisplayName("탈출일지 등록, timeType이 정해진 값이 아닐 때")
+	void t1_3() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries")
+				.content("""
+					{
+						"themeId": 1,
+						"timeType": "WRONG TYPE",
+						"elapsedTime": "65:00"
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("write"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("진행 시간인지, 남은 시간인지 확인해주세요."));
+	}
+
+	@Test
+	@DisplayName("탈출일지 등록, 탈출 시간이 00:00의 형식이 아닐 때")
+	void t1_4() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries")
+				.content("""
+					{
+						"themeId": 1,
+						"timeType": "remaining",
+						"elapsedTime": "WRONG TIME"
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("write"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("잘못 된 시간 형식입니다."));
 	}
 
 	@Test
@@ -229,7 +283,7 @@ public class DiaryControllerTest {
 						"hintCount": 0,
 						"escapeResult": true,
 						"timeType": "elapsed",
-						"elapsedTime": 34500,
+						"elapsedTime": "65:00",
 						"review": "완전 완전 재밌었다!!"
 					}
 					""".stripIndent())
@@ -262,7 +316,7 @@ public class DiaryControllerTest {
 			.andExpect(jsonPath("$.data.deviceRatio").value(50))
 			.andExpect(jsonPath("$.data.hintCount").value(0))
 			.andExpect(jsonPath("$.data.escapeResult").value(true))
-			.andExpect(jsonPath("$.data.elapsedTime").value(34500))
+			.andExpect(jsonPath("$.data.elapsedTime").value(3900))
 			.andExpect(jsonPath("$.data.review").value("완전 완전 재밌었다!!"))
 			.andExpect(jsonPath("$.data.createdAt").exists())
 			.andExpect(jsonPath("$.data.modifiedAt").exists());
@@ -387,6 +441,56 @@ public class DiaryControllerTest {
 			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("인테리어는 최대 5 이하여야 합니다.")))
 			.andExpect(jsonPath("$.errors[*].field").value(Matchers.hasItem("deviceRatio")))
 			.andExpect(jsonPath("$.errors[*].message").value(Matchers.hasItem("장치 비율은 최대 100% 이하여야 합니다.")));
+	}
+
+	@Test
+	@DisplayName("탈출일지 수정, timeType이 정해진 값이 아닐 때")
+	void t3_4() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(put("/diaries/1")
+				.content("""
+					{
+						"themeId": 1,
+						"timeType": "WRONG TYPE",
+						"elapsedTime": "65:00"
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("modify"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("진행 시간인지, 남은 시간인지 확인해주세요."));
+	}
+
+	@Test
+	@DisplayName("탈출일지 수정, 탈출 시간이 00:00의 형식이 아닐 때")
+	void t3_5() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(put("/diaries/1")
+				.content("""
+					{
+						"themeId": 1,
+						"timeType": "remaining",
+						"elapsedTime": "WRONG TIME"
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("modify"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("잘못 된 시간 형식입니다."));
 	}
 
 	@Test
