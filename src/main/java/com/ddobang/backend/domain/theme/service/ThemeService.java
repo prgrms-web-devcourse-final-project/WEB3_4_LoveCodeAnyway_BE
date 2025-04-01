@@ -48,4 +48,9 @@ public class ThemeService {
 
 		return ThemeDetailResponse.of(theme, themeStatDto);
 	}
+
+	public Theme getThemeById(Long id) {
+		return themeRepository.findById(id).orElseThrow(
+			() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND));
+	}
 }
