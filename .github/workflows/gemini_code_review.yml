@@ -48,16 +48,9 @@ jobs:
             const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});            
 
-            // 프롬프트 수정 - 엄격한 JSON 형식 요청
-            const prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to calculate the exact line number by referring to the "@@ -0,0 +0,0 @@" part.
-            
-            The output format MUST be a valid JSON array like this:
-            [{"path":"filepath", "line": 123, "text": "review comment", "side": "RIGHT"}]
-            
-            Important: Ensure that all line numbers are valid integers without any decimal points or quotes. The JSON must be properly formatted with no syntax errors.
+            // Pull Request 전용 프롬프트
+            const prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to calculate the exact line number by referring to the "@@ -0,0 +0,0 @@" part. The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment }, "side": "RIGHT"}\] format must be respected.\n<git diff>${diff_output}</git diff>`;
 
-            <git diff>${diff_output}</git diff>`;
-            
             const result = await model.generateContent(prompt);
             const response = await result.response;
             const text = response.text();
