@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryFilterRequest;
 import com.ddobang.backend.domain.diary.entity.Diary;
+import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.theme.entity.QThemeTag;
 import com.ddobang.backend.domain.theme.entity.QThemeTagMapping;
 import com.querydsl.core.BooleanBuilder;
@@ -33,8 +34,8 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<Diary> findDiariesByFilter(DiaryFilterRequest request, Pageable pageable) {
-		BooleanBuilder builder = buildFilterConditions(request);
+	public Page<Diary> findDiariesByFilter(Member author, DiaryFilterRequest request, Pageable pageable) {
+		BooleanBuilder builder = buildFilterConditions(author, request);
 
 		JPAQuery<Diary> diariesQuery = createDiariesQuery(builder, request);
 
@@ -46,8 +47,13 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 		return PageableExecutionUtils.getPage(diariesQuery.fetch(), pageable, totalQuery::fetchOne);
 	}
 
-	private BooleanBuilder buildFilterConditions(DiaryFilterRequest request) {
+	private BooleanBuilder buildFilterConditions(Member author, DiaryFilterRequest request) {
 		BooleanBuilder builder = new BooleanBuilder();
+
+		// 작성자 확인
+		if (author != null) {
+			builder.and(diary.author.eq(author));
+		}
 
 		// 지역 필터링
 		if (request.regionId() != null && !request.regionId().isEmpty()) {

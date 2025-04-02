@@ -64,8 +64,8 @@ public class Diary extends BaseTime {
 		this.review = review;
 	}
 
-	public void setDiaryStats(DiaryStat diaryStats) {
-		this.diaryStats = diaryStats;
+	public void setDiaryStat(DiaryStat diaryStat) {
+		this.diaryStat = diaryStat;
 	}
 
 	public void modify(

@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.diary.converter.DiaryConverter;
+import com.ddobang.backend.domain.diary.dto.request.DiaryFilterRequest;
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
+import com.ddobang.backend.domain.diary.dto.response.DiaryListDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.entity.DiaryStat;
 import com.ddobang.backend.domain.diary.exception.DiaryErrorCode;
@@ -52,11 +54,11 @@ public class DiaryService {
 			DiaryConverter.toDiary(actor, theme, diaryRequestDto)
 		);
 
-		DiaryStat diaryStats = diaryStatRepository.save(
+		DiaryStat diaryStat = diaryStatRepository.save(
 			DiaryConverter.toDiaryStat(diary, diaryRequestDto, elapsedTime)
 		);
 
-		diary.setDiaryStats(diaryStats);
+		diary.setDiaryStat(diaryStat);
 
 		return DiaryDto.of(diary);
 	}
@@ -128,5 +130,14 @@ public class DiaryService {
 		return timeType.equals("remaining")
 			? themeRuntime * 60 - timeSeconds
 			: timeSeconds;
+	}
+
+	@Transactional(readOnly = true)
+	public Page<DiaryListDto> getAllItems(DiaryFilterRequest request, int page, int pageSize) {
+		Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Order.desc("id")));
+		Member actor = memberRepository.findById(1L).get();
+
+		return diaryRepository.findDiariesByFilter(actor, request, pageable)
+			.map(DiaryListDto::of);
 	}
 }
