@@ -11,6 +11,9 @@ import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTagMapping;
 
+import lombok.Builder;
+
+@Builder
 public record PartyDetailResponse(
 	Long id,
 	String title,
@@ -25,20 +28,19 @@ public record PartyDetailResponse(
 	Integer totalParticipants,
 
 	List<PartyMemberSummaries> acceptedPartyMembers,
-
 	List<PartyMemberSummaries> AppliedPartyMembers,
 
 	Boolean rookie_available,
 
 	Long theme_id,
 	String theme_name,
-	String theme_img_url,
+	String theme_thumbnail_url,
 
 	List<ThemeTagMapping> theme_tag_mappings,
 
-	float noHintEscapeRate,
-	float escapeResult,
-	float escapeTimeAvg,
+	float no_hint_escape_rate,
+	float escape_result,
+	float escape_time_avg,
 
 	String store_name,
 	String store_address
@@ -48,40 +50,44 @@ public record PartyDetailResponse(
 		Theme theme = party.getTheme();
 		Member host = party.getHost();
 		Store store = theme.getStore();
-		return new PartyDetailResponse(
-			party.getId(),
-			party.getTitle(),
-			party.getScheduledAt(),
-			party.getContent(),
 
-			host.getId(),
-			host.getNickname(),
-			host.getProfilePictureUrl(),
+		return PartyDetailResponse.builder()
+			.id(party.getId())
+			.title(party.getTitle())
+			.scheduled_at(party.getScheduledAt())
+			.content(party.getContent())
 
-			party.getParticipantsNeeded() - party.getAcceptedParticipantsCount(),
-			party.getTotalParticipants(),
+			.host_id(host.getId())
+			.host_nickname(host.getNickname())
+			.host_profile_img_url(host.getProfilePictureUrl())
 
-			party.getAcceptedMembers().stream()
-				.map(PartyMemberSummaries::from)
-				.toList(),
+			.recruitableCount(party.getParticipantsNeeded() - party.getAcceptedParticipantsCount())
+			.totalParticipants(party.getTotalParticipants())
 
-			isHost ? party.getApplicants().stream()
-				.map(PartyMemberSummaries::from)
-				.toList() : null,
+			.acceptedPartyMembers(
+				party.getAcceptedMembers().stream()
+					.map(PartyMemberSummaries::from)
+					.toList()
+			)
+			.AppliedPartyMembers(
+				isHost ? party.getApplicants().stream()
+					.map(PartyMemberSummaries::from)
+					.toList() : null
+			)
 
-			party.getRookieAvailable(),
+			.rookie_available(party.getRookieAvailable())
 
-			theme.getId(),
-			theme.getName(),
-			theme.getThumbnailUrl(),
-			theme.getThemeTagMappings(),
+			.theme_id(theme.getId())
+			.theme_name(theme.getName())
+			.theme_thumbnail_url(theme.getThumbnailUrl())
+			.theme_tag_mappings(theme.getThemeTagMappings())
 
-			themeStat.getNoHintEscapeRate(),
-			themeStat.getEscapeResult(),
-			themeStat.getEscapeTimeAvg(),
+			.no_hint_escape_rate(themeStat.getNoHintEscapeRate())
+			.escape_result(themeStat.getEscapeResult())
+			.escape_time_avg(themeStat.getEscapeTimeAvg())
 
-			store.getName(),
-			store.getAddress()
-		);
+			.store_name(store.getName())
+			.store_address(store.getAddress())
+			.build();
 	}
 }
