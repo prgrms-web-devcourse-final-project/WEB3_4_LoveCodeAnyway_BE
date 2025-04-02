@@ -18,13 +18,25 @@ public class MemberService {
 	// OAuth2User 정보로 회원 생성
 	public Member createMemberFromOAuth2(OAuth2User oAuth2User) {
 		String kakaoId = oAuth2User.getAttribute("id").toString();
-		Map<String, Object> properties = oAuth2User.getAttribute("properties");
-		String nickname = (String)properties.get("nickname");
 
-		return memberRepository.save(Member.builder()
+		Map<String, Object> properties = oAuth2User.getAttribute("properties");
+		String nickname = null;
+
+		if (properties != null && properties.containsKey("nickname")) {
+			nickname = (String)properties.get("nickname");
+		}
+
+		// 닉네임 없으면 기본값 사용
+		if (nickname == null || nickname.isBlank()) {
+			nickname = "기본닉네임";
+		}
+
+		Member member = Member.builder()
 			.kakaoId(kakaoId)
 			.nickname(nickname)
-			.build());
+			.build();
+
+		return memberRepository.save(member);
 	}
 
 	/**
