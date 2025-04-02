@@ -10,11 +10,16 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.ddobang.backend.global.exception.JwtErrorCode;
+import com.ddobang.backend.global.exception.ServiceException;
+
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,11 +35,13 @@ public class JwtTokenProvider {
 
 	private Key key;
 
+	// 애플리케이션 실행 시 초기화
 	@PostConstruct
 	public void init() {
 		key = Keys.hmacShaKeyFor(secret.getBytes());
 	}
 
+	// 엑세스 토큰, 리프레시 토큰 생성
 	public String generateAccessToken(String subject, boolean isAdmin) {
 		return buildToken(subject, accessTokenExpiration, isAdmin);
 	}
@@ -43,7 +50,6 @@ public class JwtTokenProvider {
 		return buildToken(subject, refreshTokenExpiration, isAdmin);
 	}
 
-	// 토큰 생성
 	private String buildToken(String subject, long expirationMillis, boolean isAdmin) {
 		Date now = new Date();
 		Date expiry = new Date(now.getTime() + expirationMillis);
@@ -57,7 +63,7 @@ public class JwtTokenProvider {
 			.compact(); // 생성
 	}
 
-	// 토큰 유효성 검사
+	// 토큰 파싱 및 정보 추출
 	public String getSubject(String token) {
 		return parseClaims(token).getBody().getSubject();
 	}
@@ -66,7 +72,6 @@ public class JwtTokenProvider {
 		return parseClaims(token).getBody();
 	}
 
-	// 토큰 파싱
 	private Jws<Claims> parseClaims(String token) {
 		return Jwts.parserBuilder()
 			.setSigningKey(key)
@@ -74,17 +79,23 @@ public class JwtTokenProvider {
 			.parseClaimsJws(token);
 	}
 
-	// 토큰 유효성 검사 (예외 처리)
+	// 토큰 유효성 검사
 	public boolean validateToken(String token) {
 		try {
 			parseClaims(token);
 			return true;
-		} catch (JwtException | IllegalArgumentException e) { // JWT 예외ㅣ잘못된 인자 예외 처리
-			return false;
+		} catch (ExpiredJwtException e) {
+			throw new ServiceException(JwtErrorCode.TOKEN_EXPIRED); // 만료된 토큰
+		} catch (UnsupportedJwtException e) {
+			throw new ServiceException(JwtErrorCode.UNSUPPORTED_TOKEN); // 지원하지 않는 토큰
+		} catch (MalformedJwtException | SecurityException e) {
+			throw new ServiceException(JwtErrorCode.TOKEN_INVALID); // 잘못된 토큰
+		} catch (IllegalArgumentException e) {
+			throw new ServiceException(JwtErrorCode.TOKEN_MISSING); // 누락된 토큰
 		}
 	}
 
-	// 요청 헤더에서 엑세스토큰 추출
+	// 엑세스토큰 추출
 	public String resolveAccessToken(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");
 		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
@@ -103,7 +114,7 @@ public class JwtTokenProvider {
 		return Boolean.TRUE.equals(claims.get("isAdmin", Boolean.class));
 	}
 
-	// 추출된 관리자 여부에 따라 권한 설정
+	// 추출된 관리자 여부에 따라 권한 설정 주입
 	public List<GrantedAuthority> getAuthorities(boolean isAdmin) {
 		if (isAdmin) {
 			return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
