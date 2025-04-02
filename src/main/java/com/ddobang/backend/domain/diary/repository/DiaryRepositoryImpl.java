@@ -131,7 +131,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
 	private JPAQuery<Long> createTotalQuery(BooleanBuilder builder, DiaryFilterRequest request) {
 		JPAQuery<Long> query = queryFactory
-			.select(diary.count())
+			.select(diary.id.countDistinct())
 			.from(diary)
 			.join(diary.theme, theme);
 
