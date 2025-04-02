@@ -26,8 +26,8 @@ public class ThemeService {
 	private final ThemeStatRepository themeStatRepository;
 
 	@Transactional(readOnly = true)
-	public SliceDto<ThemesResponse> getThemesWithFilter(ThemeFilterRequest filterRequest, int page) {
-		int size = 8;
+	public SliceDto<ThemesResponse> getThemesWithFilter(ThemeFilterRequest filterRequest, int page, int size) {
+
 		List<Theme> themes = themeRepository.findThemesByFilter(filterRequest, page, size);
 
 		return SliceDto.of(themes.stream()
@@ -37,6 +37,7 @@ public class ThemeService {
 
 	@Transactional(readOnly = true)
 	public ThemeDetailResponse getTheme(Long id) {
+
 		Theme theme = themeRepository.findById(id).orElseThrow(
 			() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
 		);
