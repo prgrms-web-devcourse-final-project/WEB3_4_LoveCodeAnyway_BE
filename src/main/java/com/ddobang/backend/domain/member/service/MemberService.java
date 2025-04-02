@@ -1,6 +1,8 @@
 package com.ddobang.backend.domain.member.service;
 
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import java.util.Map;
+
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import com.ddobang.backend.domain.member.entity.Member;
@@ -14,13 +16,14 @@ public class MemberService {
 	private final MemberRepository memberRepository;
 
 	// OAuth2User 정보로 회원 생성
-	public Member createMemberFromOAuth2(OidcUser oidcUser) {
-		String sub = oidcUser.getSubject();
-		String nickname = oidcUser.getAttribute("nickname");
+	public Member createMemberFromOAuth2(OAuth2User oAuth2User) {
+		String kakaoId = oAuth2User.getAttribute("id").toString();
+		Map<String, Object> properties = oAuth2User.getAttribute("properties");
+		String nickname = (String)properties.get("nickname");
 
 		return memberRepository.save(Member.builder()
-			.kakaoId(sub) // 카카오 ID
-			.nickname(nickname) // 닉네임
+			.kakaoId(kakaoId)
+			.nickname(nickname)
 			.build());
 	}
 

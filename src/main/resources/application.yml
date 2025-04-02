@@ -1,5 +1,7 @@
 server:
   port: 8080
+  servlet:
+    context-path: /api/v1
 
 spring:
   application:
@@ -45,16 +47,16 @@ spring:
           kakao:
             client-id: ${oauth.kakao.client-id}
             client-secret: ${oauth.kakao.client-secret}
-            redirect-uri: ${oauth.kakao.redirect-uri}
+            client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
-            scope:
-              - openid
-              - profile_nickname
+            redirect-uri: http://localhost:8080/api/v1/login/oauth2/code/kakao
+            provider: kakao
         provider:
           kakao:
             authorization-uri: https://kauth.kakao.com/oauth/authorize
             token-uri: https://kauth.kakao.com/oauth/token
-            jwk-set-uri: https://kauth.kakao.com/.well-known/jwks.json
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
 
 # logging
 logging:

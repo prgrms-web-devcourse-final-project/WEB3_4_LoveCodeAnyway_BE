@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import com.ddobang.backend.global.security.jwt.JwtAuthenticationFilter;
 import com.ddobang.backend.global.security.jwt.JwtExceptionFilter;
@@ -23,7 +25,11 @@ public class SecurityConfig {
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain securityFilterChain(
+		HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
+
+		MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector).servletPath("/api/v1");
+
 		http
 			.cors(Customizer.withDefaults())
 			.csrf(AbstractHttpConfigurer::disable)
@@ -32,9 +38,15 @@ public class SecurityConfig {
 
 			// 인가 정책
 			.authorizeHttpRequests(auth -> auth
-				.anyRequest().permitAll() // 개발 중에만 우선순위 허용
-				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-				.requestMatchers("/api/v1/**").hasAnyRole("MEMBER", "ADMIN")
+				.requestMatchers(mvc.pattern("/api/v1/error")).permitAll()
+				.requestMatchers(mvc.pattern("/error")).permitAll()
+				.requestMatchers(mvc.pattern("/v3/api-docs/**")).permitAll()
+				.requestMatchers(mvc.pattern("/swagger-ui/**")).permitAll()
+				.requestMatchers(mvc.pattern("/swagger-resources/**")).permitAll()
+				.requestMatchers(mvc.pattern("/webjars/**")).permitAll()
+				.requestMatchers(mvc.pattern("/admin/**")).hasRole("ADMIN")
+				.requestMatchers(mvc.pattern("/**")).hasAnyRole("MEMBER", "ADMIN")
+				.anyRequest().permitAll()
 			)
 
 			// OAuth2 로그인 설정

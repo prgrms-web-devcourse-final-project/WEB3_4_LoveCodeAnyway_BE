@@ -1,10 +1,11 @@
 package com.ddobang.backend.global.security.oauth;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -33,30 +34,30 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		HttpServletRequest request,
 		HttpServletResponse response,
 		Authentication authentication
-	) throws IOException, ServletException { // OAuth2 로그인 성공 시 처리될 내용
+	) throws IOException, ServletException {
 		log.info("OAuth2 로그인 성공: {}", authentication.getName());
 
-		// 카카오 ID 추출
-		OidcUser oidcUser = (OidcUser)authentication.getPrincipal();
-		String kakaoId = oidcUser.getSubject(); //
+		OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
+
+		String kakaoId = oAuth2User.getAttribute("id").toString();
+		Map<String, Object> properties = oAuth2User.getAttribute("properties");
+		String nickname = (String)properties.get("nickname");
+
 		log.info("카카오 ID: {}", kakaoId);
+		log.info("닉네임: {}", nickname);
 
-		// 기존 회원 여부 확인
 		Optional<Member> existMember = memberRepository.findByKakaoId(kakaoId);
-
 		Member member;
 
-		// 기존 회원이면 로그인 처리
 		if (existMember.isPresent()) {
 			log.info("기존 회원: {}", kakaoId);
-			member = existMember.get(); // 회원 정보 가져오기
+			member = existMember.get();
 		} else {
-			// 신규 회원이면 회원 생성
 			log.info("신규 회원입니다: {}", kakaoId);
-			member = memberService.createMemberFromOAuth2(oidcUser); // 신규 회원 정보 가져오기
+			member = memberService.createMemberFromOAuth2(oAuth2User);
 		}
 
-		boolean isAdmin = member.getPassword() != null; // 비밀번호가 존재하면 관리자로 판단
+		boolean isAdmin = member.getPassword() != null;
 
 		String accessToken = jwtTokenProvider.generateAccessToken(member.getKakaoId(), isAdmin);
 		String refreshToken = jwtTokenProvider.generateRefreshToken(member.getKakaoId(), isAdmin);
@@ -65,5 +66,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		response.addCookie(CookieUtil.createRefreshTokenCookie(refreshToken));
 
 		log.info("JWT 토큰 생성 및 쿠키 전송 완료");
+
+		response.sendRedirect("http://localhost:3000"); // 프론트 페이지로 리다이렉트
 	}
 }
