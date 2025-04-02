@@ -44,7 +44,7 @@ public class PartyService {
 			.map(PartySummaryResponse::from)
 			.toList();
 
-		return SliceDto.of(content, size);
+		return SliceDto.of(content, size + 1);
 	}
 
 	public Party getPartyById(Long id) {
