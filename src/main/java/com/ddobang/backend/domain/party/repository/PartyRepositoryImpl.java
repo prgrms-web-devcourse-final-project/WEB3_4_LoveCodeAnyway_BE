@@ -48,7 +48,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 			.where(
 				ltLastId(lastId),
 				keywordMatch(partySearchCondition.keyword()),
-				regionIn(partySearchCondition.regions()),
+				regionIn(partySearchCondition.regionIds()),
 				dateIn(partySearchCondition.dates()),
 				tagIn(partySearchCondition.tags())
 			)
