@@ -134,6 +134,12 @@ public class DiaryService {
 
 	@Transactional(readOnly = true)
 	public Page<DiaryListDto> getAllItems(DiaryFilterRequest request, int page, int pageSize) {
+		if (request.startDate() != null
+			&& request.endDate() != null
+			&& request.startDate().isAfter(request.endDate())) {
+			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_DATE_RANGE);
+		}
+
 		Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Order.desc("id")));
 		Member actor = memberRepository.findById(1L).get();
 
