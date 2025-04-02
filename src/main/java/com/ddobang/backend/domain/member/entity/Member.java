@@ -19,6 +19,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// fot test
+@AllArgsConstructor
+@Builder
+//여기까지
 @Entity
 @Getter
 @Builder
