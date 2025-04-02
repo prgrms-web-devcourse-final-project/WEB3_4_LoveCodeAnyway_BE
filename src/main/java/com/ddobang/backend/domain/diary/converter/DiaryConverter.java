@@ -43,6 +43,6 @@ public class DiaryConverter {
 		int elapsedTime
 	) {
 		diary.modify(theme, dto);
-		diary.getDiaryStats().modify(dto, elapsedTime);
+		diary.getDiaryStat().modify(dto, elapsedTime);
 	}
 }
