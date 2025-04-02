@@ -1,0 +1,42 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:mysql://localhost:3606/ddobang?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${mysql.username}  # secret.yml
+    password: ${mysql.password}  # secret.yml
+
+  jpa:
+    hibernate:
+      ddl-auto: update # 개발 환경에서는 update, 운영에서는 validate
+
+jwt:
+  access-token-expiration: 3600000        # 1시간
+  refresh-token-expiration: 604800000     # 7일
+
+logging:
+  level:
+    # 개발용 디버깅 로그
+    org.springframework.security: DEBUG
+    com.ddobang.backend: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.security.oauth2.client: DEBUG
+    org.springframework.security.oauth2.core: DEBUG
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui
+    display-request-duration: true
+  default-produces-media-type: application/json
+  paths-to-match: /**
+
+oauth:
+  kakao:
+    base-uri: http://localhost:8080
