@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
@@ -13,13 +15,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ddobang.backend.domain.diary.dto.request.DiaryFilterRequest;
 import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
+import com.ddobang.backend.domain.diary.dto.response.DiaryListDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.diary.service.DiaryService;
@@ -528,5 +533,480 @@ public class DiaryControllerTest {
 			.andExpect(handler().methodName("delete"))
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.message").value("탈출일지를 찾을 수 없습니다."));
+	}
+
+	@Test
+	@DisplayName("탈출일지 다건 조회")
+	void t5() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries/list")
+				.content("{}")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		DiaryFilterRequest request = DiaryFilterRequest.builder()
+			.regionId(null)
+			.tagNames(null)
+			.startDate(null)
+			.endDate(null)
+			.isSuccess(null)
+			.isNoHint(null)
+			.keyword(null)
+			.build();
+
+		Page<DiaryListDto> diariesPage = diaryService
+			.getAllItems(request, 0, 10);
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getAllItems"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.currentPageNumber").value(1))
+			.andExpect(jsonPath("$.data.pageSize").value(10))
+			.andExpect(jsonPath("$.data.totalPages").value(diariesPage.getTotalPages()))
+			.andExpect(jsonPath("$.data.totalItems").value(diariesPage.getTotalElements()));
+
+		List<DiaryListDto> diaries = diariesPage.getContent();
+
+		for (int i = 0; i < diaries.size(); i++) {
+			DiaryListDto diary = diaries.get(i);
+
+			resultActions
+				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
+				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+		}
+	}
+
+	@Test
+	@DisplayName("탈출일지 다건 조회, with 테마명 검색")
+	void t5_1() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries/list")
+				.content("""
+					{
+						"keyword": "테마 1"
+					}
+					""")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		DiaryFilterRequest request = DiaryFilterRequest.builder()
+			.regionId(null)
+			.tagNames(null)
+			.startDate(null)
+			.endDate(null)
+			.isSuccess(null)
+			.isNoHint(null)
+			.keyword("테마 1")
+			.build();
+
+		Page<DiaryListDto> diariesPage = diaryService
+			.getAllItems(request, 0, 10);
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getAllItems"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.currentPageNumber").value(1))
+			.andExpect(jsonPath("$.data.pageSize").value(10))
+			.andExpect(jsonPath("$.data.totalPages").value(diariesPage.getTotalPages()))
+			.andExpect(jsonPath("$.data.totalItems").value(diariesPage.getTotalElements()));
+
+		List<DiaryListDto> diaries = diariesPage.getContent();
+
+		for (int i = 0; i < diaries.size(); i++) {
+			DiaryListDto diary = diaries.get(i);
+
+			resultActions
+				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
+				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+		}
+	}
+
+	@Test
+	@DisplayName("탈출일지 다건 조회, with 지역 검색")
+	void t5_2() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries/list")
+				.content("""
+					{
+						"regionId": [1]
+					}
+					""")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		DiaryFilterRequest request = DiaryFilterRequest.builder()
+			.regionId(List.of(1L))
+			.tagNames(null)
+			.startDate(null)
+			.endDate(null)
+			.isSuccess(null)
+			.isNoHint(null)
+			.keyword(null)
+			.build();
+
+		Page<DiaryListDto> diariesPage = diaryService
+			.getAllItems(request, 0, 10);
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getAllItems"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.currentPageNumber").value(1))
+			.andExpect(jsonPath("$.data.pageSize").value(10))
+			.andExpect(jsonPath("$.data.totalPages").value(diariesPage.getTotalPages()))
+			.andExpect(jsonPath("$.data.totalItems").value(diariesPage.getTotalElements()));
+
+		List<DiaryListDto> diaries = diariesPage.getContent();
+
+		for (int i = 0; i < diaries.size(); i++) {
+			DiaryListDto diary = diaries.get(i);
+
+			resultActions
+				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
+				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+		}
+	}
+
+	@Test
+	@DisplayName("탈출일지 다건 조회, with 장르 검색")
+	void t5_3() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries/list")
+				.content("""
+					{
+						"tagNames": ["공포", "판타지"]
+					}
+					""")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		DiaryFilterRequest request = DiaryFilterRequest.builder()
+			.regionId(null)
+			.tagNames(List.of("공포", "판타지"))
+			.startDate(null)
+			.endDate(null)
+			.isSuccess(null)
+			.isNoHint(null)
+			.keyword(null)
+			.build();
+
+		Page<DiaryListDto> diariesPage = diaryService
+			.getAllItems(request, 0, 10);
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getAllItems"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.currentPageNumber").value(1))
+			.andExpect(jsonPath("$.data.pageSize").value(10))
+			.andExpect(jsonPath("$.data.totalPages").value(diariesPage.getTotalPages()))
+			.andExpect(jsonPath("$.data.totalItems").value(diariesPage.getTotalElements()));
+
+		List<DiaryListDto> diaries = diariesPage.getContent();
+
+		for (int i = 0; i < diaries.size(); i++) {
+			DiaryListDto diary = diaries.get(i);
+
+			resultActions
+				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
+				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+		}
+	}
+
+	@Test
+	@DisplayName("탈출일지 다건 조회, with 기간 검색")
+	void t5_4() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries/list")
+				.content("""
+					{
+						"startDate": "2024-02-20",
+						"endDate": "2024-05-20"
+					}
+					""")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		DiaryFilterRequest request = DiaryFilterRequest.builder()
+			.regionId(null)
+			.tagNames(null)
+			.startDate(LocalDate.of(2024, 2, 20))
+			.endDate(LocalDate.of(2024, 5, 20))
+			.isSuccess(null)
+			.isNoHint(null)
+			.keyword(null)
+			.build();
+
+		Page<DiaryListDto> diariesPage = diaryService
+			.getAllItems(request, 0, 10);
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getAllItems"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.currentPageNumber").value(1))
+			.andExpect(jsonPath("$.data.pageSize").value(10))
+			.andExpect(jsonPath("$.data.totalPages").value(diariesPage.getTotalPages()))
+			.andExpect(jsonPath("$.data.totalItems").value(diariesPage.getTotalElements()));
+
+		List<DiaryListDto> diaries = diariesPage.getContent();
+
+		for (int i = 0; i < diaries.size(); i++) {
+			DiaryListDto diary = diaries.get(i);
+
+			resultActions
+				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
+				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+		}
+	}
+
+	@Test
+	@DisplayName("탈출일지 다건 조회, with 성공한 테마만 검색")
+	void t5_5() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries/list")
+				.content("""
+					{
+						"isSuccess": "success"
+					}
+					""")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		DiaryFilterRequest request = DiaryFilterRequest.builder()
+			.regionId(null)
+			.tagNames(null)
+			.startDate(null)
+			.endDate(null)
+			.isSuccess("success")
+			.isNoHint(null)
+			.keyword(null)
+			.build();
+
+		Page<DiaryListDto> diariesPage = diaryService
+			.getAllItems(request, 0, 10);
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getAllItems"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.currentPageNumber").value(1))
+			.andExpect(jsonPath("$.data.pageSize").value(10))
+			.andExpect(jsonPath("$.data.totalPages").value(diariesPage.getTotalPages()))
+			.andExpect(jsonPath("$.data.totalItems").value(diariesPage.getTotalElements()));
+
+		List<DiaryListDto> diaries = diariesPage.getContent();
+
+		for (int i = 0; i < diaries.size(); i++) {
+			DiaryListDto diary = diaries.get(i);
+
+			resultActions
+				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
+				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+		}
+	}
+
+	@Test
+	@DisplayName("탈출일지 다건 조회, with 노힌트 테마만 검색")
+	void t5_6() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries/list")
+				.content("""
+					{
+						"isNoHint": true
+					}
+					""")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		DiaryFilterRequest request = DiaryFilterRequest.builder()
+			.regionId(null)
+			.tagNames(null)
+			.startDate(null)
+			.endDate(null)
+			.isSuccess(null)
+			.isNoHint(true)
+			.keyword(null)
+			.build();
+
+		Page<DiaryListDto> diariesPage = diaryService
+			.getAllItems(request, 0, 10);
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getAllItems"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.currentPageNumber").value(1))
+			.andExpect(jsonPath("$.data.pageSize").value(10))
+			.andExpect(jsonPath("$.data.totalPages").value(diariesPage.getTotalPages()))
+			.andExpect(jsonPath("$.data.totalItems").value(diariesPage.getTotalElements()));
+
+		List<DiaryListDto> diaries = diariesPage.getContent();
+
+		for (int i = 0; i < diaries.size(); i++) {
+			DiaryListDto diary = diaries.get(i);
+
+			resultActions
+				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
+				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+		}
+	}
+
+	@Test
+	@DisplayName("""
+		탈출일지 다건 조회, with 다중 필터 검색(
+			강남, 홍대
+			공포
+			2024-03-20 ~ 2024-06-20
+			성공, 노힌트
+			방탈출 A
+		)
+		""")
+	void t5_7() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries/list")
+				.content("""
+					{
+						"regionId": [1, 2],
+						"tagNames": ["공포"],
+						"startDate": "2024-03-20",
+						"endDate": "2024-06-20",
+						"isSuccess": "success",
+						"isNoHint": true,
+						"keyword": "방탈출 A"
+					}
+					""")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		DiaryFilterRequest request = DiaryFilterRequest.builder()
+			.regionId(List.of(1L, 2L))
+			.tagNames(List.of("공포"))
+			.startDate(LocalDate.of(2024, 3, 20))
+			.endDate(LocalDate.of(2024, 6, 20))
+			.isSuccess("success")
+			.isNoHint(true)
+			.keyword("방탈출 A")
+			.build();
+
+		Page<DiaryListDto> diariesPage = diaryService
+			.getAllItems(request, 0, 10);
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getAllItems"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.currentPageNumber").value(1))
+			.andExpect(jsonPath("$.data.pageSize").value(10))
+			.andExpect(jsonPath("$.data.totalPages").value(diariesPage.getTotalPages()))
+			.andExpect(jsonPath("$.data.totalItems").value(diariesPage.getTotalElements()));
+
+		List<DiaryListDto> diaries = diariesPage.getContent();
+
+		for (int i = 0; i < diaries.size(); i++) {
+			DiaryListDto diary = diaries.get(i);
+
+			resultActions
+				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
+				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+		}
 	}
 }

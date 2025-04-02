@@ -134,7 +134,7 @@ public class DiaryService {
 
 	@Transactional(readOnly = true)
 	public Page<DiaryListDto> getAllItems(DiaryFilterRequest request, int page, int pageSize) {
-		Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Order.desc("id")));
+		Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Order.desc("id")));
 		Member actor = memberRepository.findById(1L).get();
 
 		return diaryRepository.findDiariesByFilter(actor, request, pageable)

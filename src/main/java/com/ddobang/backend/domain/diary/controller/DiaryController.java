@@ -46,7 +46,7 @@ public class DiaryController {
 	}
 
 	@Operation(summary = "탈출일지 다건조회", description = "필터를 기반으로 사용자의 전체 탈출일지 목록을 가져옵니다.")
-	@GetMapping
+	@PostMapping("/list")
 	public ResponseEntity<SuccessResponse<PageDto<DiaryListDto>>> getAllItems(
 		@RequestBody @Valid DiaryFilterRequest request,
 		@RequestParam(defaultValue = "0") int page,
