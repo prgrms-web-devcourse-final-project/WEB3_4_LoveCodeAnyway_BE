@@ -5,7 +5,7 @@ import java.util.List;
 
 public record PartySearchCondition(
 	String keyword,
-	List<String> regions,
+	List<Long> regionIds,
 	List<LocalDate> dates,
 	List<String> tags
 ) {
