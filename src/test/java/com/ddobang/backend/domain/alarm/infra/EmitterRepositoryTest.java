@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -20,6 +21,9 @@ class EmitterRepositoryTest {
 	@Mock
 	private SseEmitter mockEmitter;
 
+	// 테스트용 사용자 ID
+	private static final Long TEST_USER_ID = 1L;
+
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
@@ -27,13 +31,11 @@ class EmitterRepositoryTest {
 	}
 
 	@Test
+	@DisplayName("SseEmitter 저장 및 조회 테스트")
 	void saveAndGet_ShouldStoreAndRetrieveEmitter() {
-		// given
-		Long userId = 1L;
-
 		// when
-		SseEmitter result = emitterRepository.save(userId, mockEmitter);
-		SseEmitter retrieved = emitterRepository.get(userId);
+		SseEmitter result = emitterRepository.save(TEST_USER_ID, mockEmitter);
+		SseEmitter retrieved = emitterRepository.get(TEST_USER_ID);
 
 		// then
 		assertEquals(mockEmitter, result);
@@ -41,49 +43,50 @@ class EmitterRepositoryTest {
 	}
 
 	@Test
+	@DisplayName("SseEmitter 제거 테스트")
 	void remove_ShouldRemoveEmitter() {
 		// given
-		Long userId = 1L;
-		emitterRepository.save(userId, mockEmitter);
+		emitterRepository.save(TEST_USER_ID, mockEmitter);
 
 		// when
-		emitterRepository.remove(userId);
+		emitterRepository.remove(TEST_USER_ID);
 
 		// then
-		assertNull(emitterRepository.get(userId));
+		assertNull(emitterRepository.get(TEST_USER_ID));
 	}
 
 	@Test
+	@DisplayName("사용자에게 이벤트 전송 성공 테스트")
 	void sendToUser_WhenEmitterExists_ShouldSendEvent() throws IOException {
 		// given
-		Long userId = 1L;
-		emitterRepository.save(userId, mockEmitter);
+		emitterRepository.save(TEST_USER_ID, mockEmitter);
 		String eventData = "Test Data";
 
 		// when
-		emitterRepository.sendToUser(userId, eventData, "testEvent", "1");
+		emitterRepository.sendToUser(TEST_USER_ID, eventData, "testEvent", "1");
 
 		// then
-		verify(mockEmitter, times(1)).send(any());
+		verify(mockEmitter, times(1)).send(any(SseEmitter.SseEventBuilder.class));
 	}
 
 	@Test
+	@DisplayName("이벤트 전송 실패 시 예외 발생 테스트")
 	void sendToUser_WhenIOExceptionOccurs_ShouldThrowSseException() throws IOException {
 		// given
-		Long userId = 1L;
-		emitterRepository.save(userId, mockEmitter);
-		doThrow(IOException.class).when(mockEmitter).send(any());
+		emitterRepository.save(TEST_USER_ID, mockEmitter);
+		doThrow(IOException.class).when(mockEmitter).send(any(SseEmitter.SseEventBuilder.class));
 
 		// when & then
 		assertThrows(SseException.class, () -> {
-			emitterRepository.sendToUser(userId, "Test Data", "testEvent", "1");
+			emitterRepository.sendToUser(TEST_USER_ID, "Test Data", "testEvent", "1");
 		});
 
 		// 예외 발생 시 emitter 제거 확인
-		assertNull(emitterRepository.get(userId));
+		assertNull(emitterRepository.get(TEST_USER_ID));
 	}
 
 	@Test
+	@DisplayName("활성 연결 수 조회 테스트")
 	void getActiveConnectionCount_ShouldReturnCorrectCount() {
 		// given
 		assertEquals(0, emitterRepository.getActiveConnectionCount());
@@ -91,6 +94,13 @@ class EmitterRepositoryTest {
 		// when
 		emitterRepository.save(1L, mockEmitter);
 		emitterRepository.save(2L, mockEmitter);
+		emitterRepository.save(3L, mockEmitter);
+
+		// then
+		assertEquals(3, emitterRepository.getActiveConnectionCount());
+
+		// when - 하나 제거
+		emitterRepository.remove(2L);
 
 		// then
 		assertEquals(2, emitterRepository.getActiveConnectionCount());

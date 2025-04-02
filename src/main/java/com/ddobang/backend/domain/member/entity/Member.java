@@ -14,15 +14,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// fot test
-@AllArgsConstructor
-@Builder
-//여기까지
+// // fot test
+// @AllArgsConstructor
+// @Builder
+// //여기까지
 @Entity
 @Getter
 @Builder

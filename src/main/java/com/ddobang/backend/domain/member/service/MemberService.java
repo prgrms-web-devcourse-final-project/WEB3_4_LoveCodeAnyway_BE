@@ -14,9 +14,7 @@ public class MemberService {
 		// 테스트용 더미 Member 반환
 		return Member.builder()
 			.id(1L)
-			//.username(username)
 			.nickname("테스트사용자")
-			//.email("test@example.com")
 			.build();
 	}
 
@@ -27,9 +25,7 @@ public class MemberService {
 		// 테스트용 더미 Member 반환
 		return Member.builder()
 			.id(id)
-			//.username("user" + id)
 			.nickname("사용자" + id)
-			//.email("user" + id + "@example.com")
 			.build();
 	}
 }
