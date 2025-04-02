@@ -26,7 +26,7 @@ public class DiaryStat {
 	private Diary diary;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "theme_id", insertable = false, updatable = false)
+	@JoinColumn(name = "theme_id", nullable = false)
 	private Theme theme;
 
 	// 평가 관련 필드
@@ -48,6 +48,7 @@ public class DiaryStat {
 	@Builder
 	public DiaryStat(
 		Diary diary,
+		Theme theme,
 		int difficulty,
 		int fear,
 		int activity,
@@ -62,6 +63,7 @@ public class DiaryStat {
 		int elapsedTime
 	) {
 		this.diary = diary;
+		this.theme = theme;
 		this.difficulty = difficulty;
 		this.fear = fear;
 		this.activity = activity;

@@ -21,6 +21,7 @@ public class DiaryConverter {
 	public static DiaryStat toDiaryStat(Diary diary, DiaryRequestDto dto, int elapsedTime) {
 		return DiaryStat.builder()
 			.diary(diary)
+			.theme(diary.getTheme())
 			.difficulty(dto.difficulty())
 			.fear(dto.fear())
 			.activity(dto.activity())
