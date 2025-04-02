@@ -4,7 +4,7 @@ on:
   # dev 브랜치로 들어오는 Pull Request 시에만 실행
   pull_request:
     branches: [ dev ]
-    types: [ opened, synchronize, reopened ]
+    types: [ opened, reopened ]
 
 
 jobs:
