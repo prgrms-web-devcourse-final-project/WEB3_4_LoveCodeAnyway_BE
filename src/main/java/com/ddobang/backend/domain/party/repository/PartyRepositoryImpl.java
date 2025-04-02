@@ -43,7 +43,6 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 			.join(party.partyMembers, partyMember)
 			.on(partyMember.role.eq(PartyMemberRole.HOST))
 			.join(partyMember.member, host).fetchJoin()
-			.join(partyMember.member, host).fetchJoin()
 			.leftJoin(theme.themeTagMappings, mapping).fetchJoin()
 			.leftJoin(mapping.themeTag, tag)
 			.where(
@@ -77,11 +76,11 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 			.or(store.name.containsIgnoreCase(keyword));
 	}
 
-	private BooleanExpression regionIn(List<String> regions) {
-		if (regions == null || regions.isEmpty()) {
+	private BooleanExpression regionIn(List<Long> regionIds) {
+		if (regionIds == null || regionIds.isEmpty()) {
 			return null;
 		}
-		return QStore.store.region.subRegion.in(regions);
+		return QStore.store.region.id.in(regionIds);
 	}
 
 	private BooleanExpression dateIn(List<LocalDate> dates) {
