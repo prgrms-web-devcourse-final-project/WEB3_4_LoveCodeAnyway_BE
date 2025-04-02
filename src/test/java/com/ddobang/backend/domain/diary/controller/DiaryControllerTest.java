@@ -536,7 +536,7 @@ public class DiaryControllerTest {
 	}
 
 	@Test
-	@DisplayName("탈출일지 다건 조회")
+	@DisplayName("탈출일지 다건 조회, with 필터 없이")
 	void t5() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/diaries/list")
@@ -547,15 +547,7 @@ public class DiaryControllerTest {
 			)
 			.andDo(print());
 
-		DiaryFilterRequest request = DiaryFilterRequest.builder()
-			.regionId(null)
-			.tagNames(null)
-			.startDate(null)
-			.endDate(null)
-			.isSuccess(null)
-			.isNoHint(null)
-			.keyword(null)
-			.build();
+		DiaryFilterRequest request = DiaryFilterRequest.builder().build();
 
 		Page<DiaryListDto> diariesPage = diaryService
 			.getAllItems(request, 0, 10);
@@ -606,12 +598,6 @@ public class DiaryControllerTest {
 			.andDo(print());
 
 		DiaryFilterRequest request = DiaryFilterRequest.builder()
-			.regionId(null)
-			.tagNames(null)
-			.startDate(null)
-			.endDate(null)
-			.isSuccess(null)
-			.isNoHint(null)
 			.keyword("테마 1")
 			.build();
 
@@ -665,12 +651,6 @@ public class DiaryControllerTest {
 
 		DiaryFilterRequest request = DiaryFilterRequest.builder()
 			.regionId(List.of(1L))
-			.tagNames(null)
-			.startDate(null)
-			.endDate(null)
-			.isSuccess(null)
-			.isNoHint(null)
-			.keyword(null)
 			.build();
 
 		Page<DiaryListDto> diariesPage = diaryService
@@ -722,13 +702,7 @@ public class DiaryControllerTest {
 			.andDo(print());
 
 		DiaryFilterRequest request = DiaryFilterRequest.builder()
-			.regionId(null)
 			.tagNames(List.of("공포", "판타지"))
-			.startDate(null)
-			.endDate(null)
-			.isSuccess(null)
-			.isNoHint(null)
-			.keyword(null)
 			.build();
 
 		Page<DiaryListDto> diariesPage = diaryService
@@ -781,13 +755,8 @@ public class DiaryControllerTest {
 			.andDo(print());
 
 		DiaryFilterRequest request = DiaryFilterRequest.builder()
-			.regionId(null)
-			.tagNames(null)
 			.startDate(LocalDate.of(2024, 2, 20))
 			.endDate(LocalDate.of(2024, 5, 20))
-			.isSuccess(null)
-			.isNoHint(null)
-			.keyword(null)
 			.build();
 
 		Page<DiaryListDto> diariesPage = diaryService
@@ -823,6 +792,30 @@ public class DiaryControllerTest {
 	}
 
 	@Test
+	@DisplayName("탈출일지 다건 조회, with 유효하지 않은 기간 검색")
+	void t5_4_1() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/diaries/list")
+				.content("""
+					{
+						"startDate": "2024-05-20",
+						"endDate": "2024-02-20"
+					}
+					""")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getAllItems"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("시작 날짜는 종료 날짜 이전이어야 합니다."));
+	}
+
+	@Test
 	@DisplayName("탈출일지 다건 조회, with 성공한 테마만 검색")
 	void t5_5() throws Exception {
 		ResultActions resultActions = mvc
@@ -839,13 +832,7 @@ public class DiaryControllerTest {
 			.andDo(print());
 
 		DiaryFilterRequest request = DiaryFilterRequest.builder()
-			.regionId(null)
-			.tagNames(null)
-			.startDate(null)
-			.endDate(null)
 			.isSuccess("success")
-			.isNoHint(null)
-			.keyword(null)
 			.build();
 
 		Page<DiaryListDto> diariesPage = diaryService
@@ -897,13 +884,7 @@ public class DiaryControllerTest {
 			.andDo(print());
 
 		DiaryFilterRequest request = DiaryFilterRequest.builder()
-			.regionId(null)
-			.tagNames(null)
-			.startDate(null)
-			.endDate(null)
-			.isSuccess(null)
 			.isNoHint(true)
-			.keyword(null)
 			.build();
 
 		Page<DiaryListDto> diariesPage = diaryService
@@ -941,10 +922,10 @@ public class DiaryControllerTest {
 	@Test
 	@DisplayName("""
 		탈출일지 다건 조회, with 다중 필터 검색(
-			강남, 홍대
-			공포
-			2024-03-20 ~ 2024-06-20
-			성공, 노힌트
+			강남, 홍대,
+			공포,
+			2024-03-20 ~ 2024-06-20,
+			성공, 노힌트,
 			방탈출 A
 		)
 		""")
