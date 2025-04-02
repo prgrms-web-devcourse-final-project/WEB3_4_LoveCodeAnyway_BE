@@ -9,6 +9,7 @@ import com.ddobang.backend.domain.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 
+// TODO: 임시 인증 헬퍼 클래스입니다. 멤버 도메인 쪽 인증 처리 완성되면 삭제 예정입니다
 @Component
 @RequiredArgsConstructor
 public class PartyAuthHelper {
