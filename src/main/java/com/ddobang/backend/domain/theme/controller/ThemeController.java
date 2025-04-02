@@ -18,9 +18,11 @@ import com.ddobang.backend.global.response.SliceDto;
 import com.ddobang.backend.global.response.SuccessResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "ThemeController", description = "테마 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/themes")
@@ -31,9 +33,10 @@ public class ThemeController {
 	@PostMapping
 	public ResponseEntity<SuccessResponse<SliceDto<ThemesResponse>>> getThemesWithFilter(
 		@RequestParam(name = "page", defaultValue = "0") int page,
+		@RequestParam(name = "size", defaultValue = "5") int size,
 		@RequestBody @Valid ThemeFilterRequest filterRequest
 	) {
-		SliceDto<ThemesResponse> themes = themeService.getThemesWithFilter(filterRequest, page);
+		SliceDto<ThemesResponse> themes = themeService.getThemesWithFilter(filterRequest, page, size);
 
 		return ResponseFactory.ok(themes);
 	}
