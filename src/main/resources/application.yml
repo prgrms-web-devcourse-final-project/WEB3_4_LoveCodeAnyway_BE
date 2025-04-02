@@ -37,6 +37,25 @@ spring:
         highlight_sql: true
         use_sql_comments: true
 
+  # security
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${oauth.kakao.client-id}
+            client-secret: ${oauth.kakao.client-secret}
+            redirect-uri: ${oauth.kakao.redirect-uri}
+            authorization-grant-type: authorization_code
+            scope:
+              - openid
+              - profile_nickname
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            jwk-set-uri: https://kauth.kakao.com/.well-known/jwks.json
+
 # logging
 logging:
   level:
@@ -50,5 +69,7 @@ logging:
 # swagger
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html
+    path: /swagger-ui
     display-request-duration: true
+  default-produces-media-type: application/json
+  paths-to-match: /**
