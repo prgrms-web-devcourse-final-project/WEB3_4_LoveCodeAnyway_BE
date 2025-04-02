@@ -2,9 +2,13 @@ package com.ddobang.backend.global.security.jwt;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -13,12 +17,12 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class JwtTokenProvider {
 	@Value("${jwt.secret}")
 	private String secret;
-
 	@Value("${jwt.access-token-expiration}")
 	private Long accessTokenExpiration;
 	@Value("${jwt.refresh-token-expiration}")
@@ -77,6 +81,34 @@ public class JwtTokenProvider {
 			return true;
 		} catch (JwtException | IllegalArgumentException e) { // JWT 예외ㅣ잘못된 인자 예외 처리
 			return false;
+		}
+	}
+
+	// 요청 헤더에서 엑세스토큰 추출
+	public String resolveAccessToken(HttpServletRequest request) {
+		String bearerToken = request.getHeader("Authorization");
+		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+			return bearerToken.substring(7); // "Bearer " 이후 토큰만 추출
+		}
+		return null;
+	}
+
+	// 관리자 여부 추출
+	public boolean getIsAdmin(String token) {
+		Claims claims = Jwts.parserBuilder()
+			.setSigningKey(key)
+			.build()
+			.parseClaimsJws(token)
+			.getBody();
+		return Boolean.TRUE.equals(claims.get("isAdmin", Boolean.class));
+	}
+
+	// 추출된 관리자 여부에 따라 권한 설정
+	public List<GrantedAuthority> getAuthorities(boolean isAdmin) {
+		if (isAdmin) {
+			return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
+		} else {
+			return List.of(new SimpleGrantedAuthority("ROLE_USER"));
 		}
 	}
 }

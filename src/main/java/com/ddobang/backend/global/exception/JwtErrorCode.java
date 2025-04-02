@@ -2,8 +2,10 @@ package com.ddobang.backend.global.exception;
 
 import org.springframework.http.HttpStatus;
 
-public enum JwtErrorCode implements ErrorCode {
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
+public enum JwtErrorCode implements ErrorCode {
 	TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "JWT_001", "토큰이 만료되었습니다."),
 	TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "JWT_002", "유효하지 않은 토큰입니다."),
 	TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "JWT_003", "토큰이 존재하지 않습니다."),
@@ -12,12 +14,6 @@ public enum JwtErrorCode implements ErrorCode {
 	private final HttpStatus httpStatus;
 	private final String errorCode;
 	private final String message;
-
-	JwtErrorCode(HttpStatus httpStatus, String errorCode, String message) {
-		this.httpStatus = httpStatus;
-		this.errorCode = errorCode;
-		this.message = message;
-	}
 
 	@Override
 	public HttpStatus getStatus() {
