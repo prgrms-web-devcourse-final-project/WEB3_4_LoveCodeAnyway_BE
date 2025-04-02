@@ -32,9 +32,9 @@ public class SecurityConfig {
 
 			// 인가 정책
 			.authorizeHttpRequests(auth -> auth
+				.anyRequest().permitAll() // 개발 중에만 우선순위 허용
 				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 				.requestMatchers("/api/v1/**").hasAnyRole("MEMBER", "ADMIN")
-				.anyRequest().permitAll()
 			)
 
 			// OAuth2 로그인 설정
