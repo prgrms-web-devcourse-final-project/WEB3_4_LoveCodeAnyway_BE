@@ -2,6 +2,7 @@ package com.ddobang.backend.domain.alarm.service;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -18,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AlarmEventService {
 	private final EmitterRepository emitterRepository;
+	@Value("${custom.sse.timeout}")
+	private Long sseTimeout;
 
 	// SSE 연결 수립 (구독)
 	public SseEmitter subscribe(Long userId) {
@@ -27,7 +30,7 @@ public class AlarmEventService {
 		emitterRepository.remove(userId);
 
 		// 새 이미터 생성 (1시간 타임아웃)
-		SseEmitter emitter = new SseEmitter(3600000L);
+		SseEmitter emitter = new SseEmitter(sseTimeout);
 
 		// 완료, 타임아웃, 에러 발생 시 이미터 제거 및 로깅
 		emitter.onCompletion(() -> {
