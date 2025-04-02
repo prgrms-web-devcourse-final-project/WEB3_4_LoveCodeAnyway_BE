@@ -110,19 +110,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 			.join(diary.theme, theme).fetchJoin()
 			.distinct();
 
-		// join이 필요한 경우에만 join 하도록
-		if (request.regionId() != null && !request.regionId().isEmpty()) {
-			query.join(theme.store, store).fetchJoin();
-		}
-
-		if (request.tagNames() != null && !request.tagNames().isEmpty()) {
-			query.join(theme.themeTagMappings, themeTagMapping).fetchJoin()
-				.join(themeTagMapping.themeTag, themeTag).fetchJoin();
-		}
-
-		if (request.isSuccess() != null || request.isNoHint() != null) {
-			query.join(diary.diaryStat, diaryStat).fetchJoin();
-		}
+		applyJoins(query, request, true);
 
 		return query.where(builder);
 	}
@@ -139,23 +127,37 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 		JPAQuery<Long> query = queryFactory
 			.select(diary.count())
 			.from(diary)
-			.join(diary.theme, theme)
-			.where(builder);
+			.join(diary.theme, theme);
 
-		// join이 필요한 경우에만 join 하도록
+		applyJoins(query, request, false);
+
+		return query.where(builder);
+	}
+
+	// 공통적인 join 로직을 적용하는 메서드
+	private <T> void applyJoins(JPAQuery<T> query, DiaryFilterRequest request, boolean fetchJoin) {
 		if (request.regionId() != null && !request.regionId().isEmpty()) {
-			query.join(theme.store, store);
+			if (fetchJoin) {
+				query.join(theme.store, store).fetchJoin();
+			} else {
+				query.join(theme.store, store);
+			}
 		}
 
 		if (request.tagNames() != null && !request.tagNames().isEmpty()) {
-			query.join(theme.themeTagMappings, themeTagMapping)
-				.join(themeTagMapping.themeTag, themeTag);
+			query.join(theme.themeTagMappings, themeTagMapping);
+			query.join(themeTagMapping.themeTag, themeTag);
+			if (fetchJoin) {
+				query.fetchJoin();
+			}
 		}
 
-		if (request.isSuccess() != null || request.isNoHint() != null) {
-			query.join(diary.diaryStat, diaryStat);
+		if (request.isSuccess() != null || (request.isNoHint() != null && request.isNoHint())) {
+			if (fetchJoin) {
+				query.join(diary.diaryStat, diaryStat).fetchJoin();
+			} else {
+				query.join(diary.diaryStat, diaryStat);
+			}
 		}
-
-		return query;
 	}
 }
