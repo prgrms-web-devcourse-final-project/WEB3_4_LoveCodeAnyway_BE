@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -26,18 +27,29 @@ public class SecurityConfig {
 		http
 			.cors(Customizer.withDefaults())
 			.csrf(AbstractHttpConfigurer::disable)
+			.sessionManagement(session
+				-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+			// 인가 정책
 			.authorizeHttpRequests(auth -> auth
+				.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+				.requestMatchers("/api/v1/**").hasAnyRole("MEMBER", "ADMIN")
 				.anyRequest().permitAll()
 			)
-			.oauth2Login(oauth2 -> oauth2
+
+			// OAuth2 로그인 설정
+			.oauth2Login(oauth -> oauth
 				.successHandler(oAuth2SuccessHandler)
 			)
-			.headers(headers -> headers.frameOptions(
-					frameOptions -> frameOptions.sameOrigin()
-				)
-			)
+
+			// 인증 필터 등록
 			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
-			.addFilterBefore(new JwtExceptionFilter(), JwtAuthenticationFilter.class);
+			.addFilterBefore(new JwtExceptionFilter(), JwtAuthenticationFilter.class)
+
+			// 개발용 설정
+			.headers(headers -> headers.frameOptions(frameOptions
+				-> frameOptions.sameOrigin())
+			);
 
 		return http.build();
 	}
