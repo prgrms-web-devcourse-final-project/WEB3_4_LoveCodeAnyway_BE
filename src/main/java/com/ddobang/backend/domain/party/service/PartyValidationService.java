@@ -20,7 +20,15 @@ public class PartyValidationService {
 		}
 	}
 
+	public void checkRecruiting(Party party) {
+		if (!party.isRecruiting()) {
+			throw new PartyException(PartyErrorCode.PARTY_NOT_REQUITING);
+		}
+	}
+
 	public void validateApply(Party party, Member member) {
+		checkRecruiting(party);
+
 		if (!party.isPartyMember(member)) {
 			return;
 		}
@@ -31,6 +39,8 @@ public class PartyValidationService {
 	}
 
 	public void validateCancel(Party party, Member member) {
+		checkRecruiting(party);
+
 		if (!party.isPartyMember(member) || party.getPartyMemberStatus(member) == PartyMemberStatus.CANCELLED) {
 			throw new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_FOUND);
 		}
@@ -39,7 +49,10 @@ public class PartyValidationService {
 		}
 	}
 
-	public void validateAccept(Party party, Member member) {
+	public void validateAccept(Party party, Member member, Member actor) {
+		checkRecruiting(party);
+		checkHost(party, actor);
+
 		if (!party.isPartyMember(member) || party.getPartyMemberStatus(member) == PartyMemberStatus.CANCELLED) {
 			throw new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_FOUND);
 		}
@@ -49,24 +62,23 @@ public class PartyValidationService {
 		}
 	}
 
-	public void checkRecruiting(Party party) {
-		if (!party.isRecruiting()) {
-			throw new PartyException(PartyErrorCode.PARTY_NOT_REQUITING);
-		}
-	}
+	public void validateExecutable(Party party, Member actor) {
 
-	public void checkOpen(Party party) {
-		if (!party.isOpen()) {
-			throw new PartyException(PartyErrorCode.PARTY_NOT_OPEN);
-		}
-	}
+		checkHost(party, actor);
 
-	public void checkExecutable(Party party) {
 		boolean afterScheduledTime = LocalDateTime.now().isAfter(party.getScheduledAt());
 		boolean isPending = party.getStatus() == PartyStatus.PENDING;
 
 		if (!afterScheduledTime && !isPending) {
 			throw new PartyException(PartyErrorCode.PARTY_NOT_EXECUTABLE);
+		}
+	}
+
+	public void validateModifiable(Party party, Member member) {
+		checkHost(party, member);
+
+		if ((long)party.getPartyMembers().size() > 1) {
+			throw new PartyException(PartyErrorCode.PARTY_NOT_MODIFIABLE);
 		}
 	}
 }

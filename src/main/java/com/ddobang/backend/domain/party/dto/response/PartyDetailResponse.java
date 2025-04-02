@@ -8,6 +8,7 @@ import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.party.types.PartyMemberRole;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.entity.Theme;
+import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTagMapping;
 
 public record PartyDetailResponse(
@@ -20,7 +21,7 @@ public record PartyDetailResponse(
 	String host_nickname,
 	String host_profile_img_url,
 
-	Integer participantsNeeded,
+	Integer recruitableCount,
 	Integer totalParticipants,
 
 	List<PartyMemberSummaries> acceptedPartyMembers,
@@ -35,17 +36,16 @@ public record PartyDetailResponse(
 
 	List<ThemeTagMapping> theme_tag_mappings,
 
-	// float noHintEscapeRate,
-	// float escapeResult,
-	// float escapeTimeAvg,
+	float noHintEscapeRate,
+	float escapeResult,
+	float escapeTimeAvg,
 
 	String store_name,
 	String store_address
 ) {
-	public static PartyDetailResponse from(Party party, Member actor) {
+	public static PartyDetailResponse from(Party party, ThemeStat themeStat, Member actor) {
 		boolean isHost = party.getPartyMemberRole(actor).equals(PartyMemberRole.HOST);
 		Theme theme = party.getTheme();
-		// ThemeStat themeStats = theme.getThemeStat();
 		Member host = party.getHost();
 		Store store = theme.getStore();
 		return new PartyDetailResponse(
@@ -58,7 +58,7 @@ public record PartyDetailResponse(
 			host.getNickname(),
 			host.getProfilePictureUrl(),
 
-			party.getParticipantsNeeded(),
+			party.getParticipantsNeeded() - party.getAcceptedParticipantsCount(),
 			party.getTotalParticipants(),
 
 			party.getAcceptedMembers().stream()
@@ -76,9 +76,9 @@ public record PartyDetailResponse(
 			theme.getThumbnailUrl(),
 			theme.getThemeTagMappings(),
 
-			// themeStats.getNoHintEscapeRate(),
-			// themeStats.getEscapeResult(),
-			// themeStats.getEscapeTimeAvg(),
+			themeStat.getNoHintEscapeRate(),
+			themeStat.getEscapeResult(),
+			themeStat.getEscapeTimeAvg(),
 
 			store.getName(),
 			store.getAddress()

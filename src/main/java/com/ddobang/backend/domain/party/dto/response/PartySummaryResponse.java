@@ -13,7 +13,7 @@ public record PartySummaryResponse(
 
 	LocalDateTime scheduled_at,
 
-	Integer participantsNeeded,
+	Integer recruitableCount,
 	Integer totalParticipants,
 
 	Boolean rookie_available,
@@ -38,7 +38,7 @@ public record PartySummaryResponse(
 
 			party.getScheduledAt(),
 
-			party.getParticipantsNeeded(),
+			party.getParticipantsNeeded() - party.getAcceptedParticipantsCount(),
 			party.getTotalParticipants(),
 
 			party.getRookieAvailable(),

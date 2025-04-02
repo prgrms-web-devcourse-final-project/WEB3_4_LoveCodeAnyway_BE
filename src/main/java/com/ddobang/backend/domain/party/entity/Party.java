@@ -29,8 +29,10 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -57,8 +59,14 @@ public class Party extends BaseTime {
 	private LocalDateTime scheduledAt;
 
 	@NotNull
+	@Min(1)
 	@Column(name = "participants_needed", nullable = false)
-	private Integer participantsNeeded = 1;
+	private Integer participantsNeeded;
+
+	@NotNull
+	@PositiveOrZero
+	@Column(name = "accepted_participants_count", nullable = false)
+	private Integer acceptedParticipantsCount;
 
 	@NotNull
 	@Column(name = "total_participants", nullable = false)
@@ -71,7 +79,7 @@ public class Party extends BaseTime {
 	@NotNull
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
-	private PartyStatus status; // RECRUITING, CLOSED, COMPLETED, CANCELLED
+	private PartyStatus status; // RECRUITING, FULL, PENDING, COMPLETED, CANCELLED
 
 	@NotNull
 	@Column(name = "is_deleted", nullable = false)
@@ -89,6 +97,7 @@ public class Party extends BaseTime {
 		this.content = request.content();
 		this.scheduledAt = request.scheduledAt();
 		this.participantsNeeded = request.participantsNeeded();
+		this.acceptedParticipantsCount = 0;
 		this.totalParticipants = request.totalParticipants();
 		this.rookieAvailable = request.rookieAvailable();
 		this.status = PartyStatus.RECRUITING;
@@ -126,12 +135,8 @@ public class Party extends BaseTime {
 		return true;
 	}
 
-	public boolean isOpen() {
-		return this.status == PartyStatus.RECRUITING || this.status == PartyStatus.FULL;
-	}
-
 	public void updatePartyStatus() {
-		long acceptedCount = getAcceptedMembers().size();
+		this.acceptedParticipantsCount = getAcceptedMembers().size() - 1;
 
 		if (this.status == PartyStatus.COMPLETED || this.status == PartyStatus.CANCELLED) {
 			return;
@@ -142,7 +147,7 @@ public class Party extends BaseTime {
 			return;
 		}
 
-		if (acceptedCount >= participantsNeeded) {
+		if (this.acceptedParticipantsCount >= participantsNeeded) {
 			this.status = PartyStatus.FULL;
 		} else {
 			this.status = PartyStatus.RECRUITING;

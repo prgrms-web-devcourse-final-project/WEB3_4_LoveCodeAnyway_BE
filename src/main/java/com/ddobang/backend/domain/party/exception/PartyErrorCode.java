@@ -14,6 +14,7 @@ public enum PartyErrorCode implements ErrorCode {
 	PARTY_NOT_REQUITING(HttpStatus.BAD_REQUEST, "PARTY_006", "현재 모집 중인 파티가 아닙니다."),
 	PARTY_NOT_OPEN(HttpStatus.BAD_REQUEST, "PARTY_007", "모집 기간이 종료되어 상태를 변경할 수 없습니다."),
 	PARTY_NOT_EXECUTABLE(HttpStatus.BAD_REQUEST, "PARTY_008", "모임을 완료 또는 취소 처리할 수 있는 상태가 아닙니다."),
+	PARTY_NOT_MODIFIABLE(HttpStatus.BAD_REQUEST, "PARTY_009", "이미 신청이 시작된 모임은 수정할 수 없습니다."),
 
 	// Party Member
 	PARTY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "PARTY_MEMBER_001", "모임원이 아닙니다."),

@@ -18,9 +18,14 @@ import com.ddobang.backend.domain.party.repository.PartyRepository;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.theme.entity.Theme;
+import com.ddobang.backend.domain.theme.entity.ThemeStat;
+import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
+import com.ddobang.backend.domain.theme.exception.ThemeException;
+import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 import com.ddobang.backend.global.response.SliceDto;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -30,6 +35,7 @@ public class PartyService {
 	private final ThemeService themeService;
 	private final MemberService memberService;
 	private final PartyValidationService partyValidationService;
+	private final ThemeStatRepository themeStatRepository;
 
 	public SliceDto<PartySummaryResponse> getParties(Long lastId, int size, PartySearchCondition partySearchCondition) {
 		List<Party> parties = partyRepository.getParties(lastId, size + 1, partySearchCondition);
@@ -47,32 +53,38 @@ public class PartyService {
 	}
 
 	public PartyDetailResponse getPartyDetailResponse(Long id, Member actor) {
-		return PartyDetailResponse.from(getPartyById(id), actor);
+		Party party = getPartyById(id);
+		ThemeStat themeStat = themeStatRepository.findById(party.getTheme().getId())
+			.orElseThrow(() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND));
+		return PartyDetailResponse.from(party, themeStat, actor);
 	}
 
+	@Transactional
 	public PartyDto createParty(PartyRequest request, Member actor) {
 		Theme theme = themeService.getThemeById(request.themeId());
 		return PartyDto.toDto(Party.of(request, theme, actor));
 	}
 
+	@Transactional
 	public PartyDto modifyParty(Long id, PartyRequest request, Member actor) {
 		Party party = getPartyById(id);
-		partyValidationService.checkHost(party, actor);
+		partyValidationService.validateModifiable(party, actor);
 		Theme theme = themeService.getThemeById(request.themeId());
 		party.modifyParty(request, theme);
 		return PartyDto.toDto(party);
 	}
 
+	@Transactional
 	public void softDeleteParty(Long id, Member actor) {
 		Party party = getPartyById(id);
 		partyValidationService.checkHost(party, actor);
 		party.delete();
 	}
 
+	@Transactional
 	public void applyParty(Long id, Member actor) {
 		Party party = getPartyById(id);
 
-		partyValidationService.checkRecruiting(party);
 		partyValidationService.validateApply(party, actor);
 
 		if (party.isPartyMember(actor)) {
@@ -82,42 +94,41 @@ public class PartyService {
 		}
 	}
 
+	@Transactional
 	public void cancelAppliedParty(Long id, Member actor) {
 		Party party = getPartyById(id);
 
-		partyValidationService.checkOpen(party);
 		partyValidationService.validateCancel(party, actor);
 
 		party.updatePartyMemberStatus(actor, PartyMemberStatus.CANCELLED);
 		party.updatePartyStatus();
 	}
 
+	@Transactional
 	public void acceptPartyMember(Long id, Long memberId, Member actor) {
 		Party party = getPartyById(id);
-
-		partyValidationService.checkRecruiting(party);
-		partyValidationService.checkHost(party, actor);
-
 		Member member = memberService.getMemberById(memberId);
-		partyValidationService.validateAccept(party, member);
+
+		partyValidationService.validateAccept(party, member, actor);
 
 		party.updatePartyMemberStatus(actor, PartyMemberStatus.ACCEPTED);
 		party.updatePartyStatus();
 	}
 
+	@Transactional
 	public void executeParty(Long id, Member actor) {
 		Party party = getPartyById(id);
-		partyValidationService.checkHost(party, actor);
-		partyValidationService.checkExecutable(party);
+
+		partyValidationService.validateExecutable(party, actor);
 
 		party.updateFinalStatus(PartyStatus.COMPLETED);
-
 	}
 
+	@Transactional
 	public void unexecuteParty(Long id, Member actor) {
 		Party party = getPartyById(id);
-		partyValidationService.checkHost(party, actor);
-		partyValidationService.checkExecutable(party);
+
+		partyValidationService.validateExecutable(party, actor);
 
 		party.updateFinalStatus(PartyStatus.CANCELLED);
 	}

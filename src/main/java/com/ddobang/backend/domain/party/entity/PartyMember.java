@@ -41,7 +41,7 @@ public class PartyMember {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
-	private PartyMemberStatus status; // APPLICANT. ACCEPTED, REJECTED, CANCELLED
+	private PartyMemberStatus status; // APPLICANT. ACCEPTED, CANCELLED
 
 	private PartyMember(Party party, Member member, PartyMemberRole role, PartyMemberStatus status) {
 		this.party = party;
