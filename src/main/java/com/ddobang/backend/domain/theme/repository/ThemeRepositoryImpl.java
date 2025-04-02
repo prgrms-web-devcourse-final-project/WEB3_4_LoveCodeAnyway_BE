@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import com.ddobang.backend.domain.store.entity.QStore;
 import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.ThemeForPartyResponse;
 import com.ddobang.backend.domain.theme.entity.QTheme;
 import com.ddobang.backend.domain.theme.entity.QThemeTag;
 import com.ddobang.backend.domain.theme.entity.QThemeTagMapping;
@@ -49,6 +50,11 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 			.fetch();
 	}
 
+	@Override
+	public List<ThemeForPartyResponse> findThemesForPartyByKeyword(String keyword) {
+		return List.of();
+	}
+
 	private BooleanBuilder buildFilterConditions(ThemeFilterRequest request, QTheme theme, QStore store,
 		QThemeTag tag) {
 		BooleanBuilder builder = new BooleanBuilder();
@@ -57,7 +63,7 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 
 		// 지역 필터링
 		if (request.regionId() != null && !request.regionId().isEmpty()) {
-			builder.and(store.id.in(request.regionId()));
+			builder.and(store.region.id.in(request.regionId()));
 		}
 
 		// 태그 필터링 시 사용될 서브 쿼리
