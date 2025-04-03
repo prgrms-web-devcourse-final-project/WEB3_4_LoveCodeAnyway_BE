@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import com.ddobang.backend.domain.auth.exception.AuthException;
 import com.ddobang.backend.domain.auth.exception.OAuth2ErrorCode;
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
 import com.ddobang.backend.global.util.CookieUtil;
@@ -22,17 +21,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
-	private final MemberRepository memberRepository;
 	private final MemberService memberService;
 	private final JwtTokenProvider jwtTokenProvider;
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException, ServletException {
+
 		log.info("OAuth2 로그인 성공: {}", authentication.getName());
 
 		OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
@@ -55,10 +54,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		}
 
 		log.info("카카오 ID: {}", kakaoId);
+		log.info("카카오 닉네임: {}", nickname);
 
 		Member member;
 		try {
-			member = memberRepository.findByKakaoId(kakaoId)
+			member = memberService.findByKakaoId(kakaoId)
 				.orElseGet(() -> {
 					log.info("신규 회원입니다: {}", kakaoId);
 					return memberService.createMemberFromOAuth2(oAuth2User); // nickname은 내부에서 처리
@@ -82,7 +82,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		}
 
 		log.info("JWT 토큰 생성 및 쿠키 전송 완료");
-
 		response.sendRedirect("http://localhost:3000");
 	}
 }
