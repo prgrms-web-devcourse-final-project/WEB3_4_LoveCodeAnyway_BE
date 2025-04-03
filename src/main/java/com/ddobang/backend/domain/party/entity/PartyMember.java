@@ -1,6 +1,7 @@
 package com.ddobang.backend.domain.party.entity;
 
 import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.party.types.PartyMemberRole;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 
 import jakarta.persistence.Column;
@@ -35,17 +36,26 @@ public class PartyMember {
 	private Member member;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false)
-	private PartyMemberStatus status; // HOST, APPLICANT. ACCEPTED, REJECTED, CANCELLED
+	@Column(name = "role", nullable = false)
+	private PartyMemberRole role; // HOST, PARTICIPANT
 
-	private PartyMember(Party party, Member member) {
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	private PartyMemberStatus status; // APPLICANT. ACCEPTED, CANCELLED
+
+	private PartyMember(Party party, Member member, PartyMemberRole role, PartyMemberStatus status) {
 		this.party = party;
 		this.member = member;
-		this.status = PartyMemberStatus.APPLICANT;
+		this.role = role;
+		this.status = status;
 	}
 
 	public static PartyMember of(Party party, Member member) {
-		return new PartyMember(party, member);
+		return new PartyMember(party, member, PartyMemberRole.PARTICIPANT, PartyMemberStatus.APPLICANT);
+	}
+
+	public static PartyMember createHost(Party party, Member member) {
+		return new PartyMember(party, member, PartyMemberRole.HOST, PartyMemberStatus.ACCEPTED);
 	}
 
 	public void changeStatus(PartyMemberStatus status) {

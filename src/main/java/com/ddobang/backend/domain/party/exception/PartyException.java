@@ -6,8 +6,4 @@ public class PartyException extends ServiceException {
 	public PartyException(PartyErrorCode errorCode) {
 		super(errorCode);
 	}
-
-	public PartyException(PartyErrorCode errorCode, String message) {
-		super(errorCode, message);
-	}
 }
