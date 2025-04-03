@@ -82,6 +82,7 @@ public class DiaryStat {
 		DiaryRequestDto diaryRequestDto,
 		int elapsedTime
 	) {
+		this.theme = this.diary.getTheme();
 		this.difficulty = diaryRequestDto.difficulty();
 		this.fear = diaryRequestDto.fear();
 		this.activity = diaryRequestDto.activity();
