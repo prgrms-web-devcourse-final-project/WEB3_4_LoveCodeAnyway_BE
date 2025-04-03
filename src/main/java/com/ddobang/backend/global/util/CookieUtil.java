@@ -30,6 +30,15 @@ public class CookieUtil {
 		return cookie;
 	}
 
+	// Signup Token 쿠키 생성
+	public static Cookie createSignupTokenCookie(String token) {
+		Cookie cookie = new Cookie("signupToken", token);
+		cookie.setHttpOnly(true);
+		cookie.setPath("/");
+		cookie.setMaxAge(300); // 5분
+		return cookie;
+	}
+	
 	// 쿠키 제거
 	public static Cookie deleteCookie(String name) {
 		Cookie cookie = new Cookie(name, null);

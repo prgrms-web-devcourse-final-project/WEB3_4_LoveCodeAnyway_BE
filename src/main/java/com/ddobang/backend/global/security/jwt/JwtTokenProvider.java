@@ -50,7 +50,7 @@ public class JwtTokenProvider {
 		return buildToken(refreshTokenExpiration, nickname, isAdmin);
 	}
 
-	private String buildToken(String subject, long expirationMillis, boolean isAdmin, String nickname) {
+	private String buildToken(long expirationMillis, String nickname, boolean isAdmin) {
 		Date now = new Date();
 		Date expiry = new Date(now.getTime() + expirationMillis);
 
@@ -63,9 +63,15 @@ public class JwtTokenProvider {
 			.compact(); // 생성
 	}
 
-	// 토큰 파싱 및 정보 추출
-	public String getSubject(String token) {
-		return parseClaims(token).getBody().getSubject();
+	// 회원가입 전용 토큰 생성
+	public String generateSignupToken(String kakaoId, String nickname) {
+		return Jwts.builder()
+			.claim("kakaoId", kakaoId)
+			.claim("nickname", nickname)
+			.setIssuedAt(new Date())
+			.setExpiration(Date.from(Instant.now().plusSeconds(300))) // 5분 유효
+			.signWith(key, SignatureAlgorithm.HS256)
+			.compact();
 	}
 
 	public Claims getClaims(String token) {
