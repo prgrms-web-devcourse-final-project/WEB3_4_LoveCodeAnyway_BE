@@ -4,7 +4,8 @@ spring:
       on-profile: dev
 
   datasource:
-    url: jdbc:mysql://localhost:3606/ddobang?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    driver-class-name: com.mysql.cj.jdbc.Driver  # MySQL 공통 드라이버
+    url: jdbc:mysql://localhost:3306/ddobang?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: ${mysql.username}  # secret.yml
     password: ${mysql.password}  # secret.yml
 
