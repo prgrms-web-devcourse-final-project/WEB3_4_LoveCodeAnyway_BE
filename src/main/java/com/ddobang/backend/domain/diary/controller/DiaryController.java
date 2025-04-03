@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.diary.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -91,5 +93,16 @@ public class DiaryController {
 		diaryService.delete(id);
 
 		return ResponseFactory.ok("%d번 탈출일지 삭제에 성공했습니다.".formatted(id));
+	}
+
+	@Operation(summary = "탈출일지 월별 다건조회", description = "필터를 기반으로 사용자의 전체 탈출일지 목록을 가져옵니다.")
+	@GetMapping
+	public ResponseEntity<SuccessResponse<List<DiaryListDto>>> getDiariesByMonth(
+		@RequestParam(defaultValue = "0") int year,
+		@RequestParam(defaultValue = "0") int month
+	) {
+		return ResponseFactory.ok(
+			diaryService.getDiariesByMonth(year, month)
+		);
 	}
 }
