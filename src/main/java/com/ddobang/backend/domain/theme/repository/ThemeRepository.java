@@ -15,7 +15,8 @@ public interface ThemeRepository extends JpaRepository<Theme, Long>, ThemeReposi
 
 	@Query("""
 		SELECT new com.ddobang.backend.domain.theme.dto.ThemeForDiaryResponse(t.id,t.name,s.name)
-		FROM Theme t JOIN t.store s WHERE (
+		FROM Theme t JOIN t.store s
+		WHERE t.status != 'DELETED' AND (
 			LOWER(t.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
 			LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
 		order by t.name asc
