@@ -28,6 +28,7 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(
 		HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
 
+		// MvcRequestMatcher를 사용하여 URL 패턴 매칭
 		MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector).servletPath("/api/v1");
 
 		http
@@ -35,19 +36,18 @@ public class SecurityConfig {
 			.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session
 				-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
 			// 인가 정책
-			.authorizeHttpRequests(auth -> auth
-				.requestMatchers(mvc.pattern("/api/v1/error")).permitAll()
-				.requestMatchers(mvc.pattern("/error")).permitAll()
-				.requestMatchers(mvc.pattern("/v3/api-docs/**")).permitAll()
-				.requestMatchers(mvc.pattern("/swagger-ui/**")).permitAll()
-				.requestMatchers(mvc.pattern("/swagger-resources/**")).permitAll()
-				.requestMatchers(mvc.pattern("/webjars/**")).permitAll()
-				.requestMatchers(mvc.pattern("/admin/**")).hasRole("ADMIN")
-				.requestMatchers(mvc.pattern("/**")).hasAnyRole("MEMBER", "ADMIN")
-				.anyRequest().permitAll()
-			)
+			.authorizeHttpRequests(auth -> {
+				auth
+					.requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/**").permitAll()
+					.requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**",
+						"/webjars/**").permitAll()
+					.requestMatchers("/admin/login").permitAll()
+					.requestMatchers("/admin/**").hasRole("ADMIN")
+					.requestMatchers(mvc.pattern("/members/check-nickname")).permitAll()
+					.requestMatchers(mvc.pattern("/themes/**")).permitAll()
+					.anyRequest().hasAnyRole("MEMBER", "ADMIN");
+			})
 
 			// OAuth2 로그인 설정
 			.oauth2Login(oauth -> oauth

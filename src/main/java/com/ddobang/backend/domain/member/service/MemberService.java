@@ -45,7 +45,7 @@ public class MemberService {
 	public Member getMemberByUsername(String username) {
 		// 테스트용 더미 Member 반환
 		return Member.builder()
-			.id(1L)
+			// .id(1L)
 			//.username(username)
 			.nickname("테스트사용자")
 			//.email("test@example.com")
@@ -58,7 +58,7 @@ public class MemberService {
 	public Member getMemberById(Long id) {
 		// 테스트용 더미 Member 반환
 		return Member.builder()
-			.id(id)
+			// .id(id)
 			//.username("user" + id)
 			.nickname("사용자" + id)
 			//.email("user" + id + "@example.com")

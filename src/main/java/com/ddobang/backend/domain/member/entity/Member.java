@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,8 +22,6 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
 public class Member extends BaseTime {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,4 +59,27 @@ public class Member extends BaseTime {
 	// 	inverseJoinColumns = @JoinColumn(name = "theme_id")
 	// )
 	// private List<Theme> themes = new ArrayList<>();
+
+	@Builder // 명시, 필요시 사용
+	public Member(
+		String nickname,
+		Gender gender,
+		String introduction,
+		String kakaoId,
+		String profilePictureUrl,
+		Integer mannerScore,
+		Integer hostCount,
+		String password,
+		List<MemberTag> tags
+	) {
+		this.nickname = nickname;
+		this.gender = gender;
+		this.introduction = introduction;
+		this.kakaoId = kakaoId;
+		this.profilePictureUrl = profilePictureUrl;
+		this.mannerScore = mannerScore;
+		this.hostCount = hostCount;
+		this.password = password;
+		this.tags = tags != null ? tags : new ArrayList<>();
+	}
 }

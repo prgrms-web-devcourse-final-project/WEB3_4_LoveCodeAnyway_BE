@@ -42,21 +42,22 @@ public class JwtTokenProvider {
 	}
 
 	// 엑세스 토큰, 리프레시 토큰 생성
-	public String generateAccessToken(String subject, boolean isAdmin) {
-		return buildToken(subject, accessTokenExpiration, isAdmin);
+	public String generateAccessToken(String subject, boolean isAdmin, String nickname) {
+		return buildToken(subject, accessTokenExpiration, isAdmin, nickname);
 	}
 
-	public String generateRefreshToken(String subject, boolean isAdmin) {
-		return buildToken(subject, refreshTokenExpiration, isAdmin);
+	public String generateRefreshToken(String subject, boolean isAdmin, String nickname) {
+		return buildToken(subject, refreshTokenExpiration, isAdmin, nickname);
 	}
 
-	private String buildToken(String subject, long expirationMillis, boolean isAdmin) {
+	private String buildToken(String subject, long expirationMillis, boolean isAdmin, String nickname) {
 		Date now = new Date();
 		Date expiry = new Date(now.getTime() + expirationMillis);
 
 		return Jwts.builder()
 			.setSubject(subject) // 사용자 ID
 			.claim("isAdmin", isAdmin) // 관리자 여부
+			.claim("nickname", nickname) // 닉네임
 			.setIssuedAt(now) // 발급일
 			.setExpiration(expiry) // 만료일
 			.signWith(key, SignatureAlgorithm.HS256) // 알고리즘, 키 적용
