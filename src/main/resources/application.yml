@@ -13,8 +13,6 @@ spring:
     import: optional:application-secret.yml
 
   mvc:
-    servlet:
-      path: /api/v1
     async:
       request-timeout: 600000  # SSE 연결 타임아웃 설정 (밀리초)
 
