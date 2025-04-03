@@ -1,4 +1,0 @@
-spring:
-  mvc:
-    async:
-      request-timeout: 600000  # SSE 연결 타임아웃 설정 (밀리초) - 이후 application.yml로 옮기기
