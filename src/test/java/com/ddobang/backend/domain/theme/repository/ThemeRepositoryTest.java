@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.repository.StoreRepository;
 import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.ThemeForDiaryResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.global.config.JpaAuditingConfig;
@@ -177,8 +178,13 @@ public class ThemeRepositoryTest {
 	@Test
 	@DisplayName("페이지네이션 테스트 - 첫 페이지")
 	void findThemesWithPaginationPage0() {
+		// given
 		ThemeFilterRequest request = new ThemeFilterRequest(null, null, null, null);
+
+		// when
 		List<Theme> results = themeRepository.findThemesByFilter(request, 0, 3);
+
+		// then
 		assertThat(results).hasSize(4);
 		AssertionsForClassTypes.assertThat(results.get(0).getName()).isEqualTo("방탈출5");
 		AssertionsForClassTypes.assertThat(results.get(1).getName()).isEqualTo("방탈출4");
@@ -188,11 +194,106 @@ public class ThemeRepositoryTest {
 	@Test
 	@DisplayName("페이지네이션 테스트 - 두 번째 페이지")
 	void findThemesWithPaginationPage1() {
+		// given
 		ThemeFilterRequest request = new ThemeFilterRequest(null, null, null, null);
+
+		// when
 		List<Theme> results = themeRepository.findThemesByFilter(request, 1, 3);
+
+		// then
 		assertThat(results).hasSize(2);
 		AssertionsForClassTypes.assertThat(results.get(0).getName()).isEqualTo("방탈출2");
 		AssertionsForClassTypes.assertThat(results.get(1).getName()).isEqualTo("방탈출1");
+	}
+
+	@Test
+	@DisplayName("테마 이름으로 모임 등록 전용 검색 테스트")
+	void findThemesForPartySearchByThemeTest() {
+		// given
+		String keyword = "탈출3";
+
+		// when
+		List<Theme> results =
+			themeRepository.findThemesForPartySearch(keyword);
+
+		// then
+		assertThat(results).hasSize(1);
+		assertThat(results.getFirst()).isEqualTo(testThemes.get(2));
+	}
+
+	@Test
+	@DisplayName("매장 이름으로 모임 등록 전용 검색 테스트")
+	void findThemesForPartySearchNoResultTest() {
+		// given
+		String keyword = "매장";
+
+		// when
+		List<Theme> results =
+			themeRepository.findThemesForPartySearch(keyword);
+
+		// then
+		assertThat(results).hasSize(5);
+		assertThat(results.getLast()).isEqualTo(testThemes.getLast());
+	}
+
+	@Test
+	@DisplayName("존재하지 않는 키워드로 모임 등록 전용 검색 테스트")
+	void findThemesForPartySearchByStoreTest() {
+		// given
+		String keyword = "NO_CONTENT";
+
+		// when
+		List<Theme> results =
+			themeRepository.findThemesForPartySearch(keyword);
+
+		// then
+		assertThat(results).hasSize(0);
+	}
+
+	@Test
+	@DisplayName("테마 이름으로 일지 작성 전용 검색 테스트")
+	void findThemesForDiarySearchByThemeTest() {
+		// given
+		String keyword = "탈출2";
+
+		// when
+		List<ThemeForDiaryResponse> results =
+			themeRepository.findThemesForDiarySearch(keyword);
+
+		// then
+		assertThat(results).hasSize(1);
+		assertThat(results.get(0).themeName()).isEqualTo(testThemes.get(1).getName());
+		assertThat(results.get(0).storeName()).isEqualTo(store.getName());
+	}
+
+	@Test
+	@DisplayName("매장 이름으로 일지 작성 전용 검색 테스트")
+	void findThemesForDiarySearchByStoreTest() {
+		// given
+		String keyword = "매장";
+
+		// when
+		List<ThemeForDiaryResponse> results =
+			themeRepository.findThemesForDiarySearch(keyword);
+
+		// then
+		assertThat(results).hasSize(5);
+		assertThat(results.get(2).themeName()).isEqualTo(testThemes.get(2).getName());
+		assertThat(results.get(2).storeName()).isEqualTo(store.getName());
+	}
+
+	@Test
+	@DisplayName("존재하지 않는 키워드로 일지 작성 전용 검색 테스트")
+	void findThemesForDiarySearchNoResultTest() {
+		// given
+		String keyword = "NO_CONTENT";
+
+		// when
+		List<ThemeForDiaryResponse> results =
+			themeRepository.findThemesForDiarySearch(keyword);
+
+		// then
+		assertThat(results).hasSize(0);
 	}
 
 	// TODO: Column 제약조건 별 저장 테스트 추가
