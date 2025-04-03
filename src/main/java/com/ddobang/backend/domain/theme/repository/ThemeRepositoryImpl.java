@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 
 import com.ddobang.backend.domain.store.entity.QStore;
 import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
-import com.ddobang.backend.domain.theme.dto.ThemeForPartyResponse;
 import com.ddobang.backend.domain.theme.entity.QTheme;
 import com.ddobang.backend.domain.theme.entity.QThemeTag;
 import com.ddobang.backend.domain.theme.entity.QThemeTagMapping;
@@ -51,8 +50,22 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 	}
 
 	@Override
-	public List<ThemeForPartyResponse> findThemesForPartyByKeyword(String keyword) {
-		return List.of();
+	public List<Theme> findThemesForPartySearch(String keyword) {
+		QTheme theme = QTheme.theme;
+		QStore store = QStore.store;
+		QThemeTagMapping mapping = QThemeTagMapping.themeTagMapping;
+		QThemeTag tag = QThemeTag.themeTag;
+
+		BooleanBuilder condition = buildSearchForPartyConditions(keyword, theme, store);
+
+		return queryFactory
+			.selectFrom(theme)
+			.leftJoin(theme.store, store).fetchJoin()
+			.leftJoin(theme.themeTagMappings, mapping).fetchJoin()
+			.leftJoin(mapping.themeTag, tag).fetchJoin()
+			.where(condition)
+			.distinct()
+			.fetch();
 	}
 
 	private BooleanBuilder buildFilterConditions(ThemeFilterRequest request, QTheme theme, QStore store,
@@ -94,7 +107,21 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 		if (request.keyword() != null && !request.keyword().isBlank()) {
 			builder.and(
 				theme.name.containsIgnoreCase(request.keyword())
-					.or(store.name.containsIgnoreCase(request.keyword()))
+					.or(store.name.containsIgnoreCase(request.keyword()))    //알파벳 대소문자 구분x
+			);
+		}
+
+		return builder;
+	}
+
+	private BooleanBuilder buildSearchForPartyConditions(String keyword, QTheme theme, QStore store) {
+		BooleanBuilder builder = new BooleanBuilder();
+		builder.and(theme.status.eq(Theme.Status.OPENED));
+
+		if (keyword != null && !keyword.isBlank()) {
+			builder.and(
+				theme.name.containsIgnoreCase(keyword)
+					.or(store.name.containsIgnoreCase(keyword))        //알파벳 대소문자 구분x
 			);
 		}
 
