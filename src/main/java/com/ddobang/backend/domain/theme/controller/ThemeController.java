@@ -48,7 +48,7 @@ public class ThemeController {
 	@Operation(summary = "테마 상세 조회 api", description = "테마 통계 부분은 해당 테마에 대한 방탈출 일지가 1개 이상 작성 되야 존재하므로 Nullable")
 	@GetMapping("/{id}")
 	public ResponseEntity<SuccessResponse<ThemeDetailResponse>> getTheme(@PathVariable Long id) {
-		ThemeDetailResponse themeDetailResponse = themeService.getTheme(id);
+		ThemeDetailResponse themeDetailResponse = themeService.getThemeWithStat(id);
 
 		return ResponseFactory.ok(themeDetailResponse);
 	}
