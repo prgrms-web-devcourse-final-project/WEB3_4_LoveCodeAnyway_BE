@@ -64,7 +64,7 @@ public class AdminStoreControllerTest {
 	void saveForAdminTest() throws Exception {
 		// given
 		// when
-		ResultActions result = mockMvc.perform(post("/admin/stores").contentType(MediaType.APPLICATION_JSON)
+		ResultActions result = mockMvc.perform(post("/api/v1/admin/stores").contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(storeRequest)));
 
 		result.andExpect(handler().handlerType(AdminStoreController.class))
@@ -85,7 +85,7 @@ public class AdminStoreControllerTest {
 			.build();
 
 		// when
-		ResultActions result = mockMvc.perform(post("/admin/stores").contentType(MediaType.APPLICATION_JSON)
+		ResultActions result = mockMvc.perform(post("/api/v1/admin/stores").contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(blankNameRequest)));
 		GlobalErrorCode errorCode = GlobalErrorCode.NOT_VALID;
 
@@ -108,7 +108,7 @@ public class AdminStoreControllerTest {
 			.build();
 
 		// when
-		ResultActions result = mockMvc.perform(post("/admin/stores").contentType(MediaType.APPLICATION_JSON)
+		ResultActions result = mockMvc.perform(post("/api/v1/admin/stores").contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(invalidStatusRequest))
 			.contentType(MediaType.APPLICATION_JSON));
 		GlobalErrorCode errorCode = GlobalErrorCode.NOT_VALID;
@@ -129,7 +129,7 @@ public class AdminStoreControllerTest {
 		Long id = 1L;
 
 		// when
-		ResultActions result = mockMvc.perform(put("/admin/stores/" + id)
+		ResultActions result = mockMvc.perform(put("/api/v1/admin/stores/" + id)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(storeRequest)));
 
@@ -148,7 +148,7 @@ public class AdminStoreControllerTest {
 			.when(storeService).modify(id, storeRequest);
 
 		// when
-		ResultActions result = mockMvc.perform(put("/admin/stores/" + id)
+		ResultActions result = mockMvc.perform(put("/api/v1/admin/stores/" + id)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(storeRequest)));
 		StoreErrorCode errorCode = StoreErrorCode.STORE_NOT_FOUND;
@@ -167,7 +167,7 @@ public class AdminStoreControllerTest {
 		Long id = 1L;
 
 		// when
-		ResultActions result = mockMvc.perform(delete("/admin/stores/" + id)
+		ResultActions result = mockMvc.perform(delete("/api/v1/admin/stores/" + id)
 			.contentType(MediaType.APPLICATION_JSON));
 
 		//then
