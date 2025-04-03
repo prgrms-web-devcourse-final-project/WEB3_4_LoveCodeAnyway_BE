@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author 100minha
  */
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles(value = {"test", "dev"})
 @AutoConfigureMockMvc
 @Transactional
 public class ThemeControllerTest {
@@ -82,7 +82,7 @@ public class ThemeControllerTest {
 
 	private ResultActions performGetThemesWithFilter(
 		int page, ThemeFilterRequest request) throws Exception {
-		return mvc.perform(post("/themes")
+		return mvc.perform(post("/api/v1/themes")
 			.param("page", String.valueOf(page))
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(request))
@@ -278,7 +278,7 @@ public class ThemeControllerTest {
 		long themeId = 1L;
 
 		// when
-		ResultActions result = mvc.perform(get("/themes/" + themeId)
+		ResultActions result = mvc.perform(get("/api/v1/themes/" + themeId)
 			.contentType(MediaType.APPLICATION_JSON)
 		);
 
@@ -303,7 +303,7 @@ public class ThemeControllerTest {
 		long themeId = 7L;
 
 		// when
-		ResultActions result = mvc.perform(get("/themes/" + themeId)
+		ResultActions result = mvc.perform(get("/api/v1/themes/" + themeId)
 			.contentType(MediaType.APPLICATION_JSON)
 		);
 
@@ -326,7 +326,7 @@ public class ThemeControllerTest {
 		long themeId = 999L;
 
 		// when
-		ResultActions result = mvc.perform(get("/themes/" + themeId)
+		ResultActions result = mvc.perform(get("/api/v1/themes/" + themeId)
 			.contentType(MediaType.APPLICATION_JSON)
 		);
 		ThemeErrorCode errorCode = ThemeErrorCode.THEME_NOT_FOUND;
@@ -336,6 +336,131 @@ public class ThemeControllerTest {
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.errorCode").value(errorCode.getErrorCode()))
 			.andExpect(jsonPath("$.message").value(errorCode.getMessage()))
+		;
+	}
+
+	@Test
+	@DisplayName("테마 이름으로 모임 등록 전용 검색 테스트")
+	void getThemesForPartySearchByThemeTest() throws Exception {
+		// given
+		String keyword = "테마 7";
+
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/search-for-party")
+			.param("keyword", keyword)
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(1))
+			.andExpect(jsonPath("$.data[0].name").value(themes.get(6).getName()))
+			.andExpect(jsonPath("$.data[0].tags[0]").value(tag1.getName()))
+			.andExpect(jsonPath("$.data[0].tags[1]").value(tag2.getName()))
+		;
+	}
+
+	@Test
+	@DisplayName("매장 이름으로 모임 등록 전용 검색 테스트")
+	void getThemesForPartySearchNoResultTest() throws Exception {
+		// given
+		String keyword = "탈출 A";
+
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/search-for-party")
+			.param("keyword", keyword)
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(4))
+			.andExpect(jsonPath("$.data[1].name").value(themes.get(3).getName()))
+			.andExpect(jsonPath("$.data[1].tags[0]").value(tag3.getName()))
+		;
+	}
+
+	@Test
+	@DisplayName("존재하지 않는 키워드로 모임 등록 전용 검색 테스트")
+	void getThemesForPartySearchByStoreTest() throws Exception {
+		// given
+		String keyword = "NO_CONTENT";
+
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/search-for-party")
+			.param("keyword", keyword)
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(0))
+		;
+	}
+
+	@Test
+	@DisplayName("테마 이름으로 일지 작성 전용 검색 테스트")
+	void getThemesForDiarySearchByThemeTest() throws Exception {
+		// given
+		String keyword = "테마 8";
+
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/search-for-diary")
+			.param("keyword", keyword)
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(1))
+			.andExpect(jsonPath("$.data[0].themeId").value(themes.get(7).getId()))
+			.andExpect(jsonPath("$.data[0].themeName").value(themes.get(7).getName()))
+			.andExpect(jsonPath("$.data[0].storeName").value(store1.getName()))
+		;
+	}
+
+	@Test
+	@DisplayName("매장 이름으로 일지 작성 전용 검색 테스트")
+	void getThemesForDiarySearchByStoreTest() throws Exception {
+		// given
+		String keyword = "탈출 B";
+
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/search-for-diary")
+			.param("keyword", keyword)
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(5))
+			.andExpect(jsonPath("$.data[1].themeId").value(themes.get(2).getId()))
+			.andExpect(jsonPath("$.data[1].themeName").value(themes.get(2).getName()))
+			.andExpect(jsonPath("$.data[1].storeName").value(store2.getName()))
+		;
+	}
+
+	@Test
+	@DisplayName("존재하지 않는 키워드로 일지 작성 전용 검색 테스트")
+	void getThemesForDiarySearchNoResultTest() throws Exception {
+		// given
+		String keyword = "NO_CONTENT";
+
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/search-for-diary")
+			.param("keyword", keyword)
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(0))
 		;
 	}
 }
