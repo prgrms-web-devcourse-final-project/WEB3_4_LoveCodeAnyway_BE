@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/parties")
+@RequestMapping("/api/v1/parties")
 @Tag(name = "Party Controller")
 public class PartyController {
 	private final PartyService partyService;
