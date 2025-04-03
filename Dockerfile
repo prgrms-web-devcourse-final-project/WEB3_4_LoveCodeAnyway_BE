@@ -25,10 +25,10 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-# JAR 파일 복사
+# 빌더 스테이지에서 생성된 JAR 파일 복사
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# 환경 설정
+# 애플리케이션 실행을 위한 환경 변수 설정
 ENV SPRING_PROFILES_ACTIVE=dev
 ENV TZ=Asia/Seoul
 
