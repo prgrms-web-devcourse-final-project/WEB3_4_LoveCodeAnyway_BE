@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.ddobang.backend.domain.alarm.exception.SseException;
 import com.ddobang.backend.global.response.ErrorResponse;
 import com.ddobang.backend.global.response.ResponseFactory;
 
@@ -73,5 +74,20 @@ public class GlobalExceptionHandler {
 		log.warn("[ValidationException] errorFields={}", errors);
 
 		return ResponseFactory.error(GlobalErrorCode.NOT_VALID, errors);
+	}
+
+	@ExceptionHandler(SseException.class)
+	public ResponseEntity<ErrorResponse> handleSseException(SseException e) {
+		ErrorCode errorCode = e.getErrorCode();
+		log.warn("[SseException] status={}, code={}, message={}",
+			errorCode.getStatus().value(),
+			errorCode.getErrorCode(),
+			errorCode.getMessage());
+
+		if (e.getCauseIoException() != null) {
+			log.debug("Caused by IOException: {}", e.getCauseIoException().getMessage());
+		}
+
+		return ResponseFactory.error(errorCode);
 	}
 }
