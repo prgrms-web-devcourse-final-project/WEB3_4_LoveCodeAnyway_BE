@@ -1,0 +1,11 @@
+.git
+.gradle
+.idea
+build
+!build/libs/*.jar
+*.iml
+*.iws
+*.ipr
+out
+db_dev*
+db_test*
