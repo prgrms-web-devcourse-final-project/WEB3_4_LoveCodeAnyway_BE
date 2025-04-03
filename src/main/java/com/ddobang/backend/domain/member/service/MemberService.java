@@ -48,6 +48,7 @@ public class MemberService {
 			// .id(1L)
 			//.username(username)
 			.nickname("테스트사용자")
+			//.email("test@example.com")
 			.build();
 	}
 
@@ -60,6 +61,7 @@ public class MemberService {
 			// .id(id)
 			//.username("user" + id)
 			.nickname("사용자" + id)
+			//.email("user" + id + "@example.com")
 			.build();
 	}
 }
