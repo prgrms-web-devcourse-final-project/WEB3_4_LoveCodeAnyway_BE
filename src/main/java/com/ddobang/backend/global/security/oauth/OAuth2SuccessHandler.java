@@ -70,9 +70,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 		boolean isAdmin = member.getPassword() != null;
 
-		try {
-			String accessToken = jwtTokenProvider.generateAccessToken(member.getKakaoId(), isAdmin, nickname);
-			String refreshToken = jwtTokenProvider.generateRefreshToken(member.getKakaoId(), isAdmin, nickname);
+			try {
+				String accessToken = jwtTokenProvider.generateAccessToken(member.getNickname(), isAdmin);
+				String refreshToken = jwtTokenProvider.generateRefreshToken(member.getNickname(), isAdmin);
 
 			response.addCookie(CookieUtil.createAccessTokenCookie(accessToken));
 			response.addCookie(CookieUtil.createRefreshTokenCookie(refreshToken));
