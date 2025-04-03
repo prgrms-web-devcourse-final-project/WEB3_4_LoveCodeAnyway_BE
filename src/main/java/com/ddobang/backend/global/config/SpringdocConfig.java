@@ -30,7 +30,7 @@ public class SpringdocConfig {
 	public GroupedOpenApi alarmApi() {
 		return GroupedOpenApi.builder()
 			.group("alarmApi")
-			.pathsToMatch("/alarms/**")
+			.pathsToMatch("/api/v1/alarms/**")
 			.build();
 	}
 
@@ -38,7 +38,7 @@ public class SpringdocConfig {
 	public GroupedOpenApi boardApi() {
 		return GroupedOpenApi.builder()
 			.group("boardApi")
-			.pathsToMatch("/boards/**")
+			.pathsToMatch("/api/v1/boards/**")
 			.build();
 	}
 
@@ -46,7 +46,7 @@ public class SpringdocConfig {
 	public GroupedOpenApi diaryApi() {
 		return GroupedOpenApi.builder()
 			.group("diaryApi")
-			.pathsToMatch("/diaries/**")
+			.pathsToMatch("/api/v1/diaries/**")
 			.build();
 	}
 
@@ -54,7 +54,7 @@ public class SpringdocConfig {
 	public GroupedOpenApi memberApi() {
 		return GroupedOpenApi.builder()
 			.group("memberApi")
-			.pathsToMatch("/members/**")
+			.pathsToMatch("/api/v1/members/**")
 			.build();
 	}
 
@@ -62,7 +62,7 @@ public class SpringdocConfig {
 	public GroupedOpenApi messageApi() {
 		return GroupedOpenApi.builder()
 			.group("messageApi")
-			.pathsToMatch("/messages/**")
+			.pathsToMatch("/api/v1/messages/**")
 			.build();
 	}
 
@@ -70,7 +70,7 @@ public class SpringdocConfig {
 	public GroupedOpenApi partyApi() {
 		return GroupedOpenApi.builder()
 			.group("partyApi")
-			.pathsToMatch("/parties/**")
+			.pathsToMatch("/api/v1/parties/**")
 			.build();
 	}
 
@@ -78,7 +78,7 @@ public class SpringdocConfig {
 	public GroupedOpenApi regionApi() {
 		return GroupedOpenApi.builder()
 			.group("regionApi")
-			.pathsToMatch("/regions/**")
+			.pathsToMatch("/api/v1/regions/**")
 			.build();
 	}
 
@@ -86,7 +86,7 @@ public class SpringdocConfig {
 	public GroupedOpenApi storeApi() {
 		return GroupedOpenApi.builder()
 			.group("storeApi")
-			.pathsToMatch("/stores/**")
+			.pathsToMatch("/api/v1/stores/**")
 			.build();
 	}
 
@@ -94,7 +94,7 @@ public class SpringdocConfig {
 	public GroupedOpenApi themeApi() {
 		return GroupedOpenApi.builder()
 			.group("themeApi")
-			.pathsToMatch("/themes/**")
+			.pathsToMatch("/api/v1/themes/**")
 			.build();
 	}
 
@@ -102,7 +102,7 @@ public class SpringdocConfig {
 	public GroupedOpenApi adminApi() {
 		return GroupedOpenApi.builder()
 			.group("adminApi")
-			.pathsToMatch("/admin/**")
+			.pathsToMatch("/api/v1/admin/**")
 			.build();
 	}
 }
