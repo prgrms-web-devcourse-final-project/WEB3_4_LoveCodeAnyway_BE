@@ -39,13 +39,29 @@ public class SecurityConfig {
 			// 인가 정책
 			.authorizeHttpRequests(auth -> {
 				auth
+					// OAuth2 로그인 관련
 					.requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/**").permitAll()
+
+					// Swagger, 오류 페이지
 					.requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**",
 						"/webjars/**").permitAll()
-					.requestMatchers("/admin/login").permitAll()
+
+					// 관리자 관련 API
+					.requestMatchers("/admin/login").permitAll() // 로그인만 공개
 					.requestMatchers("/admin/**").hasRole("ADMIN")
+
+					// 닉네임 중복 체크
 					.requestMatchers(mvc.pattern("/members/check-nickname")).permitAll()
-					.requestMatchers(mvc.pattern("/themes/**")).permitAll()
+
+					// 공개 API
+					.requestMatchers(mvc.pattern("/regions")).permitAll()
+					.requestMatchers(mvc.pattern("/themes")).permitAll()
+					.requestMatchers(mvc.pattern("/themes/*")).permitAll()
+					.requestMatchers(mvc.pattern("/parties")).permitAll()
+					.requestMatchers(mvc.pattern("/parties/*")).permitAll()
+					.requestMatchers(mvc.pattern("/stores/*")).permitAll()
+
+					// 인증 필요 API
 					.anyRequest().hasAnyRole("MEMBER", "ADMIN");
 			})
 
