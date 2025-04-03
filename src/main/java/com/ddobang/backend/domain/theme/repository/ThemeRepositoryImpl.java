@@ -27,12 +27,14 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 
 	private final JPAQueryFactory queryFactory;
 
+	private static final QTheme theme = QTheme.theme;
+	private static final QStore store = QStore.store;
+	private static final QThemeTagMapping mapping = QThemeTagMapping.themeTagMapping;
+	private static final QThemeTag tag = QThemeTag.themeTag;
+
 	@Override
 	public List<Theme> findThemesByFilter(ThemeFilterRequest request, int page, int size) {
-		QTheme theme = QTheme.theme;
-		QStore store = QStore.store;
-		QThemeTagMapping mapping = QThemeTagMapping.themeTagMapping;
-		QThemeTag tag = QThemeTag.themeTag;
+		BooleanBuilder condition = buildFilterConditions(request);
 
 		return queryFactory
 			.selectFrom(theme)
@@ -40,9 +42,7 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 			.leftJoin(theme.themeTagMappings, mapping).fetchJoin()
 			.leftJoin(mapping.themeTag, tag).fetchJoin()
 			.distinct()
-			.where(
-				buildFilterConditions(request, theme, store, tag)
-			)
+			.where(condition)
 			.orderBy(theme.createdAt.desc())
 			.offset((long)page * size)
 			.limit(size + 1) // size보다 1개 더 가져와서 hasNext 판단
@@ -51,12 +51,7 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 
 	@Override
 	public List<Theme> findThemesForPartySearch(String keyword) {
-		QTheme theme = QTheme.theme;
-		QStore store = QStore.store;
-		QThemeTagMapping mapping = QThemeTagMapping.themeTagMapping;
-		QThemeTag tag = QThemeTag.themeTag;
-
-		BooleanBuilder condition = buildSearchForPartyConditions(keyword, theme, store);
+		BooleanBuilder condition = buildSearchForPartyConditions(keyword);
 
 		return queryFactory
 			.selectFrom(theme)
@@ -68,8 +63,7 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 			.fetch();
 	}
 
-	private BooleanBuilder buildFilterConditions(ThemeFilterRequest request, QTheme theme, QStore store,
-		QThemeTag tag) {
+	private BooleanBuilder buildFilterConditions(ThemeFilterRequest request) {
 		BooleanBuilder builder = new BooleanBuilder();
 
 		builder.and(theme.status.eq(Theme.Status.OPENED));
@@ -114,7 +108,7 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 		return builder;
 	}
 
-	private BooleanBuilder buildSearchForPartyConditions(String keyword, QTheme theme, QStore store) {
+	private BooleanBuilder buildSearchForPartyConditions(String keyword) {
 		BooleanBuilder builder = new BooleanBuilder();
 		builder.and(theme.status.eq(Theme.Status.OPENED));
 
