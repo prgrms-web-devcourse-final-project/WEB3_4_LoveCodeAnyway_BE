@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: ddobang-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ddobang
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_USER: ddobang_user
+      MYSQL_PASSWORD: ddobang_pass
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - ddobang-network
+
+volumes:
+  mysql-data:
+
+networks:
+  ddobang-network:
+
+# 터미널에서
+# docker compose up -d
+# 으로 실행
