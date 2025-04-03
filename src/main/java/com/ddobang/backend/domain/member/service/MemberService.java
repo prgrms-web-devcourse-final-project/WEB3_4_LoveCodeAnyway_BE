@@ -1,6 +1,7 @@
 package com.ddobang.backend.domain.member.service;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -63,5 +64,9 @@ public class MemberService {
 			.nickname("사용자" + id)
 			//.email("user" + id + "@example.com")
 			.build();
+	}
+
+	public Optional<Member> findByKakaoId(String kakaoId) {
+		return memberRepository.findByKakaoId(kakaoId);
 	}
 }
