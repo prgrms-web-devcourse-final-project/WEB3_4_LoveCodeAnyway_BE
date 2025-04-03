@@ -13,8 +13,8 @@ spring:
     import: optional:application-secret.yml
 
   mvc:
-    servlet:
-      path: /api/v1
+    async:
+      request-timeout: 600000  # SSE 연결 타임아웃 설정 (밀리초)
 
   # h2
   h2:
@@ -82,3 +82,8 @@ springdoc:
     display-request-duration: true
   default-produces-media-type: application/json
   paths-to-match: /**
+
+# Custom settings
+custom:
+  sse:
+    timeout: 600000  # SSE 타임아웃 설정 (밀리초, 10분)
