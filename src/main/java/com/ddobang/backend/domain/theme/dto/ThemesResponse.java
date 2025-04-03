@@ -1,7 +1,6 @@
 package com.ddobang.backend.domain.theme.dto;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.ddobang.backend.domain.theme.entity.Theme;
 
@@ -34,7 +33,7 @@ public record ThemesResponse(
 			.thumbnailUrl(theme.getThumbnailUrl())
 			.tags(theme.getThemeTagMappings().stream()
 				.map(ttm -> ttm.getThemeTag().getName())
-				.collect(Collectors.toList()))
+				.toList())
 			.build();
 	}
 }

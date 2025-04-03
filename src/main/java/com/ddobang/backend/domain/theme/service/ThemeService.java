@@ -1,12 +1,15 @@
 package com.ddobang.backend.domain.theme.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.theme.dto.ThemeDetailResponse;
 import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.ThemeForDiaryResponse;
+import com.ddobang.backend.domain.theme.dto.ThemeForPartyResponse;
 import com.ddobang.backend.domain.theme.dto.ThemeStatDto;
 import com.ddobang.backend.domain.theme.dto.ThemesResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
@@ -26,8 +29,8 @@ public class ThemeService {
 	private final ThemeStatRepository themeStatRepository;
 
 	@Transactional(readOnly = true)
-	public SliceDto<ThemesResponse> getThemesWithFilter(ThemeFilterRequest filterRequest, int page) {
-		int size = 8;
+	public SliceDto<ThemesResponse> getThemesWithFilter(ThemeFilterRequest filterRequest, int page, int size) {
+
 		List<Theme> themes = themeRepository.findThemesByFilter(filterRequest, page, size);
 
 		return SliceDto.of(themes.stream()
@@ -36,7 +39,8 @@ public class ThemeService {
 	}
 
 	@Transactional(readOnly = true)
-	public ThemeDetailResponse getTheme(Long id) {
+	public ThemeDetailResponse getThemeWithStat(Long id) {
+
 		Theme theme = themeRepository.findById(id).orElseThrow(
 			() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
 		);
@@ -47,6 +51,21 @@ public class ThemeService {
 			.orElse(null);
 
 		return ThemeDetailResponse.of(theme, themeStatDto);
+	}
+
+	@Transactional(readOnly = true)
+	public List<ThemeForPartyResponse> getThemesForPartySearch(String keyword) {
+
+		List<Theme> themes = themeRepository.findThemesForPartySearch(keyword);
+
+		return themes.stream().map(ThemeForPartyResponse::of)
+			.collect(Collectors.toList());
+	}
+
+	@Transactional(readOnly = true)
+	public List<ThemeForDiaryResponse> getThemesForDiarySearch(String keyword) {
+
+		return themeRepository.findThemesForDiarySearch(keyword);
 	}
 
 	public Theme getThemeById(Long id) {

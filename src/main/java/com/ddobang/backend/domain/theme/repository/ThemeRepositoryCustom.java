@@ -12,4 +12,6 @@ import com.ddobang.backend.domain.theme.entity.Theme;
  */
 public interface ThemeRepositoryCustom {
 	List<Theme> findThemesByFilter(ThemeFilterRequest request, int page, int size);
+
+	List<Theme> findThemesForPartySearch(String keyword);
 }
