@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author 100minha
  */
 @SpringBootTest
-@ActiveProfiles(value = {"test", "dev"})
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
 public class ThemeControllerTest {
