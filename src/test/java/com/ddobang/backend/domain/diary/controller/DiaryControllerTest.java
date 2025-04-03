@@ -990,4 +990,99 @@ public class DiaryControllerTest {
 				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
 		}
 	}
+
+	@Test
+	@DisplayName("탈출일지 월별 다건 조회")
+	void t6() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(get("/diaries?year=2024&month=5"))
+			.andDo(print());
+
+		List<DiaryListDto> diaries = diaryService
+			.getDiariesByMonth(2024, 5);
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getDiariesByMonth"))
+			.andExpect(status().isOk());
+
+		for (int i = 0; i < diaries.size(); i++) {
+			DiaryListDto diary = diaries.get(i);
+
+			resultActions
+				.andExpect(jsonPath("$.data[%d].id".formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data[%d].themeId".formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data[%d].themeName".formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data[%d].tags".formatted(i))
+					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
+				.andExpect(jsonPath("$.data[%d].storeName".formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data[%d].hintCount".formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+		}
+	}
+
+	@Test
+	@DisplayName("탈출일지 월별 다건 조회, with 날짜 없을 때")
+	void t6_1() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(get("/diaries"))
+			.andDo(print());
+
+		// 오늘 날짜로 조회
+		List<DiaryListDto> diaries = diaryService
+			.getDiariesByMonth(LocalDate.now().getYear(), LocalDate.now().getMonthValue());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getDiariesByMonth"))
+			.andExpect(status().isOk());
+
+		for (int i = 0; i < diaries.size(); i++) {
+			DiaryListDto diary = diaries.get(i);
+
+			resultActions
+				.andExpect(jsonPath("$.data[%d].id".formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data[%d].themeId".formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data[%d].themeName".formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data[%d].tags".formatted(i))
+					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
+				.andExpect(jsonPath("$.data[%d].storeName".formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data[%d].hintCount".formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+		}
+	}
+
+	@Test
+	@DisplayName("탈출일지 월별 다건 조회, with 잘못 된 년도로 조회")
+	void t6_2() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(get("/diaries?year=-1&month=5"))
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getDiariesByMonth"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("유효하지 않은 날짜입니다."));
+	}
+
+	@Test
+	@DisplayName("탈출일지 월별 다건 조회, with 잘못 된 달로 조회")
+	void t6_3() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(get("/diaries?year=2025&month=13"))
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("getDiariesByMonth"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("유효하지 않은 날짜입니다."));
+	}
 }

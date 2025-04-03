@@ -1,5 +1,8 @@
 package com.ddobang.backend.domain.diary.service;
 
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Page;
@@ -145,5 +148,32 @@ public class DiaryService {
 
 		return diaryRepository.findDiariesByFilter(actor, request, pageable)
 			.map(DiaryListDto::of);
+	}
+
+	@Transactional(readOnly = true)
+	public List<DiaryListDto> getDiariesByMonth(int year, int month) {
+		if (year == 0) {
+			year = LocalDate.now().getYear();
+		}
+
+		if (year < 0) {
+			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_DATE);
+		}
+
+		if (month == 0) {
+			month = LocalDate.now().getMonthValue();
+		}
+
+		if (month < 1 || month > 12) {
+			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_DATE);
+		}
+
+		LocalDate startDate = LocalDate.of(year, month, 1);
+		LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+
+		return diaryRepository.findByEscapeDateBetween(startDate, endDate)
+			.stream()
+			.map(DiaryListDto::of)
+			.toList();
 	}
 }
