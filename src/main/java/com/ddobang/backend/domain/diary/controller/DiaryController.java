@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/diaries")
+@RequestMapping("/api/v1/diaries")
 @Tag(name = "DiaryController", description = "탈출일지 관리 API")
 public class DiaryController {
 	private final DiaryService diaryService;
