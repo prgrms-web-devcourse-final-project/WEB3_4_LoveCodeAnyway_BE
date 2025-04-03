@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: ddobang
+
+  profiles:
+    # 기본 활성 프로파일은 dev로 설정
+    active: dev
+
+  config:
+    # 민감 정보는 application-secret.yml에서 관리 (깃 업로드 X)
+    import: optional:application-secret.yml
+
+  # 서블릿 경로는 /api/v1로 설정
+  web:
+    servlet:
+      path: /api/v1
+
+  datasource:
+    # 아래 항목들은 환경별 yml(dev/prod/test)에서 오버라이드
+    driver-class-name: com.mysql.cj.jdbc.Driver  # MySQL 공통 드라이버
+    url: # 각 환경별 설정
+    username: ${mysql.username}  # secret.yml
+    password: ${mysql.password}  # secret.yml
+
+  jpa:
+    hibernate:
+      ddl-auto: # 각 환경별 설정(예: update, validate, create-drop)
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${oauth.kakao.client-id}          # secret.yml
+            client-secret: ${oauth.kakao.client-secret}  # secret.yml
+            redirect-uri: ${oauth.kakao.redirect-uri}    # secret.yml
+            authorization-grant-type: authorization_code
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            jwk-set-uri: https://kauth.kakao.com/.well-known/jwks.json
+
+# JWT 설정
+jwt:
+  secret: # secret.yml
+  # 환경 별로 access-token-expiration, refresh-token-expiration 값을 오버라이드
+  access-token-expiration: # 각 환경별 설정
+  refresh-token-expiration: # 각 환경별 설정
+
+# 로깅 설정
+logging:
+  # 로그 레벨은 dev.yml에서 디버깅용으로 조정, 기본은 INFO
+  level:
+    root: INFO
+
+# Swagger 설정
+springdoc:
+  swagger-ui:
+    enabled: # Swagger는 dev에서만 활성화
+    path: /swagger-ui
+    display-request-duration: true
+  default-produces-media-type: application/json
+  paths-to-match: /**

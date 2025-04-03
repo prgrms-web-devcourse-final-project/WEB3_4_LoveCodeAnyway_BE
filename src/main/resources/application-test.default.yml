@@ -1,0 +1,39 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # 테스트 실행 시 생성하고, 끝나면 삭제
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        highlight_sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+jwt:
+  access-token-expiration: 99999999       # 테스트 도중 끊기지 않게 넉넉하게
+  refresh-token-expiration: 99999999
+
+logging:
+  level:
+    root: WARN
+    com.ddobang.backend: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+
+oauth:
+  kakao:
+    base-uri: http://localhost:8080

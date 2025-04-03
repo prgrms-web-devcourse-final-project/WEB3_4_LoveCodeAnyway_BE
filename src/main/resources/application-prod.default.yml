@@ -1,0 +1,32 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:mysql://<운영DB주소>:3306/ddobang?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${mysql.username}  # secret.yml
+    password: ${mysql.password}  # secret.yml
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 운영에서는 validate 또는 none
+
+jwt:
+  access-token-expiration: 900000         # 15분
+  refresh-token-expiration: 1209600000    # 14일
+
+logging:
+  level:
+    root: INFO  # 운영 로그는 INFO 이상만 출력
+    com.ddobang.backend: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+
+springdoc:
+  swagger-ui:
+    enabled: false  # 운영에서는 Swagger 비활성화
+
+oauth:
+  kakao:
+    base-uri: # 도메인 확정시 입력
