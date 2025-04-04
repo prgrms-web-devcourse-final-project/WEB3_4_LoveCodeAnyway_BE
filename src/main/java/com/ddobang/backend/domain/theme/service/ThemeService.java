@@ -6,13 +6,17 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ddobang.backend.domain.store.entity.Store;
+import com.ddobang.backend.domain.store.service.StoreService;
 import com.ddobang.backend.domain.theme.dto.ThemeDetailResponse;
 import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.dto.ThemeForDiaryResponse;
+import com.ddobang.backend.domain.theme.dto.ThemeForMemberRequest;
 import com.ddobang.backend.domain.theme.dto.ThemeForPartyResponse;
 import com.ddobang.backend.domain.theme.dto.ThemeStatDto;
 import com.ddobang.backend.domain.theme.dto.ThemesResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
+import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
 import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
@@ -27,6 +31,9 @@ public class ThemeService {
 
 	private final ThemeRepository themeRepository;
 	private final ThemeStatRepository themeStatRepository;
+
+	private final StoreService storeService;
+	private final ThemeTagService themeTagService;
 
 	@Transactional(readOnly = true)
 	public SliceDto<ThemesResponse> getThemesWithFilter(ThemeFilterRequest filterRequest, int page, int size) {
@@ -71,5 +78,27 @@ public class ThemeService {
 	public Theme getThemeById(Long id) {
 		return themeRepository.findById(id).orElseThrow(
 			() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND));
+	}
+
+	/**
+	 * 사용자 일지 등록 전용 테마 저장 메서드
+	 * @param request ThemeForMemberRequest
+	 */
+	public ThemeForDiaryResponse saveThemeForMember(ThemeForMemberRequest request) {
+		List<ThemeTag> themeTags = request.tags().stream()
+			.map(themeTagService::getByName)
+			.toList();
+		Store store = storeService.saveForMember(Store.builder()
+			.name(request.storeName()).build());
+
+		Theme savedTheme = themeRepository.save(Theme.builder()
+			.name(request.themeName())
+			.store(store)
+			.thumbnailUrl(request.thumbnailUrl())
+			.status(Theme.Status.INACTIVE)
+			.themeTags(themeTags)
+			.build());
+
+		return ThemeForDiaryResponse.of(savedTheme);
 	}
 }
