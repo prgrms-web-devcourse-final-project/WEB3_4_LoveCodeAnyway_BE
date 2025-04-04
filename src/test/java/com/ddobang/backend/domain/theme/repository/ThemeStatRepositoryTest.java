@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ddobang.backend.domain.store.entity.Store;
+import com.ddobang.backend.domain.store.repository.StoreRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.global.config.QuerydslConfig;
@@ -32,6 +34,8 @@ import jakarta.persistence.PersistenceContext;
 public class ThemeStatRepositoryTest {
 
 	@Autowired
+	private StoreRepository storeRepository;
+	@Autowired
 	private ThemeRepository themeRepository;
 	@Autowired
 	private ThemeStatRepository themeStatRepository;
@@ -39,6 +43,7 @@ public class ThemeStatRepositoryTest {
 	@PersistenceContext
 	private EntityManager em;
 
+	private Store store;
 	private Theme theme;
 	private ThemeStat themeStat;
 
@@ -47,6 +52,10 @@ public class ThemeStatRepositoryTest {
 		em.createNativeQuery("ALTER TABLE theme ALTER COLUMN id RESTART WITH 1").executeUpdate();
 		em.createNativeQuery("ALTER TABLE theme_stat ALTER COLUMN theme_id RESTART WITH 1").executeUpdate();
 
+		store = storeRepository.save(Store.builder()
+			.name("매장1")
+			.status(Store.Status.OPENED)
+			.build());
 		theme = themeRepository.save(Theme.builder()
 			.name("테마 ")
 			.description("테마 설명 ")
@@ -59,6 +68,7 @@ public class ThemeStatRepositoryTest {
 			.reservationUrl("https://example.com/theme/")
 			.thumbnailUrl("https://placehold.co/600x400?text=Theme")
 			.themeTags(Collections.emptyList())
+			.store(store)
 			.build());
 
 		themeStat = themeStatRepository.save(ThemeStat.builder()
