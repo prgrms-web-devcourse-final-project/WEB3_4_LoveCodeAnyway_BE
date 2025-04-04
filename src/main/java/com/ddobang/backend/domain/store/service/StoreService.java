@@ -50,4 +50,9 @@ public class StoreService {
 	public void delete(Long id) {
 		findById(id).delete();
 	}
+
+	@Transactional
+	public Store saveForMember(Store store) {
+		return storeRepository.save(store);
+	}
 }
