@@ -37,7 +37,7 @@ public class DiaryConverter {
 			.build();
 	}
 
-	public static void updateDiary(
+	public static void modifyDiary(
 		Theme theme,
 		Diary diary,
 		DiaryRequestDto dto,

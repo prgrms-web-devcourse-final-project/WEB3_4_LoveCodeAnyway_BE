@@ -57,7 +57,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
 		// 지역 필터링
 		if (request.regionId() != null && !request.regionId().isEmpty()) {
-			builder.and(diary.theme.store.id.in(request.regionId()));
+			builder.and(diary.theme.store.region.id.in(request.regionId()));
 		}
 
 		// 태그 필터링 시 사용될 서브 쿼리

@@ -102,7 +102,7 @@ public class DiaryService {
 			diaryRequestDto.elapsedTime()
 		);
 
-		DiaryConverter.updateDiary(theme, diary, diaryRequestDto, elapsedTime);
+		DiaryConverter.modifyDiary(theme, diary, diaryRequestDto, elapsedTime);
 
 		return DiaryDto.of(diary);
 	}
@@ -156,15 +156,11 @@ public class DiaryService {
 			year = LocalDate.now().getYear();
 		}
 
-		if (year < 0) {
-			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_DATE);
-		}
-
 		if (month == 0) {
 			month = LocalDate.now().getMonthValue();
 		}
 
-		if (month < 1 || month > 12) {
+		if (year < 0 || month < 1 || month > 12) {
 			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_DATE);
 		}
 
