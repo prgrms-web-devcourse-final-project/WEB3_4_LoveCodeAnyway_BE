@@ -43,7 +43,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 등록")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
@@ -93,7 +93,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 등록, theme id, timeType이 없을 때")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t1_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
@@ -119,7 +119,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 등록, 테마 평가 항목이 정해진 범위의 값이 아닐 때")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t1_2() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
@@ -171,7 +171,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 등록, timeType이 정해진 값이 아닐 때")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t1_3() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
@@ -197,7 +197,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 등록, 탈출 시간이 00:00의 형식이 아닐 때")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t1_4() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
@@ -223,7 +223,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 단건 조회")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t2() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries/1"))
@@ -262,7 +262,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 단건 조회, 존재하지 않는 번호의 탈출일지 조회")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t2_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries/99999999"))
@@ -277,7 +277,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t3() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/1")
@@ -343,7 +343,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정, 존재하지 않는 번호의 탈출일지 수정")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t3_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/99999999")
@@ -384,7 +384,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정, theme id가 없을 때")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t3_2() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/1")
@@ -416,7 +416,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정, 테마 평가 항목이 정해진 범위의 값이 아닐 때")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t3_3() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/1")
@@ -467,7 +467,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정, timeType이 정해진 값이 아닐 때")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t3_4() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/1")
@@ -493,7 +493,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정, 탈출 시간이 00:00의 형식이 아닐 때")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t3_5() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/1")
@@ -519,7 +519,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 삭제")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t4() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(delete("/api/v1/diaries/1"))
@@ -538,7 +538,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 삭제, 존재하지 않는 번호의 탈출일지 삭제")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t4_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(delete("/api/v1/diaries/99999999"))
@@ -553,7 +553,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 필터 없이")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t5() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -600,7 +600,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 테마명 검색")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t5_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -653,7 +653,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 지역 검색")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t5_2() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -706,7 +706,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 장르 검색")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t5_3() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -759,7 +759,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 기간 검색")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t5_4() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -814,7 +814,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 유효하지 않은 기간 검색")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t5_4_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -839,7 +839,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 성공한 테마만 검색")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t5_5() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -892,7 +892,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 노힌트 테마만 검색")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t5_6() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -953,7 +953,7 @@ public class DiaryControllerTest {
 			방탈출 A
 		)
 		""")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t5_7() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -1018,7 +1018,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 월별 다건 조회")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t6() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries?year=2024&month=5"))
@@ -1052,7 +1052,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 월별 다건 조회, with 날짜 없을 때")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t6_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries"))
@@ -1087,7 +1087,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 월별 다건 조회, with 잘못 된 년도로 조회")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t6_2() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries?year=-1&month=5"))
@@ -1102,7 +1102,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 월별 다건 조회, with 잘못 된 달로 조회")
-	@WithMockUser(roles = "MEMBER")
+	@WithMockUser(roles = "USER")
 	void t6_3() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries?year=2025&month=13"))
