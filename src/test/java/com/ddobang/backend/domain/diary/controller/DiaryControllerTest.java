@@ -1114,4 +1114,91 @@ public class DiaryControllerTest {
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.message").value("유효하지 않은 날짜입니다."));
 	}
+
+	@Test
+	@DisplayName("탈출일지에서 테마 등록")
+	@WithMockUser(roles = "USER")
+	void t7_1() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/api/v1/diaries/theme")
+				.content("""
+					{
+						"themeName": "테마 1",
+						"storeName": "방탈출 A",
+						"thumbnailUrl": "https://example.com/thumbnail.jpg",
+						"tags": ["공포", "판타지"]
+					}
+					""")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("saveThemeForDiary"))
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath("$.message").value("테마 등록에 성공했습니다."))
+			.andExpect(jsonPath("$.data.themeId").value(11))
+			.andExpect(jsonPath("$.data.themeName").value("테마 1"));
+	}
+
+	@Test
+	@DisplayName("탈출일지에서 테마 등록, With 테마이름 없을 때")
+	@WithMockUser(roles = "USER")
+	void t7_2() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/api/v1/diaries/theme")
+				.content("""
+					{
+						"themeName": "",
+						"storeName": "방탈출 A",
+						"thumbnailUrl": "https://example.com/thumbnail.jpg",
+						"tags": ["공포", "판타지"]
+					}
+					""")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("saveThemeForDiary"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("입력값이 올바르지 않습니다."))
+			.andExpect(jsonPath("$.errors[0].field").value("themeName"))
+			.andExpect(jsonPath("$.errors[0].message").value("테마 이름은 공백일 수 없습니다."));
+	}
+
+	@Test
+	@DisplayName("탈출일지에서 테마 등록, With 매장이름 없을 때")
+	@WithMockUser(roles = "USER")
+	void t7_3() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/api/v1/diaries/theme")
+				.content("""
+					{
+						"themeName": "테마 1",
+						"storeName": "",
+						"thumbnailUrl": "https://example.com/thumbnail.jpg",
+						"tags": ["공포", "판타지"]
+					}
+					""")
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("saveThemeForDiary"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("입력값이 올바르지 않습니다."))
+			.andExpect(jsonPath("$.errors[0].field").value("storeName"))
+			.andExpect(jsonPath("$.errors[0].message").value("매장 이름은 공백일 수 없습니다."));
+	}
 }
