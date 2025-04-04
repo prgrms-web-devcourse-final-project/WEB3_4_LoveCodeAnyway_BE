@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.diary.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,11 +10,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ddobang.backend.domain.diary.dto.request.DiaryFilterRequest;
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
+import com.ddobang.backend.domain.diary.dto.response.DiaryListDto;
 import com.ddobang.backend.domain.diary.service.DiaryService;
+import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SuccessResponse;
 
@@ -23,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/diaries")
+@RequestMapping("/api/v1/diaries")
 @Tag(name = "DiaryController", description = "탈출일지 관리 API")
 public class DiaryController {
 	private final DiaryService diaryService;
@@ -38,6 +44,20 @@ public class DiaryController {
 		return ResponseFactory.created(
 			"탈출일지 등록에 성공했습니다.",
 			diaryDto
+		);
+	}
+
+	@Operation(summary = "탈출일지 다건조회", description = "필터를 기반으로 사용자의 전체 탈출일지 목록을 가져옵니다.")
+	@PostMapping("/list")
+	public ResponseEntity<SuccessResponse<PageDto<DiaryListDto>>> getAllItems(
+		@RequestBody @Valid DiaryFilterRequest request,
+		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "10") int pageSize
+	) {
+		return ResponseFactory.ok(
+			new PageDto<>(
+				diaryService.getAllItems(request, page, pageSize)
+			)
 		);
 	}
 
@@ -73,5 +93,16 @@ public class DiaryController {
 		diaryService.delete(id);
 
 		return ResponseFactory.ok("%d번 탈출일지 삭제에 성공했습니다.".formatted(id));
+	}
+
+	@Operation(summary = "탈출일지 월별 다건조회", description = "필터를 기반으로 사용자의 전체 탈출일지 목록을 가져옵니다.")
+	@GetMapping
+	public ResponseEntity<SuccessResponse<List<DiaryListDto>>> getDiariesByMonth(
+		@RequestParam(defaultValue = "0") int year,
+		@RequestParam(defaultValue = "0") int month
+	) {
+		return ResponseFactory.ok(
+			diaryService.getDiariesByMonth(year, month)
+		);
 	}
 }

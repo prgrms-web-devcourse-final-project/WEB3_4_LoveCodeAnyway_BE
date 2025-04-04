@@ -1,9 +1,13 @@
 package com.ddobang.backend.domain.diary.entity;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+import com.ddobang.backend.domain.theme.entity.Theme;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import lombok.Builder;
@@ -13,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-public class DiaryStats {
+public class DiaryStat {
 	@Id
 	private Long id;
 
@@ -21,9 +25,9 @@ public class DiaryStats {
 	@MapsId
 	private Diary diary;
 
-	// @ManyToOne(fetch = FetchType.LAZY)
-	// @JoinColumn(name = "theme_id", insertable = false, updatable = false)
-	// private Theme theme;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "theme_id", nullable = false)
+	private Theme theme;
 
 	// 평가 관련 필드
 	private int difficulty;
@@ -42,8 +46,9 @@ public class DiaryStats {
 	private int elapsedTime;
 
 	@Builder
-	public DiaryStats(
+	public DiaryStat(
 		Diary diary,
+		Theme theme,
 		int difficulty,
 		int fear,
 		int activity,
@@ -58,6 +63,7 @@ public class DiaryStats {
 		int elapsedTime
 	) {
 		this.diary = diary;
+		this.theme = theme;
 		this.difficulty = difficulty;
 		this.fear = fear;
 		this.activity = activity;
@@ -76,6 +82,7 @@ public class DiaryStats {
 		DiaryRequestDto diaryRequestDto,
 		int elapsedTime
 	) {
+		this.theme = this.diary.getTheme();
 		this.difficulty = diaryRequestDto.difficulty();
 		this.fear = diaryRequestDto.fear();
 		this.activity = diaryRequestDto.activity();
