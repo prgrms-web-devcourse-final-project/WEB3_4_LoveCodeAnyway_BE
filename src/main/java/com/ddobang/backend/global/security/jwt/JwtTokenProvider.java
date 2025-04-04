@@ -1,6 +1,7 @@
 package com.ddobang.backend.global.security.jwt;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
@@ -74,10 +75,17 @@ public class JwtTokenProvider {
 			.compact();
 	}
 
+	// 토큰에서 Claims 추출
 	public Claims getClaims(String token) {
 		return parseClaims(token).getBody();
 	}
 
+	// 토큰에서 닉네임 추출
+	public String getNickname(String token) {
+		return getClaims(token).get("nickname", String.class);
+	}
+
+	// 토큰 파싱
 	private Jws<Claims> parseClaims(String token) {
 		return Jwts.parserBuilder()
 			.setSigningKey(key)

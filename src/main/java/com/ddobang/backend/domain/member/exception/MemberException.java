@@ -1,9 +1,15 @@
 package com.ddobang.backend.domain.member.exception;
 
-import com.ddobang.backend.global.exception.ServiceException;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-public class MemberException extends ServiceException {
-    public MemberException(MemberErrorCode errorCode) {
-        super(errorCode);
-    }
+@Getter
+@RequiredArgsConstructor
+public class MemberException extends RuntimeException {
+	private final MemberErrorCode errorCode;
+
+	@Override
+	public String getMessage() {
+		return errorCode.getMessage();
+	}
 }

@@ -34,15 +34,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			String token = jwtTokenProvider.resolveAccessToken(request);
 
 			if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-				String subject = jwtTokenProvider.getSubject(token);
+				String nickname = jwtTokenProvider.getNickname(token);
 				boolean isAdmin = jwtTokenProvider.getIsAdmin(token);
 
 				UsernamePasswordAuthenticationToken authentication =
-					new UsernamePasswordAuthenticationToken(subject, null, jwtTokenProvider.getAuthorities(isAdmin));
+					new UsernamePasswordAuthenticationToken(nickname, null, jwtTokenProvider.getAuthorities(isAdmin));
 
 				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 				SecurityContextHolder.getContext().setAuthentication(authentication);
-				log.debug("인증 객체 등록 완료 - subject: {}", subject);
+				log.debug("인증 객체 등록 완료 - 닉네임: {}", nickname);
 			}
 
 		} catch (JwtException e) {

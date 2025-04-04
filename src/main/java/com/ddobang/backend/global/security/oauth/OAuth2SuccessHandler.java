@@ -58,22 +58,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			log.warn("카카오 응답에 '닉네임'이 없습니다.");
 		}
 
-		log.info("카카오 ID: {}", kakaoId);
-		log.info("카카오 닉네임: {}", nickname);
-
-		Member member;
-		try {
-			member = memberService.findByKakaoId(kakaoId)
-				.orElseGet(() -> {
-					log.info("신규 회원입니다: {}", kakaoId);
-					return memberService.createMemberFromOAuth2(oAuth2User); // nickname은 내부에서 처리
-				});
-		} catch (Exception e) {
-			log.error("회원 정보 처리 중 예외 발생", e);
-			throw new AuthException(OAuth2ErrorCode.OAUTH2_MEMBER_PROCESS_FAIL);
-		}
-
-		boolean isAdmin = member.getPassword() != null;
 		// 기존 회원 여부 확인
 		if (memberService.existsByKakaoId(kakaoId)) {
 			log.info("기존 회원입니다: {}", kakaoId);
