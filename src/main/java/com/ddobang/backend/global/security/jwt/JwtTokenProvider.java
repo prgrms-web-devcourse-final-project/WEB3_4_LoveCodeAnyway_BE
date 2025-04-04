@@ -114,9 +114,9 @@ public class JwtTokenProvider {
 	// 추출된 관리자 여부에 따라 권한 설정 주입
 	public List<GrantedAuthority> getAuthorities(boolean isAdmin) {
 		if (isAdmin) {
-			return List.of(new SimpleGrantedAuthority("ADMIN"));
+			return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
 		} else {
-			return List.of(new SimpleGrantedAuthority("USER"));
+			return List.of(new SimpleGrantedAuthority("ROLE_USER"));
 		}
 	}
 }
