@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.theme.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,4 +13,6 @@ import com.ddobang.backend.domain.theme.entity.ThemeTag;
  */
 @Repository
 public interface ThemeTagRepository extends JpaRepository<ThemeTag, Long> {
+
+	Optional<ThemeTag> findByName(String name);
 }
