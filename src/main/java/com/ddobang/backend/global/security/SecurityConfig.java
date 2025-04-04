@@ -47,15 +47,15 @@ public class SecurityConfig {
 					.requestMatchers("/admin/**").hasRole("ADMIN")
 
 					// 닉네임 중복 체크
-					.requestMatchers("api/v1/members/check-nickname").permitAll()
+					.requestMatchers("/api/v1/members/check-nickname").permitAll()
 
 					// 공개 API
-					.requestMatchers("api/v1/regions").permitAll()
-					.requestMatchers("api/v1/themes").permitAll()
-					.requestMatchers("api/v1/themes/*").permitAll()
-					.requestMatchers("api/v1/parties").permitAll()
-					.requestMatchers("api/v1/parties/*").permitAll()
-					.requestMatchers("api/v1/stores/*").permitAll()
+					.requestMatchers("/api/v1/regions").permitAll()
+					.requestMatchers("/api/v1/themes").permitAll()
+					.requestMatchers("/api/v1/themes/*").permitAll()
+					.requestMatchers("/api/v1/parties").permitAll()
+					.requestMatchers("/api/v1/parties/*").permitAll()
+					.requestMatchers("/api/v1/stores/*").permitAll()
 
 					// 인증 필요 API
 					.anyRequest().hasAnyRole("MEMBER", "ADMIN");
