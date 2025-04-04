@@ -2,6 +2,7 @@ package com.ddobang.backend.domain.diary.repository;
 
 import static com.ddobang.backend.domain.diary.entity.QDiary.*;
 import static com.ddobang.backend.domain.diary.entity.QDiaryStat.*;
+import static com.ddobang.backend.domain.region.entity.QRegion.*;
 import static com.ddobang.backend.domain.store.entity.QStore.*;
 import static com.ddobang.backend.domain.theme.entity.QTheme.*;
 import static com.ddobang.backend.domain.theme.entity.QThemeTag.*;
@@ -57,7 +58,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
 		// 지역 필터링
 		if (request.regionId() != null && !request.regionId().isEmpty()) {
-			builder.and(diary.theme.store.region.id.in(request.regionId()));
+			builder.and(store.region.id.in(request.regionId()));
 		}
 
 		// 태그 필터링 시 사용될 서브 쿼리
@@ -145,8 +146,10 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 		if (request.regionId() != null && !request.regionId().isEmpty()) {
 			if (fetchJoin) {
 				query.join(theme.store, store).fetchJoin();
+				query.join(store.region, region).fetchJoin();
 			} else {
 				query.join(theme.store, store);
+				query.join(store.region, region);
 			}
 		}
 
