@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -21,7 +22,7 @@ import com.ddobang.backend.domain.store.exception.StoreErrorCode;
 import com.ddobang.backend.domain.store.exception.StoreException;
 import com.ddobang.backend.domain.store.service.StoreService;
 import com.ddobang.backend.global.exception.GlobalErrorCode;
-import com.ddobang.backend.global.security.SecurityConfig;
+import com.ddobang.backend.global.security.TestSecurityConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -30,7 +31,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author 100minha
  */
 @WebMvcTest(AdminStoreController.class)
-@Import({SecurityConfig.class})
+@ActiveProfiles("test")
+@Import(TestSecurityConfig.class)
 public class AdminStoreControllerTest {
 
 	@MockitoBean
