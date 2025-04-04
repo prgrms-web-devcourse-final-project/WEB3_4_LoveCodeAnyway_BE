@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import com.ddobang.backend.global.exception.JwtErrorCode;
 import com.ddobang.backend.global.exception.ServiceException;
+import com.ddobang.backend.global.util.CookieUtil;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -64,9 +64,9 @@ public class JwtTokenProvider {
 			.compact(); // 생성
 	}
 
-	// 토큰 파싱 및 정보 추출
-	public String getSubject(String token) {
-		return parseClaims(token).getBody().getSubject();
+	// 닉네임 추출
+	public String getNickname(String token) {
+		return parseClaims(token).getBody().get("nickname", String.class);
 	}
 
 	public Claims getClaims(String token) {
@@ -96,13 +96,9 @@ public class JwtTokenProvider {
 		}
 	}
 
-	// 엑세스토큰 추출
+	// 엑세스 토큰 추출
 	public String resolveAccessToken(HttpServletRequest request) {
-		String bearerToken = request.getHeader("Authorization");
-		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-			return bearerToken.substring(7); // "Bearer " 이후 토큰만 추출
-		}
-		return null;
+		return CookieUtil.getAccessToken(request);
 	}
 
 	// 관리자 여부 추출
@@ -118,9 +114,9 @@ public class JwtTokenProvider {
 	// 추출된 관리자 여부에 따라 권한 설정 주입
 	public List<GrantedAuthority> getAuthorities(boolean isAdmin) {
 		if (isAdmin) {
-			return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
+			return List.of(new SimpleGrantedAuthority("ADMIN"));
 		} else {
-			return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+			return List.of(new SimpleGrantedAuthority("USER"));
 		}
 	}
 }
