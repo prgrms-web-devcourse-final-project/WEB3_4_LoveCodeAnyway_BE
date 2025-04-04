@@ -53,7 +53,7 @@ public class RegionControllerTest {
 			.thenReturn(List.of(response1, response2));
 
 		// when
-		ResultActions result = mockMvc.perform(get("/regions")
+		ResultActions result = mockMvc.perform(get("/api/v1/regions")
 			.param("majorRegion", majorRegion)
 			.contentType(MediaType.APPLICATION_JSON));
 
@@ -74,7 +74,7 @@ public class RegionControllerTest {
 			.when(regionService).findByMajorRegion(anyString());
 
 		// when
-		ResultActions result = mockMvc.perform(get("/regions")
+		ResultActions result = mockMvc.perform(get("/api/v1/regions")
 			.param("majorRegion", "")
 			.contentType(MediaType.APPLICATION_JSON));
 

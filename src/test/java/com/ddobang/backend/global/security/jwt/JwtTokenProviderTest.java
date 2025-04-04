@@ -31,7 +31,7 @@ class JwtTokenProviderTest {
 
 		String subject = jwtTokenProvider.getSubject(token);
 
-		assertThat(subject).isEqualTo("jaeyoung");
+		assertThat(subject).isEqualTo("ddobang");
 	}
 
 	@DisplayName("Claims에 isAdmin 값이 포함되어야 한다.")

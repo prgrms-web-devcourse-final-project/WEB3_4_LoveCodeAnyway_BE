@@ -1,5 +1,6 @@
 package com.ddobang.backend.domain.theme.initData;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -21,6 +22,7 @@ import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.domain.theme.repository.ThemeTagRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -42,6 +44,27 @@ public class InitThemeMockData {
 	@Lazy
 	private InitThemeMockData self;
 
+	@Getter
+	private Region region1;
+	@Getter
+	private Region region2;
+
+	@Getter
+	private Store store1;
+	@Getter
+	private Store store2;
+	@Getter
+	private ThemeTag tag1;
+	@Getter
+	private ThemeTag tag2;
+	@Getter
+	private ThemeTag tag3;
+
+	@Getter
+	private List<Theme> themes = new ArrayList<>();
+	@Getter
+	private List<ThemeStat> themeStats = new ArrayList<>();
+
 	@Bean
 	public ApplicationRunner themeInitDataApplicationRunner() {
 		return args -> {
@@ -55,11 +78,11 @@ public class InitThemeMockData {
 			return;
 
 		// 1. 지역 2개 저장
-		Region region1 = regionRepository.save(new Region("서울", "강남"));
-		Region region2 = regionRepository.save(new Region("서울", "홍대"));
+		region1 = regionRepository.save(new Region("서울", "강남"));
+		region2 = regionRepository.save(new Region("서울", "홍대"));
 
 		// 2. 매장 2개 저장
-		Store store1 = storeRepository.save(Store.builder()
+		store1 = storeRepository.save(Store.builder()
 			.name("방탈출 A")
 			.address("서울 강남구")
 			.phoneNumber("010-1111-1111")
@@ -67,7 +90,7 @@ public class InitThemeMockData {
 			.region(region1)
 			.build());
 
-		Store store2 = storeRepository.save(Store.builder()
+		store2 = storeRepository.save(Store.builder()
 			.name("방탈출 B")
 			.address("서울 마포구")
 			.phoneNumber("010-2222-2222")
@@ -76,12 +99,12 @@ public class InitThemeMockData {
 			.build());
 
 		// 3. 태그 2개 저장
-		ThemeTag tag1 = themeTagRepository.save(new ThemeTag("공포"));
-		ThemeTag tag2 = themeTagRepository.save(new ThemeTag("감성"));
-		ThemeTag tag3 = themeTagRepository.save(new ThemeTag("판타지"));
+		tag1 = themeTagRepository.save(new ThemeTag("공포"));
+		tag2 = themeTagRepository.save(new ThemeTag("감성"));
+		tag3 = themeTagRepository.save(new ThemeTag("판타지"));
 
 		// 4. 테마 10개 저장
-		List<Theme> themes = IntStream.range(1, 11)
+		themes = IntStream.range(1, 11)
 			.mapToObj(i -> themeRepository.save(Theme.builder()
 				.name("테마 " + i)
 				.description("테마 설명 " + i)
@@ -94,13 +117,13 @@ public class InitThemeMockData {
 				.reservationUrl("https://example.com/theme/" + i)
 				.thumbnailUrl("https://placehold.co/600x400?text=Theme" + i)
 				.store(i % 2 == 0 ? store1 : store2)
-				.themeTags(i % 2 == 0 ? List.of(tag1, tag2) : List.of(tag3))
+				.themeTags(i % 4 != 0 ? List.of(tag1, tag2) : List.of(tag3))
 				.build()))
 			.toList();
 
 		// 5. 테마 통계 5개 저장
-		IntStream.range(0, 5).forEach(i -> {
-			themeStatRepository.save(ThemeStat.builder()
+		themeStats = IntStream.range(0, 5)
+			.mapToObj(i -> themeStatRepository.save(ThemeStat.builder()
 				.theme(themes.get(i))
 				.difficulty(3)
 				.fear(2)
@@ -114,7 +137,7 @@ public class InitThemeMockData {
 				.noHintEscapeRate(80)
 				.escapeResult(60)
 				.escapeTimeAvg(3600)
-				.build());
-		});
+				.build()))
+			.toList();
 	}
 }
