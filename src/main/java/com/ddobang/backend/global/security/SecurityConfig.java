@@ -58,7 +58,7 @@ public class SecurityConfig {
 					.requestMatchers("/api/v1/stores/*").permitAll()
 
 					// 인증 필요 API
-					.anyRequest().hasAnyRole("MEMBER", "ADMIN");
+					.anyRequest().hasAnyRole("USER", "ADMIN");
 			})
 
 			// OAuth2 로그인 설정
