@@ -21,8 +21,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -51,10 +51,10 @@ public class Theme extends BaseTime {
 
 	private int runtime;
 
-	@Min(1)
+	@PositiveOrZero
 	@Max(8)
 	private int minParticipants;
-	@Min(1)
+	@PositiveOrZero
 	@Max(8)
 	private int maxParticipants;
 	@PositiveOrZero
@@ -62,6 +62,7 @@ public class Theme extends BaseTime {
 	private int price;
 
 	@Enumerated(EnumType.STRING)
+	@NotNull
 	private Status status;
 
 	public enum Status {
@@ -72,6 +73,7 @@ public class Theme extends BaseTime {
 
 	private String thumbnailUrl;
 
+	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "store_id")
 	private Store store;
@@ -94,8 +96,11 @@ public class Theme extends BaseTime {
 		this.reservationUrl = reservationUrl;
 		this.thumbnailUrl = thumbnailUrl;
 		this.store = store;
-		themeTags.forEach(themeTag ->
-			themeTagMappings.add(new ThemeTagMapping(this, themeTag)));
+
+		if (themeTags != null) {
+			themeTags.forEach(themeTag ->
+				themeTagMappings.add(new ThemeTagMapping(this, themeTag)));
+		}
 	}
 
 }
