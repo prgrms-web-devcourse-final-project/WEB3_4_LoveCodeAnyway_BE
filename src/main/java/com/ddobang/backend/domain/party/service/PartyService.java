@@ -38,13 +38,9 @@ public class PartyService {
 	private final ThemeStatRepository themeStatRepository;
 
 	public SliceDto<PartySummaryResponse> getParties(Long lastId, int size, PartySearchCondition partySearchCondition) {
-		List<Party> parties = partyRepository.getParties(lastId, size + 1, partySearchCondition);
+		List<PartySummaryResponse> parties = partyRepository.getParties(lastId, size + 1, partySearchCondition);
 
-		List<PartySummaryResponse> content = parties.stream()
-			.map(PartySummaryResponse::from)
-			.toList();
-
-		return SliceDto.of(content, size + 1);
+		return SliceDto.of(content, size);
 	}
 
 	public Party getPartyById(Long id) {
