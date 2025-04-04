@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.ddobang.backend.domain.store.entity.QStore;
-import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.entity.QTheme;
 import com.ddobang.backend.domain.theme.entity.QThemeTag;
 import com.ddobang.backend.domain.theme.entity.QThemeTagMapping;

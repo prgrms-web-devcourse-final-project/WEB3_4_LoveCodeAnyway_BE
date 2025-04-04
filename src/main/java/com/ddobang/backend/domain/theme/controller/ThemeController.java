@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ddobang.backend.domain.theme.dto.ThemeDetailResponse;
-import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
-import com.ddobang.backend.domain.theme.dto.ThemeForDiaryResponse;
-import com.ddobang.backend.domain.theme.dto.ThemeForPartyResponse;
-import com.ddobang.backend.domain.theme.dto.ThemesResponse;
+import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.response.ThemeDetailResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemeForDiaryResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemeForPartyResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemesResponse;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SliceDto;

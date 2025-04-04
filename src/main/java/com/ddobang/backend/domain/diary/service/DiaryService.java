@@ -25,8 +25,8 @@ import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
-import com.ddobang.backend.domain.theme.dto.ThemeForDiaryResponse;
-import com.ddobang.backend.domain.theme.dto.ThemeForMemberRequest;
+import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
+import com.ddobang.backend.domain.theme.dto.response.ThemeForDiaryResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 

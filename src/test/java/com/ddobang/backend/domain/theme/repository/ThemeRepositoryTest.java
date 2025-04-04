@@ -17,8 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.repository.StoreRepository;
-import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
-import com.ddobang.backend.domain.theme.dto.ThemeForDiaryResponse;
+import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.response.ThemeForDiaryResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.global.config.JpaAuditingConfig;

@@ -2,7 +2,7 @@ package com.ddobang.backend.domain.theme.repository;
 
 import java.util.List;
 
-import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.entity.Theme;
 
 /**

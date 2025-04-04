@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.region.entity.Region;
 import com.ddobang.backend.domain.store.entity.Store;
-import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;

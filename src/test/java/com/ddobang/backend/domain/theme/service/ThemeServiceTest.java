@@ -15,12 +15,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.service.StoreService;
-import com.ddobang.backend.domain.theme.dto.ThemeDetailResponse;
-import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
-import com.ddobang.backend.domain.theme.dto.ThemeForDiaryResponse;
-import com.ddobang.backend.domain.theme.dto.ThemeForMemberRequest;
-import com.ddobang.backend.domain.theme.dto.ThemeForPartyResponse;
-import com.ddobang.backend.domain.theme.dto.ThemesResponse;
+import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
+import com.ddobang.backend.domain.theme.dto.response.ThemeDetailResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemeForDiaryResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemeForPartyResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemesResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
