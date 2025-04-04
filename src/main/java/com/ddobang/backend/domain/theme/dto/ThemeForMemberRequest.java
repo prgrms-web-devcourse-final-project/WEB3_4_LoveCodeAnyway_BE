@@ -10,9 +10,9 @@ import jakarta.validation.constraints.NotBlank;
  * @author 100minha
  */
 public record ThemeForMemberRequest(
-	@NotBlank
+	@NotBlank(message = "테마 이름은 공백일 수 없습니다.")
 	String themeName,
-	@NotBlank
+	@NotBlank(message = "매장 이름은 공백일 수 없습니다.")
 	String storeName,
 	String thumbnailUrl,
 	List<String> tags
