@@ -44,8 +44,20 @@ public class ThemeStatRepositoryTest {
 
 	@BeforeEach
 	void setUp() {
-		em.createNativeQuery("ALTER TABLE theme ALTER COLUMN id RESTART WITH 1").executeUpdate();
-		em.createNativeQuery("ALTER TABLE theme_stat ALTER COLUMN theme_id RESTART WITH 1").executeUpdate();
+		// H2 데이터베이스의 시퀀스 초기화 (MySQL 모드에서는 RESTART WITH 대신 AUTO_INCREMENT 사용)
+		try {
+			em.createNativeQuery("ALTER TABLE theme ALTER COLUMN id RESTART WITH 1").executeUpdate();
+			em.createNativeQuery("ALTER TABLE theme_stat ALTER COLUMN theme_id RESTART WITH 1").executeUpdate();
+		} catch (Exception e) {
+			// MySQL 모드에서 실패한 경우 AUTO_INCREMENT 사용 시도
+			try {
+				em.createNativeQuery("ALTER TABLE theme AUTO_INCREMENT = 1").executeUpdate();
+				em.createNativeQuery("ALTER TABLE theme_stat AUTO_INCREMENT = 1").executeUpdate();
+			} catch (Exception e2) {
+				// 로그만 출력하고 진행
+				System.out.println("Failed to reset sequence: " + e2.getMessage());
+			}
+		}
 
 		theme = themeRepository.save(Theme.builder()
 			.name("테마 ")
