@@ -1,9 +1,5 @@
 package com.ddobang.backend.domain.party.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.domain.party.dto.PartyDto;
@@ -24,9 +20,11 @@ import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 import com.ddobang.backend.global.response.SliceDto;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +38,7 @@ public class PartyService {
 	public SliceDto<PartySummaryResponse> getParties(Long lastId, int size, PartySearchCondition partySearchCondition) {
 		List<PartySummaryResponse> parties = partyRepository.getParties(lastId, size + 1, partySearchCondition);
 
-		return SliceDto.of(content, size);
+		return SliceDto.of(parties, size);
 	}
 
 	public Party getPartyById(Long id) {
