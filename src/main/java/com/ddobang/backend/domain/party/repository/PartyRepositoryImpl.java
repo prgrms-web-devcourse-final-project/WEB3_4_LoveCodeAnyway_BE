@@ -1,11 +1,5 @@
 package com.ddobang.backend.domain.party.repository;
 
-import static com.ddobang.backend.domain.party.types.PartyMemberRole.*;
-import static com.ddobang.backend.domain.party.types.PartyStatus.*;
-
-import java.time.LocalDate;
-import java.util.List;
-
 import com.ddobang.backend.domain.member.entity.QMember;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
@@ -18,8 +12,14 @@ import com.ddobang.backend.domain.theme.entity.QThemeTagMapping;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import static com.ddobang.backend.domain.party.types.PartyMemberRole.HOST;
+import static com.ddobang.backend.domain.party.types.PartyStatus.FULL;
+import static com.ddobang.backend.domain.party.types.PartyStatus.RECRUITING;
 
 @RequiredArgsConstructor
 public class PartyRepositoryImpl implements PartyRepositoryCustom {
@@ -66,7 +66,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 				.where(
 						party.status.in(RECRUITING, FULL),
 						pm.role.eq(HOST),
-						keywordContains(condition.keyword(), party, theme, store),
+						keywordContains(condition.keyword(), party, theme, store, host),
 						regionIn(condition.regionIds(), store),
 						dateIn(condition.dates(), party),
 						tagIn(condition.tags(), themeTag),
@@ -78,14 +78,15 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 				.fetch();
 	}
 
-	private BooleanExpression keywordContains(String keyword, QParty party, QTheme theme, QStore store) {
+	private BooleanExpression keywordContains(String keyword, QParty party, QTheme theme, QStore store, QMember host) {
 		if (keyword == null || keyword.isBlank()) {
 			return null;
 		}
 
 		return party.title.containsIgnoreCase(keyword)
 				.or(theme.name.containsIgnoreCase(keyword))
-				.or(store.name.containsIgnoreCase(keyword));
+				.or(store.name.containsIgnoreCase(keyword))
+				.or(host.nickname.containsIgnoreCase(keyword));
 	}
 
 	private BooleanExpression regionIn(List<Long> regionIds, QStore store) {
