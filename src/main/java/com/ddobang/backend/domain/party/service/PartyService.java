@@ -56,7 +56,8 @@ public class PartyService {
 	@Transactional
 	public PartyDto createParty(PartyRequest request, Member actor) {
 		Theme theme = themeService.getThemeById(request.themeId());
-		return PartyDto.toDto(Party.of(request, theme, actor));
+		Party party = Party.of(request, theme, actor);
+		return PartyDto.toDto(partyRepository.save(party));
 	}
 
 	@Transactional
