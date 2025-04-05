@@ -106,7 +106,7 @@ public class PartyService {
 
 		partyValidationService.validateAccept(party, member, actor);
 
-		party.updatePartyMemberStatus(actor, PartyMemberStatus.ACCEPTED);
+		party.updatePartyMemberStatus(member, PartyMemberStatus.ACCEPTED);
 		party.updatePartyStatus();
 	}
 
