@@ -115,7 +115,7 @@ public class PartyService {
 
 		partyValidationService.validateExecutable(party, actor);
 
-		party.updateFinalStatus(PartyStatus.COMPLETED);
+		party.updateStatus(PartyStatus.COMPLETED);
 	}
 
 	@Transactional
@@ -124,6 +124,6 @@ public class PartyService {
 
 		partyValidationService.validateExecutable(party, actor);
 
-		party.updateFinalStatus(PartyStatus.CANCELLED);
+		party.updateStatus(PartyStatus.CANCELLED);
 	}
 }
