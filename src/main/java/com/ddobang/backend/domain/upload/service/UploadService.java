@@ -68,7 +68,7 @@ public class UploadService {
 			String originalName = file.getOriginalFilename();
 
 			// 파일 이름이 없는 경우 예외 처리
-			if (originalName == null) {
+			if (originalName == null || originalName.length() < 1) {
 				throw new UploadException(UploadErrorCode.UPLOAD_FILE_INVALID_FILE_NAME);
 			}
 

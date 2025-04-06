@@ -27,13 +27,13 @@ public class UploadController {
 	private final UploadService uploadService;
 
 	@Operation(summary = "파일 업로드", description = "새로운 파일을 업로드합니다.")
-	@PostMapping("/{id}")
+	@PostMapping("/{parentId}")
 	public ResponseEntity<SuccessResponse<Void>> upload(
 		@PathVariable long parentId,
-		@RequestParam(defaultValue = "NONE") FileUploadTarget fileUploadTarget,
+		@RequestParam(defaultValue = "NONE") FileUploadTarget target,
 		@RequestParam MultipartFile[] files
 	) throws IOException {
-		uploadService.upload(parentId, fileUploadTarget, files);
+		uploadService.upload(parentId, target, files);
 
 		return ResponseFactory.created(
 			"파일 저장에 성공했습니다."
