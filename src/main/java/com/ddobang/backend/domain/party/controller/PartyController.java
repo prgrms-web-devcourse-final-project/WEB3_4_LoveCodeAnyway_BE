@@ -56,7 +56,7 @@ public class PartyController {
 	@PostMapping
 	@Operation(summary = "모임 등록")
 	public ResponseEntity<SuccessResponse<PartyDto>> createParty(@RequestBody @Valid PartyRequest request) {
-		return ResponseFactory.ok(partyService.createParty(request, partyAuthHelper.getCurrentMember()));
+		return ResponseFactory.created(partyService.createParty(request, partyAuthHelper.getCurrentMember()));
 	}
 
 	@PutMapping("/{id}")
