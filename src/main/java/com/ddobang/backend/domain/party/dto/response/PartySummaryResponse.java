@@ -8,19 +8,19 @@ import com.ddobang.backend.domain.theme.entity.Theme;
 import java.time.LocalDateTime;
 
 public record PartySummaryResponse(
-		Long partyId,
+		Long party_id,
 		String title,
-		LocalDateTime scheduledAt,
-		int participantsLeft,
-		int totalParticipants,
-		boolean rookieAvailable,
-		String storeName,
-		Long themeId,
-		String themeName,
-		String themeThumbnailUrl,
-		Long hostId,
-		String hostNickname,
-		String hostProfilePictureUrl
+		LocalDateTime scheduled_at,
+		int participants_left,
+		int total_participants,
+		boolean rookie_available,
+		String store_name,
+		Long theme_id,
+		String theme_name,
+		String theme_thumbnail_url,
+		Long host_id,
+		String host_nickname,
+		String host_profile_picture_url
 ) {
 	public static PartySummaryResponse from(Party party) {
 		Theme theme = party.getTheme();
