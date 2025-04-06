@@ -135,7 +135,7 @@ public class PartyRepositoryTest {
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.getFirst().theme_name()).contains("공포");
+        assertThat(result.getFirst().themeName()).contains("공포");
     }
 
     @Test
@@ -162,7 +162,7 @@ public class PartyRepositoryTest {
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.getFirst().theme_name()).contains("기쁨");
+        assertThat(result.getFirst().themeName()).contains("기쁨");
     }
 
     @Test
@@ -208,7 +208,7 @@ public class PartyRepositoryTest {
         List<PartySummaryResponse> results = partyRepository.getParties(null, 10, condition);
 
         assertThat(results).hasSize(1);
-        assertThat(results.getFirst().host_nickname()).contains("공포");
+        assertThat(results.getFirst().hostNickname()).contains("공포");
     }
 
     @Test

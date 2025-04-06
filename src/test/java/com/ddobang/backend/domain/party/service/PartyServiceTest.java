@@ -137,8 +137,8 @@ class PartyServiceTest {
         // then
         assertNotNull(result);
         assertEquals(request.title(), result.title());
-        assertEquals(theme.getId(), result.theme_id());
-        assertEquals(host.getId(), result.host_id());
+        assertEquals(theme.getId(), result.themeId());
+        assertEquals(host.getId(), result.hostId());
 
         verify(themeService).getThemeById(theme.getId());
     }
@@ -192,7 +192,7 @@ class PartyServiceTest {
         assertNotNull(result);
         assertEquals(request.title(), result.title());
         assertEquals(request.content(), result.content());
-        assertEquals(request.themeId(), result.theme_id());
+        assertEquals(request.themeId(), result.themeId());
 
         verify(partyValidationService).validateModifiable(party, host);
         verify(themeService).getThemeById(request.themeId());
