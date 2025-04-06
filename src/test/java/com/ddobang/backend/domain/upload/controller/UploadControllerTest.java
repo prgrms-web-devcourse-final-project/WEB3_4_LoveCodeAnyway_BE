@@ -77,6 +77,15 @@ public class UploadControllerTest {
 			.andExpect(handler().methodName("upload"))
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.message").value("파일 저장에 성공했습니다."));
+
+		Member member = memberRepository.findById(1L).orElseThrow();
+
+		assertThat(member.getProfilePictureUrl()).contains(
+			Path.of(FileUploadTarget.PROFILE.getType())
+				.resolve(member.getId().toString())
+				.resolve(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd")))
+				.toString()
+		);
 	}
 
 	@Test
@@ -110,6 +119,7 @@ public class UploadControllerTest {
 			.andExpect(jsonPath("$.message").value("파일 저장에 성공했습니다."));
 
 		List<Attachment> attachments = post.getAttachments();
+
 		assertThat(attachments).hasSize(1);
 		assertThat(attachments.get(0).getOriginalName()).isEqualTo("test-image.png");
 		assertThat(attachments.get(0).getUrl()).contains(
