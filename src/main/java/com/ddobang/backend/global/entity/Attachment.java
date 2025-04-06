@@ -12,18 +12,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@Setter
 public class Attachment {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,4 +37,15 @@ public class Attachment {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "post_id", nullable = false)
 	private Post post;
+
+	@Builder
+	public Attachment(
+		String url,
+		String originalName,
+		Post post
+	) {
+		this.url = url;
+		this.originalName = originalName;
+		this.post = post;
+	}
 }

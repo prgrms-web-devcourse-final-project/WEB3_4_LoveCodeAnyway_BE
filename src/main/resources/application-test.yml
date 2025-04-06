@@ -4,3 +4,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+# Custom settings
+custom:
+  fileUpload:
+    dirPath: c:/temp/ddobang_test

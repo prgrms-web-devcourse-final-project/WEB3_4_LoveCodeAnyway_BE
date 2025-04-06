@@ -86,4 +86,8 @@ public class Member extends BaseTime {
 		this.password = password;
 		this.tags = tags != null ? tags : new ArrayList<>();
 	}
+
+	public void setProfilePictureUrl(String profilePictureUrl) {
+		this.profilePictureUrl = profilePictureUrl;
+	}
 }
