@@ -3,6 +3,7 @@ package com.ddobang.backend.domain.upload.controller;
 import java.io.IOException;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +38,22 @@ public class UploadController {
 
 		return ResponseFactory.created(
 			"파일 저장에 성공했습니다."
+		);
+	}
+
+	@Operation(summary = "파일 삭제", description = """
+		해당되는 게시물의 파일을 삭제합니다.\n
+		문의 게시판의 경우 해당 이미지의 id 입니다.
+		""")
+	@DeleteMapping("/{id}")
+	public ResponseEntity<SuccessResponse<Void>> delete(
+		@PathVariable long id,
+		@RequestParam(defaultValue = "NONE") FileUploadTarget target
+	) throws IOException {
+		uploadService.delete(id, target);
+
+		return ResponseFactory.ok(
+			"파일 삭제에 성공했습니다."
 		);
 	}
 }

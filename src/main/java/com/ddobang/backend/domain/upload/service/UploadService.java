@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.upload.service;
 
+import static com.ddobang.backend.domain.upload.exception.UploadErrorCode.*;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,9 +32,12 @@ import com.ddobang.backend.domain.upload.exception.UploadErrorCode;
 import com.ddobang.backend.domain.upload.exception.UploadException;
 import com.ddobang.backend.domain.upload.types.FileUploadTarget;
 import com.ddobang.backend.global.entity.Attachment;
+import com.ddobang.backend.global.util.Ut;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UploadService {
@@ -93,6 +98,41 @@ public class UploadService {
 		}
 	}
 
+	@Transactional
+	public void delete(long id, FileUploadTarget target) throws IOException {
+		String path = "";
+
+		switch (target) {
+			case PROFILE -> {
+				Member member = memberRepository.findById(id)
+					.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+				path = member.getProfilePictureUrl();
+				member.setProfilePictureUrl(null);
+			}
+			case DIARY -> {
+				Diary diary = diaryRepository.findById(id)
+					.orElseThrow(() -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND));
+
+				path = diary.getImageUrl();
+				diary.setImageUrl(null);
+			}
+			case BOARD -> {
+				Attachment attachment = attachmentRepository.findById(id)
+					.orElseThrow(() -> new UploadException(UPLOAD_FILE_NOT_FOUND));
+
+				path = attachment.getUrl();
+				attachmentRepository.delete(attachment);
+			}
+			default -> throw new UploadException(UploadErrorCode.UPLOAD_FILE_INVALID_TARGET);
+		}
+
+		if (path != null && !path.isBlank()) {
+			log.info("파일 삭제: path={}", target, path);
+			Ut.rm(Path.of(fileDirPath).resolve(path).toString());
+		}
+	}
+
 	private void applyUploadPathToDomain(FileUploadTarget target, long parentId, Path path, String originalName) {
 		switch (target) {
 			case PROFILE -> {
@@ -108,13 +148,11 @@ public class UploadService {
 			case BOARD -> {
 				Post post = boardRepository.findById(parentId)
 					.orElseThrow(() -> new BoardException(BoardErrorCode.BOARD_NOT_FOUND));
-				Attachment attachment = attachmentRepository.save(
-					Attachment.builder()
-						.url(path.toString())
-						.originalName(originalName)
-						.post(post)
-						.build()
-				);
+				Attachment attachment = Attachment.builder()
+					.url(path.toString())
+					.originalName(originalName)
+					.post(post)
+					.build();
 
 				post.getAttachments().add(attachment);
 			}
