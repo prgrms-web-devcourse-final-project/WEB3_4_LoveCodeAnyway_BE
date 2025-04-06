@@ -1,9 +1,5 @@
 package com.ddobang.backend.domain.party.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.domain.party.dto.PartyDto;
@@ -24,9 +20,11 @@ import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 import com.ddobang.backend.global.response.SliceDto;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -38,13 +36,9 @@ public class PartyService {
 	private final ThemeStatRepository themeStatRepository;
 
 	public SliceDto<PartySummaryResponse> getParties(Long lastId, int size, PartySearchCondition partySearchCondition) {
-		List<Party> parties = partyRepository.getParties(lastId, size + 1, partySearchCondition);
+		List<PartySummaryResponse> parties = partyRepository.getParties(lastId, size + 1, partySearchCondition);
 
-		List<PartySummaryResponse> content = parties.stream()
-			.map(PartySummaryResponse::from)
-			.toList();
-
-		return SliceDto.of(content, size + 1);
+		return SliceDto.of(parties, size);
 	}
 
 	public Party getPartyById(Long id) {
@@ -62,7 +56,8 @@ public class PartyService {
 	@Transactional
 	public PartyDto createParty(PartyRequest request, Member actor) {
 		Theme theme = themeService.getThemeById(request.themeId());
-		return PartyDto.toDto(Party.of(request, theme, actor));
+		Party party = Party.of(request, theme, actor);
+		return PartyDto.toDto(partyRepository.save(party));
 	}
 
 	@Transactional
@@ -111,7 +106,7 @@ public class PartyService {
 
 		partyValidationService.validateAccept(party, member, actor);
 
-		party.updatePartyMemberStatus(actor, PartyMemberStatus.ACCEPTED);
+		party.updatePartyMemberStatus(member, PartyMemberStatus.ACCEPTED);
 		party.updatePartyStatus();
 	}
 
@@ -121,7 +116,7 @@ public class PartyService {
 
 		partyValidationService.validateExecutable(party, actor);
 
-		party.updateFinalStatus(PartyStatus.COMPLETED);
+		party.updateStatus(PartyStatus.COMPLETED);
 	}
 
 	@Transactional
@@ -130,6 +125,6 @@ public class PartyService {
 
 		partyValidationService.validateExecutable(party, actor);
 
-		party.updateFinalStatus(PartyStatus.CANCELLED);
+		party.updateStatus(PartyStatus.CANCELLED);
 	}
 }
