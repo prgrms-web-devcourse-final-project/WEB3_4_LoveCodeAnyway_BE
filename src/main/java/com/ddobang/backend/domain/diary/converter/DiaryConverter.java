@@ -2,11 +2,15 @@ package com.ddobang.backend.domain.diary.converter;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
-import com.ddobang.backend.domain.diary.entity.DiaryStats;
+import com.ddobang.backend.domain.diary.entity.DiaryStat;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.theme.entity.Theme;
 
 public class DiaryConverter {
-	public static Diary toDiary(DiaryRequestDto dto) {
+	public static Diary toDiary(Member author, Theme theme, DiaryRequestDto dto) {
 		return Diary.builder()
+			.theme(theme)
+			.author(author)
 			.escapeDate(dto.escapeDate())
 			.imageUrl(dto.imageUrl())
 			.participants(dto.participants())
@@ -14,9 +18,10 @@ public class DiaryConverter {
 			.build();
 	}
 
-	public static DiaryStats toDiaryStats(Diary diary, DiaryRequestDto dto) {
-		return DiaryStats.builder()
+	public static DiaryStat toDiaryStat(Diary diary, DiaryRequestDto dto, int elapsedTime) {
+		return DiaryStat.builder()
 			.diary(diary)
+			.theme(diary.getTheme())
 			.difficulty(dto.difficulty())
 			.fear(dto.fear())
 			.activity(dto.activity())
@@ -28,12 +33,17 @@ public class DiaryConverter {
 			.deviceRatio(dto.deviceRatio())
 			.hintCount(dto.hintCount())
 			.escapeResult(dto.escapeResult())
-			.elapsedTime(dto.elapsedTime())
+			.elapsedTime(elapsedTime)
 			.build();
 	}
 
-	public static void updateDiary(Diary diary, DiaryRequestDto dto, int elapsedTime) {
-		diary.modify(dto);
-		diary.getDiaryStats().modify(dto, elapsedTime);
+	public static void modifyDiary(
+		Theme theme,
+		Diary diary,
+		DiaryRequestDto dto,
+		int elapsedTime
+	) {
+		diary.modify(theme, dto);
+		diary.getDiaryStat().modify(dto, elapsedTime);
 	}
 }

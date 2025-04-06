@@ -3,6 +3,7 @@ package com.ddobang.backend.domain.diary.dto.request;
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
@@ -43,8 +44,11 @@ public record DiaryRequestDto(
 
 	int hintCount,
 	boolean escapeResult,
+
+	@NotBlank(message = "탈출 시간 타입을 선택해주세요.")
 	String timeType,
-	int elapsedTime,
+
+	String elapsedTime,
 	String review
 ) {
 }
