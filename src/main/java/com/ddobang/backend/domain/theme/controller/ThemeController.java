@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeDetailResponse;
-import com.ddobang.backend.domain.theme.dto.response.ThemeForDiaryResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeForPartyResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemesResponse;
 import com.ddobang.backend.domain.theme.service.ThemeService;
@@ -65,10 +65,10 @@ public class ThemeController {
 
 	@Operation(summary = "방탈출 일지 작성 전용 테마 검색 api", description = "삭제된(soft) 테마 제외 모든 테마 검색 가능")
 	@GetMapping("/search-for-diary")
-	public ResponseEntity<SuccessResponse<List<ThemeForDiaryResponse>>> getThemesForDiarySearch(
+	public ResponseEntity<SuccessResponse<List<SimpleThemeResponse>>> getThemesForDiarySearch(
 		@RequestParam(name = "keyword") String keyword
 	) {
-		List<ThemeForDiaryResponse> themesForDiary = themeService.getThemesForDiarySearch(keyword);
+		List<SimpleThemeResponse> themesForDiary = themeService.getThemesForDiarySearch(keyword);
 
 		return ResponseFactory.ok(themesForDiary);
 	}
