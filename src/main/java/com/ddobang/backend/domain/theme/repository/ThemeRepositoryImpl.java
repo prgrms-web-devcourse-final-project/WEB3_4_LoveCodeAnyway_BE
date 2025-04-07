@@ -4,13 +4,16 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import com.ddobang.backend.domain.region.entity.QRegion;
 import com.ddobang.backend.domain.store.entity.QStore;
 import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.QTheme;
 import com.ddobang.backend.domain.theme.entity.QThemeTag;
 import com.ddobang.backend.domain.theme.entity.QThemeTagMapping;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -29,16 +32,18 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 
 	private static final QTheme theme = QTheme.theme;
 	private static final QStore store = QStore.store;
+	private static final QRegion region = QRegion.region;
 	private static final QThemeTagMapping mapping = QThemeTagMapping.themeTagMapping;
 	private static final QThemeTag tag = QThemeTag.themeTag;
 
 	@Override
 	public List<Theme> findThemesByFilter(ThemeFilterRequest request, int page, int size) {
-		BooleanBuilder condition = buildFilterConditions(request);
+		BooleanBuilder condition = buildFilterConditions(request, false);
 
 		return queryFactory
 			.selectFrom(theme)
 			.leftJoin(theme.store, store).fetchJoin()
+			.leftJoin(store.region, region).fetchJoin()
 			.leftJoin(theme.themeTagMappings, mapping).fetchJoin()
 			.leftJoin(mapping.themeTag, tag).fetchJoin()
 			.distinct()
@@ -63,10 +68,35 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 			.fetch();
 	}
 
-	private BooleanBuilder buildFilterConditions(ThemeFilterRequest request) {
+	@Override
+	public List<SimpleThemeResponse> findThemesForAdminSearch(ThemeFilterRequest request, int page, int size) {
+		BooleanBuilder condition = buildFilterConditions(request, true);
+
+		return queryFactory
+			.select(Projections.constructor(
+				SimpleThemeResponse.class,
+				theme.id,
+				theme.name,
+				store.name
+			))
+			.from(theme)
+			.leftJoin(theme.store, store)
+			.leftJoin(store.region, region)
+			.where(condition)
+			.orderBy(theme.name.asc())
+			.offset((long)page * size)
+			.limit(size + 1) // size보다 1개 더 가져와서 hasNext 판단
+			.fetch();
+	}
+
+	private BooleanBuilder buildFilterConditions(ThemeFilterRequest request, Boolean isForAdmin) {
 		BooleanBuilder builder = new BooleanBuilder();
 
-		builder.and(theme.status.eq(Theme.Status.OPENED));
+		if (isForAdmin) {
+			builder.and(theme.status.ne(Theme.Status.DELETED));
+		} else {
+			builder.and(theme.status.eq(Theme.Status.OPENED));
+		}
 
 		// 지역 필터링
 		if (request.regionId() != null && !request.regionId().isEmpty()) {
