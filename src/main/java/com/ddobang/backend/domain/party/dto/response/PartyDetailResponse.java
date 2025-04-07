@@ -1,8 +1,5 @@
 package com.ddobang.backend.domain.party.dto.response;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.party.types.PartyMemberRole;
@@ -10,19 +7,21 @@ import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTagMapping;
-
 import lombok.Builder;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 public record PartyDetailResponse(
 	Long id,
 	String title,
-	LocalDateTime scheduled_at,
+	LocalDateTime scheduledAt,
 	String content,
 
-	Long host_id,
-	String host_nickname,
-	String host_profile_img_url,
+	Long hostId,
+	String hostNickname,
+	String hostProfilePictureUrl,
 
 	Integer recruitableCount,
 	Integer totalParticipants,
@@ -30,20 +29,20 @@ public record PartyDetailResponse(
 	List<PartyMemberSummaries> acceptedPartyMembers,
 	List<PartyMemberSummaries> AppliedPartyMembers,
 
-	Boolean rookie_available,
+	Boolean rookieAvailable,
 
-	Long theme_id,
-	String theme_name,
-	String theme_thumbnail_url,
+	Long themeId,
+	String themeName,
+	String themeThumbnailUrl,
 
-	List<ThemeTagMapping> theme_tag_mappings,
+	List<ThemeTagMapping> themeTagMappings,
 
-	float no_hint_escape_rate,
-	float escape_result,
-	float escape_time_avg,
+	float noHintEscapeRate,
+	float escapeResult,
+	float escapeTimeAvg,
 
-	String store_name,
-	String store_address
+	String storeName,
+	String storeAddress
 ) {
 	public static PartyDetailResponse from(Party party, ThemeStat themeStat, Member actor) {
 		boolean isHost = party.getPartyMemberRole(actor).equals(PartyMemberRole.HOST);
@@ -54,12 +53,12 @@ public record PartyDetailResponse(
 		return PartyDetailResponse.builder()
 			.id(party.getId())
 			.title(party.getTitle())
-			.scheduled_at(party.getScheduledAt())
+			.scheduledAt(party.getScheduledAt())
 			.content(party.getContent())
 
-			.host_id(host.getId())
-			.host_nickname(host.getNickname())
-			.host_profile_img_url(host.getProfilePictureUrl())
+			.hostId(host.getId())
+			.hostNickname(host.getNickname())
+			.hostProfilePictureUrl(host.getProfilePictureUrl())
 
 			.recruitableCount(party.getParticipantsNeeded() - party.getAcceptedParticipantsCount())
 			.totalParticipants(party.getTotalParticipants())
@@ -75,19 +74,19 @@ public record PartyDetailResponse(
 					.toList() : null
 			)
 
-			.rookie_available(party.getRookieAvailable())
+			.rookieAvailable(party.getRookieAvailable())
 
-			.theme_id(theme.getId())
-			.theme_name(theme.getName())
-			.theme_thumbnail_url(theme.getThumbnailUrl())
-			.theme_tag_mappings(theme.getThemeTagMappings())
+			.themeId(theme.getId())
+			.themeName(theme.getName())
+			.themeThumbnailUrl(theme.getThumbnailUrl())
+			.themeTagMappings(theme.getThemeTagMappings())
 
-			.no_hint_escape_rate(themeStat.getNoHintEscapeRate())
-			.escape_result(themeStat.getEscapeResult())
-			.escape_time_avg(themeStat.getEscapeTimeAvg())
+			.noHintEscapeRate(themeStat.getNoHintEscapeRate())
+			.escapeResult(themeStat.getEscapeResult())
+			.escapeTimeAvg(themeStat.getEscapeTimeAvg())
 
-			.store_name(store.getName())
-			.store_address(store.getAddress())
+			.storeName(store.getName())
+			.storeAddress(store.getAddress())
 			.build();
 	}
 }

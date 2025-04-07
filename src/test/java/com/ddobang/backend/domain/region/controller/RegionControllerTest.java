@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -21,14 +22,15 @@ import com.ddobang.backend.domain.region.entity.Region;
 import com.ddobang.backend.domain.region.exception.RegionErrorCode;
 import com.ddobang.backend.domain.region.exception.RegionException;
 import com.ddobang.backend.domain.region.service.RegionService;
-import com.ddobang.backend.global.security.SecurityConfig;
+import com.ddobang.backend.global.security.TestSecurityConfig;
 
 /**
  * RegionControllerTest
  * @author 100minha
  */
 @WebMvcTest(RegionController.class)
-@Import({SecurityConfig.class})        // TODO: Test전용 SecurityConfig 설정 추가
+@ActiveProfiles("test")
+@Import(TestSecurityConfig.class)
 public class RegionControllerTest {
 
 	@MockitoBean

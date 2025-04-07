@@ -1,6 +1,7 @@
 package com.ddobang.backend.global.util;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class CookieUtil {
 
@@ -28,6 +29,19 @@ public class CookieUtil {
 		cookie.setPath("/");
 		cookie.setMaxAge(REFRESH_TOKEN_EXPIRE_SEC);
 		return cookie;
+	}
+
+	// Access Token 쿠키 값 가져오기
+	public static String getAccessToken(HttpServletRequest request) {
+		if (request.getCookies() == null)
+			return null;
+
+		for (Cookie cookie : request.getCookies()) {
+			if (ACCESS_TOKEN_KEY.equals(cookie.getName())) {
+				return cookie.getValue();
+			}
+		}
+		return null;
 	}
 
 	// 쿠키 제거

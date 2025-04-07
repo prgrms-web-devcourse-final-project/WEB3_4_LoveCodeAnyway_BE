@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import com.ddobang.backend.global.security.jwt.JwtAuthenticationFilter;
@@ -27,9 +26,6 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(
 		HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
-
-		// MvcRequestMatcher를 사용하여 URL 패턴 매칭
-		MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector).servletPath("/api/v1");
 
 		http
 			.cors(Customizer.withDefaults())
@@ -51,18 +47,18 @@ public class SecurityConfig {
 					.requestMatchers("/admin/**").hasRole("ADMIN")
 
 					// 닉네임 중복 체크
-					.requestMatchers(mvc.pattern("/members/check-nickname")).permitAll()
+					.requestMatchers("/api/v1/members/check-nickname").permitAll()
 
 					// 공개 API
-					.requestMatchers(mvc.pattern("/regions")).permitAll()
-					.requestMatchers(mvc.pattern("/themes")).permitAll()
-					.requestMatchers(mvc.pattern("/themes/*")).permitAll()
-					.requestMatchers(mvc.pattern("/parties")).permitAll()
-					.requestMatchers(mvc.pattern("/parties/*")).permitAll()
-					.requestMatchers(mvc.pattern("/stores/*")).permitAll()
+					.requestMatchers("/api/v1/regions").permitAll()
+					.requestMatchers("/api/v1/themes").permitAll()
+					.requestMatchers("/api/v1/themes/*").permitAll()
+					.requestMatchers("/api/v1/parties").permitAll()
+					.requestMatchers("/api/v1/parties/*").permitAll()
+					.requestMatchers("/api/v1/stores/*").permitAll()
 
 					// 인증 필요 API
-					.anyRequest().hasAnyRole("MEMBER", "ADMIN");
+					.anyRequest().hasAnyRole("USER", "ADMIN");
 			})
 
 			// OAuth2 로그인 설정
