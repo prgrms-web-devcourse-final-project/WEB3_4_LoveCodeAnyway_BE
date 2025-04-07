@@ -1,6 +1,5 @@
 package com.ddobang.backend.domain.message.controller;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +19,7 @@ import com.ddobang.backend.domain.message.dto.MessageDto;
 import com.ddobang.backend.domain.message.dto.MessageRequestDto;
 import com.ddobang.backend.domain.message.service.MessageService;
 import com.ddobang.backend.global.response.ResponseFactory;
+import com.ddobang.backend.global.response.SliceDto;
 import com.ddobang.backend.global.response.SuccessResponse;
 
 import jakarta.validation.Valid;
@@ -49,29 +49,29 @@ public class MessageController {
 
 		return ResponseFactory.ok("쪽지 전송 성공", messageDto);
 	}
-
-	// 페이징 처리: 받은 쪽지 목록 조회
+	
+	// 받은 쪽지 목록 조회 (무한 스크롤)
 	@GetMapping("/received")
-	public ResponseEntity<SuccessResponse<Page<MessageDto>>> getReceivedMessages(
+	public ResponseEntity<SuccessResponse<SliceDto<MessageDto>>> getReceivedMessages(
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size,
 		@AuthenticationPrincipal UserDetails userDetails) {
 
 		Member member = memberService.getMemberByUsername(userDetails.getUsername());
-		Page<MessageDto> messages = messageService.getReceivedMessagesWithPaging(member, page, size);
+		SliceDto<MessageDto> messages = messageService.getReceivedMessagesWithInfiniteScroll(member, page, size);
 
 		return ResponseFactory.ok("받은 쪽지 목록 조회 성공", messages);
 	}
 
-	// 페이징 처리: 보낸 쪽지 목록 조회
+	// 보낸 쪽지 목록 조회 (무한 스크롤)
 	@GetMapping("/sent")
-	public ResponseEntity<SuccessResponse<Page<MessageDto>>> getSentMessages(
+	public ResponseEntity<SuccessResponse<SliceDto<MessageDto>>> getSentMessages(
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size,
 		@AuthenticationPrincipal UserDetails userDetails) {
 
 		Member member = memberService.getMemberByUsername(userDetails.getUsername());
-		Page<MessageDto> messages = messageService.getSentMessagesWithPaging(member, page, size);
+		SliceDto<MessageDto> messages = messageService.getSentMessagesWithInfiniteScroll(member, page, size);
 
 		return ResponseFactory.ok("보낸 쪽지 목록 조회 성공", messages);
 	}

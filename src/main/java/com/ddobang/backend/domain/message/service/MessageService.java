@@ -1,5 +1,8 @@
 package com.ddobang.backend.domain.message.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +14,7 @@ import com.ddobang.backend.domain.message.entity.Message;
 import com.ddobang.backend.domain.message.exception.MessageErrorCode;
 import com.ddobang.backend.domain.message.exception.MessageException;
 import com.ddobang.backend.domain.message.repository.MessageRepository;
+import com.ddobang.backend.global.response.SliceDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -55,51 +59,35 @@ public class MessageService {
 		return MessageDto.fromEntity(message);
 	}
 
-	// // 무한 스크롤 - 받은 메시지 목록 조회
-	// @Transactional(readOnly = true)
-	// public SliceDto<MessageDto> getReceivedMessagesInfinite(Member member, Long cursorId, int size) {
-	// 	Pageable pageable = PageRequest.of(0, size + 1);
-	// 	List<Message> messages;
-	//
-	// 	if (cursorId == null) {
-	// 		// 첫 페이지 요청
-	// 		messages = messageRepository.findReceivedMessagesFirstPage(member.getId(), pageable);
-	// 	} else {
-	// 		// 다음 페이지 요청
-	// 		messages = messageRepository.findReceivedMessagesNextPage(member.getId(), cursorId, pageable);
-	// 	}
-	//
-	// 	// MessageDto로 변환
-	// 	List<MessageDto> messageDtos = messages.stream()
-	// 		.map(MessageDto::fromEntity)
-	// 		.collect(Collectors.toList());
-	//
-	// 	// SliceDto로 변환 (자동으로 size+1개를 확인하여 hasNext 계산)
-	// 	return SliceDto.of(messageDtos, size);
-	// }
-	//
-	// // 무한 스크롤 - 보낸 메시지 목록 조회
-	// @Transactional(readOnly = true)
-	// public SliceDto<MessageDto> getSentMessagesInfinite(Member member, Long cursorId, int size) {
-	// 	Pageable pageable = PageRequest.of(0, size + 1);
-	// 	List<Message> messages;
-	//
-	// 	if (cursorId == null) {
-	// 		// 첫 페이지 요청
-	// 		messages = messageRepository.findSentMessagesFirstPage(member.getId(), pageable);
-	// 	} else {
-	// 		// 다음 페이지 요청
-	// 		messages = messageRepository.findSentMessagesNextPage(member.getId(), cursorId, pageable);
-	// 	}
-	//
-	// 	// MessageDto로 변환
-	// 	List<MessageDto> messageDtos = messages.stream()
-	// 		.map(MessageDto::fromEntity)
-	// 		.collect(Collectors.toList());
-	//
-	// 	// SliceDto로 변환
-	// 	return SliceDto.of(messageDtos, size);
-	// }
+	// 무한 스크롤을 위한 받은 메시지 목록 조회
+	@Transactional(readOnly = true)
+	public SliceDto<MessageDto> getReceivedMessagesWithInfiniteScroll(Member member, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size + 1); // +1로 다음 페이지 존재여부 확인
+		Slice<Message> messageSlice = messageRepository.findSliceByReceiverIdOrderByCreatedAtDesc(
+			member.getId(), pageable);
+
+		// MessageDto로 변환
+		var messageDtos = messageSlice.getContent().stream()
+			.map(MessageDto::fromEntity)
+			.toList();
+
+		return SliceDto.of(messageDtos, size);
+	}
+
+	// 무한 스크롤을 위한 보낸 메시지 목록 조회
+	@Transactional(readOnly = true)
+	public SliceDto<MessageDto> getSentMessagesWithInfiniteScroll(Member member, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size + 1); // +1로 다음 페이지 존재여부 확인
+		Slice<Message> messageSlice = messageRepository.findSliceBySenderIdOrderByCreatedAtDesc(
+			member.getId(), pageable);
+
+		// MessageDto로 변환
+		var messageDtos = messageSlice.getContent().stream()
+			.map(MessageDto::fromEntity)
+			.toList();
+
+		return SliceDto.of(messageDtos, size);
+	}
 
 	// 메시지 읽음 상태 변경
 	public MessageDto updateIsRead(Long id, Member member) {
