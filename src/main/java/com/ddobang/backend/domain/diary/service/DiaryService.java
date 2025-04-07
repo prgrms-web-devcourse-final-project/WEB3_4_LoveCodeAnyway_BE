@@ -43,7 +43,7 @@ public class DiaryService {
 	@Transactional
 	public DiaryDto write(DiaryRequestDto diaryRequestDto) {
 		Theme theme = themeService.getThemeById(diaryRequestDto.themeId());
-		Member actor = memberRepository.findById(1L).get();
+		Member actor = memberRepository.findById(1L).orElseThrow();
 
 		int elapsedTime = calculateElapsedTime(
 			diaryRequestDto.timeType(),
@@ -119,28 +119,26 @@ public class DiaryService {
 			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_FORMAT);
 		}
 
-		if (!timeType.equals("remaining") && !timeType.equals("elapsed")) {
+		if (!"remaining".equals(timeType) && !"elapsed".equals(timeType)) {
 			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_TYPE);
 		}
 
 		String[] timeBits = time.split(":");
 		int timeSeconds = Integer.parseInt(timeBits[0]) * 60 + Integer.parseInt(timeBits[1]);
 
-		return timeType.equals("remaining")
+		return "remaining".equals(timeType)
 			? themeRuntime * 60 - timeSeconds
 			: timeSeconds;
 	}
 
 	@Transactional(readOnly = true)
 	public Page<DiaryListDto> getAllItems(DiaryFilterRequest request, int page, int pageSize) {
-		if (request.startDate() != null
-			&& request.endDate() != null
-			&& request.startDate().isAfter(request.endDate())) {
+		if (request.isInvalidDateRange()) {
 			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_DATE_RANGE);
 		}
 
 		Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Order.desc("id")));
-		Member actor = memberRepository.findById(1L).get();
+		Member actor = memberRepository.findById(1L).orElseThrow();
 
 		return diaryRepository.findDiariesByFilter(actor, request, pageable)
 			.map(DiaryListDto::of);
