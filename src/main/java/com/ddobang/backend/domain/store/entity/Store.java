@@ -7,6 +7,7 @@ import com.ddobang.backend.global.entity.BaseTime;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,7 +40,7 @@ public class Store extends BaseTime {
 		OPENED, CLOSED, INACTIVE, DELETED
 	}
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	private Region region;
 
 	@Builder
