@@ -21,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -43,6 +44,7 @@ import jakarta.persistence.EntityManager;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
+@DirtiesContext
 public class UploadControllerTest {
 	@Autowired
 	private MockMvc mvc;
