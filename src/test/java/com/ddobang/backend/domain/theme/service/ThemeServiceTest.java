@@ -17,8 +17,8 @@ import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.service.StoreService;
 import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
+import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeDetailResponse;
-import com.ddobang.backend.domain.theme.dto.response.ThemeForDiaryResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeForPartyResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemesResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
@@ -136,10 +136,10 @@ public class ThemeServiceTest {
 	@DisplayName("일지 등록용 테마 검색 성공")
 	void getThemesForDiarySearch_success() {
 		String keyword = "방탈";
-		ThemeForDiaryResponse response = new ThemeForDiaryResponse(1L, "일지테마", "매장1");
+		SimpleThemeResponse response = new SimpleThemeResponse(1L, "일지테마", "매장1");
 		when(themeRepository.findThemesForDiarySearch(keyword)).thenReturn(List.of(response));
 
-		List<ThemeForDiaryResponse> result = themeService.getThemesForDiarySearch(keyword);
+		List<SimpleThemeResponse> result = themeService.getThemesForDiarySearch(keyword);
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).themeName()).isEqualTo("일지테마");
@@ -181,7 +181,7 @@ public class ThemeServiceTest {
 		when(storeService.saveForMember(any())).thenReturn(store);
 		when(themeRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-		ThemeForDiaryResponse response = themeService.saveThemeForMember(request);
+		SimpleThemeResponse response = themeService.saveForMember(request);
 
 		assertThat(response.themeName()).isEqualTo("테마A");
 		assertThat(response.storeName()).isEqualTo("매장1");
@@ -201,7 +201,7 @@ public class ThemeServiceTest {
 			new ThemeException(errorCode));
 
 		// then
-		assertThatThrownBy(() -> themeService.saveThemeForMember(request))
+		assertThatThrownBy(() -> themeService.saveForMember(request))
 			.isInstanceOf(ThemeException.class)
 			.hasMessageContaining(errorCode.getMessage());
 	}
