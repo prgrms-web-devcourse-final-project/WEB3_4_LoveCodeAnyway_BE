@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -21,7 +22,7 @@ import com.ddobang.backend.domain.store.exception.StoreErrorCode;
 import com.ddobang.backend.domain.store.exception.StoreException;
 import com.ddobang.backend.domain.store.service.StoreService;
 import com.ddobang.backend.global.exception.GlobalErrorCode;
-import com.ddobang.backend.global.security.SecurityConfig;
+import com.ddobang.backend.global.security.TestSecurityConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -30,7 +31,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author 100minha
  */
 @WebMvcTest(AdminStoreController.class)
-@Import({SecurityConfig.class})
+@ActiveProfiles("test")
+@Import(TestSecurityConfig.class)
 public class AdminStoreControllerTest {
 
 	@MockitoBean
@@ -64,7 +66,7 @@ public class AdminStoreControllerTest {
 	void saveForAdminTest() throws Exception {
 		// given
 		// when
-		ResultActions result = mockMvc.perform(post("/admin/stores").contentType(MediaType.APPLICATION_JSON)
+		ResultActions result = mockMvc.perform(post("/api/v1/admin/stores").contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(storeRequest)));
 
 		result.andExpect(handler().handlerType(AdminStoreController.class))
@@ -85,7 +87,7 @@ public class AdminStoreControllerTest {
 			.build();
 
 		// when
-		ResultActions result = mockMvc.perform(post("/admin/stores").contentType(MediaType.APPLICATION_JSON)
+		ResultActions result = mockMvc.perform(post("/api/v1/admin/stores").contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(blankNameRequest)));
 		GlobalErrorCode errorCode = GlobalErrorCode.NOT_VALID;
 
@@ -108,7 +110,7 @@ public class AdminStoreControllerTest {
 			.build();
 
 		// when
-		ResultActions result = mockMvc.perform(post("/admin/stores").contentType(MediaType.APPLICATION_JSON)
+		ResultActions result = mockMvc.perform(post("/api/v1/admin/stores").contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(invalidStatusRequest))
 			.contentType(MediaType.APPLICATION_JSON));
 		GlobalErrorCode errorCode = GlobalErrorCode.NOT_VALID;
@@ -129,7 +131,7 @@ public class AdminStoreControllerTest {
 		Long id = 1L;
 
 		// when
-		ResultActions result = mockMvc.perform(put("/admin/stores/" + id)
+		ResultActions result = mockMvc.perform(put("/api/v1/admin/stores/" + id)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(storeRequest)));
 
@@ -148,7 +150,7 @@ public class AdminStoreControllerTest {
 			.when(storeService).modify(id, storeRequest);
 
 		// when
-		ResultActions result = mockMvc.perform(put("/admin/stores/" + id)
+		ResultActions result = mockMvc.perform(put("/api/v1/admin/stores/" + id)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(storeRequest)));
 		StoreErrorCode errorCode = StoreErrorCode.STORE_NOT_FOUND;
@@ -167,7 +169,7 @@ public class AdminStoreControllerTest {
 		Long id = 1L;
 
 		// when
-		ResultActions result = mockMvc.perform(delete("/admin/stores/" + id)
+		ResultActions result = mockMvc.perform(delete("/api/v1/admin/stores/" + id)
 			.contentType(MediaType.APPLICATION_JSON));
 
 		//then

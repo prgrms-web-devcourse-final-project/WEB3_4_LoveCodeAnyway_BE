@@ -1,10 +1,5 @@
 package com.ddobang.backend.domain.party.entity;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.exception.PartyErrorCode;
@@ -14,28 +9,16 @@ import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.global.entity.BaseTime;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -129,11 +112,8 @@ public class Party extends BaseTime {
 	}
 
 	public boolean isRecruiting() {
-		if (this.getStatus() != PartyStatus.RECRUITING) {
-			return false;
-		}
-		return true;
-	}
+        return this.getStatus() == PartyStatus.RECRUITING;
+    }
 
 	public void updatePartyStatus() {
 		this.acceptedParticipantsCount = getAcceptedMembers().size() - 1;
@@ -143,18 +123,18 @@ public class Party extends BaseTime {
 		}
 
 		if (LocalDateTime.now().isAfter(scheduledAt)) {
-			this.status = PartyStatus.PENDING;
+			updateStatus(PartyStatus.PENDING);
 			return;
 		}
 
 		if (this.acceptedParticipantsCount >= participantsNeeded) {
-			this.status = PartyStatus.FULL;
+			updateStatus(PartyStatus.FULL);
 		} else {
-			this.status = PartyStatus.RECRUITING;
+			updateStatus(PartyStatus.RECRUITING);
 		}
 	}
 
-	public void updateFinalStatus(PartyStatus status) {
+	public void updateStatus(PartyStatus status) {
 		this.status = status;
 	}
 

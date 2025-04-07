@@ -5,7 +5,7 @@ import com.ddobang.backend.domain.party.entity.PartyMember;
 
 public record PartyMemberSummaries(
 	Long id,
-	String profileImageUrl,
+	String profilePictureUrl,
 	String nickname
 ) {
 	public static PartyMemberSummaries from(PartyMember partyMember) {

@@ -1,9 +1,9 @@
 package com.ddobang.backend.domain.party.dto;
 
-import java.time.LocalDateTime;
-
 import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.party.types.PartyStatus;
+
+import java.time.LocalDateTime;
 
 public record PartyDto(
 	Long id,
@@ -16,11 +16,11 @@ public record PartyDto(
 	Boolean rookieAvailable,
 	PartyStatus status,
 
-	Long host_id,
-	String host_nickname,
+	Long hostId,
+	String hostNickname,
 
-	Long theme_id,
-	String theme_name
+	Long themeId,
+	String themeName
 ) {
 	public static PartyDto toDto(Party party) {
 		return new PartyDto(

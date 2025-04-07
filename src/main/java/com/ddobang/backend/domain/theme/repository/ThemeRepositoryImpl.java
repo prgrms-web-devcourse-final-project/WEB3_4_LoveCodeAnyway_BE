@@ -27,12 +27,14 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 
 	private final JPAQueryFactory queryFactory;
 
+	private static final QTheme theme = QTheme.theme;
+	private static final QStore store = QStore.store;
+	private static final QThemeTagMapping mapping = QThemeTagMapping.themeTagMapping;
+	private static final QThemeTag tag = QThemeTag.themeTag;
+
 	@Override
 	public List<Theme> findThemesByFilter(ThemeFilterRequest request, int page, int size) {
-		QTheme theme = QTheme.theme;
-		QStore store = QStore.store;
-		QThemeTagMapping mapping = QThemeTagMapping.themeTagMapping;
-		QThemeTag tag = QThemeTag.themeTag;
+		BooleanBuilder condition = buildFilterConditions(request);
 
 		return queryFactory
 			.selectFrom(theme)
@@ -40,24 +42,35 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 			.leftJoin(theme.themeTagMappings, mapping).fetchJoin()
 			.leftJoin(mapping.themeTag, tag).fetchJoin()
 			.distinct()
-			.where(
-				buildFilterConditions(request, theme, store, tag)
-			)
+			.where(condition)
 			.orderBy(theme.createdAt.desc())
 			.offset((long)page * size)
 			.limit(size + 1) // size보다 1개 더 가져와서 hasNext 판단
 			.fetch();
 	}
 
-	private BooleanBuilder buildFilterConditions(ThemeFilterRequest request, QTheme theme, QStore store,
-		QThemeTag tag) {
+	@Override
+	public List<Theme> findThemesForPartySearch(String keyword) {
+		BooleanBuilder condition = buildSearchForPartyConditions(keyword);
+
+		return queryFactory
+			.selectFrom(theme)
+			.leftJoin(theme.store, store).fetchJoin()
+			.leftJoin(theme.themeTagMappings, mapping).fetchJoin()
+			.leftJoin(mapping.themeTag, tag).fetchJoin()
+			.where(condition)
+			.distinct()
+			.fetch();
+	}
+
+	private BooleanBuilder buildFilterConditions(ThemeFilterRequest request) {
 		BooleanBuilder builder = new BooleanBuilder();
 
 		builder.and(theme.status.eq(Theme.Status.OPENED));
 
 		// 지역 필터링
 		if (request.regionId() != null && !request.regionId().isEmpty()) {
-			builder.and(store.id.in(request.regionId()));
+			builder.and(store.region.id.in(request.regionId()));
 		}
 
 		// 태그 필터링 시 사용될 서브 쿼리
@@ -88,7 +101,21 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 		if (request.keyword() != null && !request.keyword().isBlank()) {
 			builder.and(
 				theme.name.containsIgnoreCase(request.keyword())
-					.or(store.name.containsIgnoreCase(request.keyword()))
+					.or(store.name.containsIgnoreCase(request.keyword()))    //알파벳 대소문자 구분x
+			);
+		}
+
+		return builder;
+	}
+
+	private BooleanBuilder buildSearchForPartyConditions(String keyword) {
+		BooleanBuilder builder = new BooleanBuilder();
+		builder.and(theme.status.eq(Theme.Status.OPENED));
+
+		if (keyword != null && !keyword.isBlank()) {
+			builder.and(
+				theme.name.containsIgnoreCase(keyword)
+					.or(store.name.containsIgnoreCase(keyword))        //알파벳 대소문자 구분x
 			);
 		}
 

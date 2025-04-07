@@ -1,6 +1,7 @@
 package com.ddobang.backend.domain.diary.entity;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+import com.ddobang.backend.domain.theme.entity.Theme;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -44,6 +45,7 @@ public class DiaryStats {
 	@Builder
 	public DiaryStats(
 		Diary diary,
+		Theme theme,
 		int difficulty,
 		int fear,
 		int activity,
@@ -58,6 +60,7 @@ public class DiaryStats {
 		int elapsedTime
 	) {
 		this.diary = diary;
+		this.theme = theme;
 		this.difficulty = difficulty;
 		this.fear = fear;
 		this.activity = activity;

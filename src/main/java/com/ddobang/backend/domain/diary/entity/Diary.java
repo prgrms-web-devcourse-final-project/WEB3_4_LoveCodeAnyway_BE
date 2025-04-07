@@ -3,14 +3,19 @@ package com.ddobang.backend.domain.diary.entity;
 import java.time.LocalDate;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.global.entity.BaseTime;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,16 +29,16 @@ public class Diary extends BaseTime {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// @ManyToOne(fetch = FetchType.LAZY)
-	// @JoinColumn(name = "theme_id", nullable = false)
-	// private Theme theme;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "theme_id", nullable = false)
+	private Theme theme;
 
-	// @ManyToOne(fetch = FetchType.LAZY)
-	// @JoinColumn(name = "member_id", nullable = false)
-	// private Member author;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id", nullable = false)
+	private Member author;
 
 	@OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
-	private DiaryStats diaryStats;
+	private DiaryStat diaryStat;
 
 	private LocalDate escapeDate;
 	private String imageUrl;
@@ -44,28 +49,30 @@ public class Diary extends BaseTime {
 
 	@Builder
 	public Diary(
-		//Theme theme,
+		Theme theme,
+		Member author,
 		LocalDate escapeDate,
 		String imageUrl,
 		String participants,
 		String review
 	) {
-		//this.theme = theme;
+		this.theme = theme;
+		this.author = author;
 		this.escapeDate = escapeDate;
 		this.imageUrl = imageUrl;
 		this.participants = participants;
 		this.review = review;
 	}
 
-	public void setDiaryStats(DiaryStats diaryStats) {
-		this.diaryStats = diaryStats;
+	public void setDiaryStat(DiaryStat diaryStat) {
+		this.diaryStat = diaryStat;
 	}
 
 	public void modify(
-		//Theme theme,
+		Theme theme,
 		DiaryRequestDto diaryRequestDto
 	) {
-		//this.theme = theme;
+		this.theme = theme;
 		this.escapeDate = diaryRequestDto.escapeDate();
 		this.imageUrl = diaryRequestDto.imageUrl();
 		this.participants = diaryRequestDto.participants();

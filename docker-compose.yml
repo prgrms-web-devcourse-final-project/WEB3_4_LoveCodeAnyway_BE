@@ -35,3 +35,6 @@ services:
 
 volumes:
   mysql-data:
+
+networks:
+  ddobang-network:
