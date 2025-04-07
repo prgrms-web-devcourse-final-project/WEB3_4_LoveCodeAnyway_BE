@@ -50,28 +50,28 @@ public class MessageController {
 		return ResponseFactory.ok("쪽지 전송 성공", messageDto);
 	}
 	
-	// 받은 쪽지 목록 조회 (무한 스크롤)
+	// 받은 쪽지 목록 조회 (커서 기반 무한 스크롤)
 	@GetMapping("/received")
 	public ResponseEntity<SuccessResponse<SliceDto<MessageDto>>> getReceivedMessages(
-		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(required = false) Long lastMessageId,
 		@RequestParam(defaultValue = "10") int size,
 		@AuthenticationPrincipal UserDetails userDetails) {
 
 		Member member = memberService.getMemberByUsername(userDetails.getUsername());
-		SliceDto<MessageDto> messages = messageService.getReceivedMessagesWithInfiniteScroll(member, page, size);
+		SliceDto<MessageDto> messages = messageService.getReceivedMessagesWithCursor(member, lastMessageId, size);
 
 		return ResponseFactory.ok("받은 쪽지 목록 조회 성공", messages);
 	}
 
-	// 보낸 쪽지 목록 조회 (무한 스크롤)
+	// 보낸 쪽지 목록 조회 (커서 기반 무한 스크롤)
 	@GetMapping("/sent")
 	public ResponseEntity<SuccessResponse<SliceDto<MessageDto>>> getSentMessages(
-		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(required = false) Long lastMessageId,
 		@RequestParam(defaultValue = "10") int size,
 		@AuthenticationPrincipal UserDetails userDetails) {
 
 		Member member = memberService.getMemberByUsername(userDetails.getUsername());
-		SliceDto<MessageDto> messages = messageService.getSentMessagesWithInfiniteScroll(member, page, size);
+		SliceDto<MessageDto> messages = messageService.getSentMessagesWithCursor(member, lastMessageId, size);
 
 		return ResponseFactory.ok("보낸 쪽지 목록 조회 성공", messages);
 	}
