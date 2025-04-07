@@ -37,3 +37,6 @@ custom:
     timeout: 600000
   fileUpload:
     dirPath: /gen
+jwt:
+  access-token-expiration: 3600000        # 1시간
+  refresh-token-expiration: 604800000     # 7일
