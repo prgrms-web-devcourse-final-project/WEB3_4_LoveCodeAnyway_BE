@@ -11,10 +11,10 @@ COPY settings.gradle .
 # 권한 설정
 RUN chmod +x ./gradlew
 
-# 의존성만 먼저 다운로드 (캐싱 효과)
+# 의존성만 먼저 다운로드
 RUN ./gradlew dependencies
 
-# 나머지 소스 복사
+# 소스 복사
 COPY src src
 
 # 애플리케이션 빌드
@@ -25,10 +25,10 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-# 빌더 스테이지에서 생성된 JAR 파일 복사
+# JAR 파일 복사
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# 애플리케이션 실행을 위한 환경 변수 설정
+# 환경 설정
 ENV SPRING_PROFILES_ACTIVE=dev
 ENV TZ=Asia/Seoul
 
