@@ -1,0 +1,37 @@
+# application-prod.yml
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:ddobang}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 운영 환경에서는 validate 사용
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+
+jwt:
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:3600000}  # 1시간
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7일
+
+logging:
+  level:
+    root: INFO
+    com.ddobang.backend: INFO
+    org.springframework: INFO
+    org.hibernate: INFO
+
+springdoc:
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}  # 운영 환경에서는 기본적으로 비활성화
+
+oauth:
+  kakao:
+    base-uri: ${KAKAO_BASE_URI}
