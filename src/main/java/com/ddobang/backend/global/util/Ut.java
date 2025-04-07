@@ -8,11 +8,11 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 public class Ut {
-	public static void rm(String filePath) throws IOException {
+	public static boolean rm(String filePath) throws IOException {
 		Path path = Path.of(filePath);
 
 		if (!Files.exists(path))
-			return;
+			return false;
 
 		if (Files.isRegularFile(path)) {
 			// 파일이면 바로 삭제
@@ -33,5 +33,7 @@ public class Ut {
 				}
 			});
 		}
+
+		return true;
 	}
 }

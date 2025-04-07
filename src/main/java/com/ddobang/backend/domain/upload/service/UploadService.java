@@ -110,6 +110,7 @@ public class UploadService {
 				path = member.getProfilePictureUrl();
 				member.setProfilePictureUrl(null);
 			}
+
 			case DIARY -> {
 				Diary diary = diaryRepository.findById(id)
 					.orElseThrow(() -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND));
@@ -117,19 +118,32 @@ public class UploadService {
 				path = diary.getImageUrl();
 				diary.setImageUrl(null);
 			}
+
 			case BOARD -> {
 				Attachment attachment = attachmentRepository.findById(id)
 					.orElseThrow(() -> new UploadException(UPLOAD_FILE_NOT_FOUND));
 
+				Post post = attachment.getPost();
 				path = attachment.getUrl();
+
+				post.getAttachments().removeIf(
+					file -> file.getId() == id
+				);
+
 				attachmentRepository.delete(attachment);
 			}
+
 			default -> throw new UploadException(UploadErrorCode.UPLOAD_FILE_INVALID_TARGET);
 		}
 
-		if (path != null && !path.isBlank()) {
-			log.info("파일 삭제: path={}", target, path);
-			Ut.rm(Path.of(fileDirPath).resolve(path).toString());
+		if (path == null || path.isBlank() || path.startsWith("http")) {
+			throw new UploadException(UploadErrorCode.UPLOAD_FILE_NOT_FOUND);
+		}
+
+		log.info("파일 삭제: path={}", target, path);
+
+		if (!Ut.rm(Path.of(fileDirPath).resolve(path).toString())) {
+			throw new UploadException(UploadErrorCode.UPLOAD_FILE_FAIL_DELETE);
 		}
 	}
 
@@ -140,11 +154,13 @@ public class UploadService {
 					.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 				member.setProfilePictureUrl(path.toString());
 			}
+
 			case DIARY -> {
 				Diary diary = diaryRepository.findById(parentId)
 					.orElseThrow(() -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND));
 				diary.setImageUrl(path.toString());
 			}
+
 			case BOARD -> {
 				Post post = boardRepository.findById(parentId)
 					.orElseThrow(() -> new BoardException(BoardErrorCode.BOARD_NOT_FOUND));
@@ -156,6 +172,7 @@ public class UploadService {
 
 				post.getAttachments().add(attachment);
 			}
+
 			default -> throw new UploadException(UploadErrorCode.UPLOAD_FILE_INVALID_TARGET);
 		}
 	}
