@@ -68,6 +68,9 @@ public class SecurityConfig {
 					.requestMatchers("/api/v1/parties/*").permitAll()
 					.requestMatchers("/api/v1/stores/*").permitAll()
 
+					// Acuator API
+					.requestMatchers("/actuator/**").permitAll()
+
 					// 인증 필요 API
 					.anyRequest().hasAnyRole("USER", "ADMIN");
 			})
