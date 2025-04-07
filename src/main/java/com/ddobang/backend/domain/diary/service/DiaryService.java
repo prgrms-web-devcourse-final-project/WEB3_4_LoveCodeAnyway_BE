@@ -26,7 +26,7 @@ import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
-import com.ddobang.backend.domain.theme.dto.response.ThemeForDiaryResponse;
+import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 
@@ -170,7 +170,7 @@ public class DiaryService {
 	}
 
 	@Transactional
-	public ThemeForDiaryResponse saveThemeForDiary(ThemeForMemberRequest request) {
-		return themeService.saveThemeForMember(request);
+	public SimpleThemeResponse saveThemeForDiary(ThemeForMemberRequest request) {
+		return themeService.saveForMember(request);
 	}
 }
