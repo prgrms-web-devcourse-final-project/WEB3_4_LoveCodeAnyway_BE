@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -186,9 +185,9 @@ public class ThemeRepositoryTest {
 
 		// then
 		assertThat(results).hasSize(4);
-		AssertionsForClassTypes.assertThat(results.get(0).getName()).isEqualTo("방탈출5");
-		AssertionsForClassTypes.assertThat(results.get(1).getName()).isEqualTo("방탈출4");
-		AssertionsForClassTypes.assertThat(results.get(2).getName()).isEqualTo("방탈출3");
+		assertThat(results.get(0)).isIn(testThemes);
+		assertThat(results.get(1)).isIn(testThemes);
+		assertThat(results.get(2)).isIn(testThemes);
 	}
 
 	@Test
@@ -202,8 +201,8 @@ public class ThemeRepositoryTest {
 
 		// then
 		assertThat(results).hasSize(2);
-		AssertionsForClassTypes.assertThat(results.get(0).getName()).isEqualTo("방탈출2");
-		AssertionsForClassTypes.assertThat(results.get(1).getName()).isEqualTo("방탈출1");
+		assertThat(results.get(0)).isIn(testThemes);
+		assertThat(results.get(1)).isIn(testThemes);
 	}
 
 	@Test

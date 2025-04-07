@@ -87,3 +87,5 @@ springdoc:
 custom:
   sse:
     timeout: 600000  # SSE 타임아웃 설정 (밀리초, 10분)
+  fileUpload:
+    dirPath: c:/temp/ddobang_dev
