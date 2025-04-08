@@ -83,8 +83,10 @@
      @Test
      @DisplayName("모임 목록 조회")
      void getPartiesTest() throws Exception {
-         // when
-         mockMvc.perform(get("/api/v1/parties"))
+
+         mockMvc.perform(post("/api/v1/parties/search")
+                         .contentType(MediaType.APPLICATION_JSON)
+                         .content("{}"))
                  .andExpect(handler().handlerType(PartyController.class))
                  .andExpect(handler().methodName("getParties"))
                  .andExpect(status().isOk());
