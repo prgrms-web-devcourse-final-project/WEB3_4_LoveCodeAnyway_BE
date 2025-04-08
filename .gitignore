@@ -48,5 +48,8 @@ mysql-data
 application-secret.yml
 .env
 
-# yml 임시 파일 제외
+# 임시 파일 제외
 *.yml~
+*~
+*.bak
+.*.swp
