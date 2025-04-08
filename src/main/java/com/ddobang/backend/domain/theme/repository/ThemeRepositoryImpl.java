@@ -105,7 +105,7 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 
 		// 태그 필터링 시 사용될 서브 쿼리
 		// 요청에 포함된 태그들 중 하나라도 포함되면 통과
-		if (request.tagNames() != null && !request.tagNames().isEmpty()) {
+		if (request.tagIds() != null && !request.tagIds().isEmpty()) {
 			QThemeTagMapping subMapping = new QThemeTagMapping("subMapping");
 			QThemeTag subTag = new QThemeTag("subTag");
 
@@ -115,7 +115,7 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 				.join(subMapping.themeTag, subTag)    // 테마 태그에 조인
 				.where(
 					subMapping.theme.eq(theme),    // 지금 조회 중인 테마와 매핑된 태그인지 확인
-					subTag.name.in(request.tagNames())    // 사용자가 요청한 필터에 포함되는 태그인지 확인
+					subTag.id.in(request.tagIds())    // 사용자가 요청한 필터에 포함되는 태그인지 확인
 				)
 				.exists()    // where 조건 만족 시 true
 			);
@@ -144,6 +144,7 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 
 		if (keyword != null && !keyword.isBlank()) {
 			builder.and(
+
 				theme.name.containsIgnoreCase(keyword)
 					.or(store.name.containsIgnoreCase(keyword))        //알파벳 대소문자 구분x
 			);
