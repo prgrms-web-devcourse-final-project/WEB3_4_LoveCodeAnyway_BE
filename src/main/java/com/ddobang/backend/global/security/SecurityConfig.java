@@ -43,8 +43,8 @@ public class SecurityConfig {
 						"/webjars/**").permitAll()
 
 					// 관리자 관련 API
-					.requestMatchers("/admin/login").permitAll() // 로그인만 공개
-					.requestMatchers("/admin/**").hasRole("ADMIN")
+					.requestMatchers("/api/v1/admin/login").permitAll() // 로그인만 공개
+					.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
 					// 닉네임 중복 체크
 					.requestMatchers("/api/v1/members/check-nickname").permitAll()
