@@ -120,11 +120,11 @@ jobs:
           
           echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
-  - name: Add Pull Request Review Comment
-    uses: nbaztec/add-pr-review-comment@v1.0.7
-    with:
-      comments: ${{ steps.store.outputs.comment }}
-      repo-token: ${{ secrets.GITHUB_TOKEN }}
-      repo-token-user-login: 'github-actions[bot]'
-      allow-repeats: false
-    continue-on-error: true
+      - name: Add Pull Request Review Comment
+        uses: nbaztec/add-pr-review-comment@v1.0.7
+        with:
+          comments: ${{ steps.store.outputs.comment }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token-user-login: 'github-actions[bot]'
+          allow-repeats: false
+        continue-on-error: true
