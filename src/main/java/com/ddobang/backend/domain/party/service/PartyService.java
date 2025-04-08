@@ -15,9 +15,6 @@ import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
-import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
-import com.ddobang.backend.domain.theme.exception.ThemeException;
-import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 import com.ddobang.backend.global.response.SliceDto;
 import jakarta.transaction.Transactional;
@@ -33,7 +30,6 @@ public class PartyService {
 	private final ThemeService themeService;
 	private final MemberService memberService;
 	private final PartyValidationService partyValidationService;
-	private final ThemeStatRepository themeStatRepository;
 
 	public SliceDto<PartySummaryResponse> getParties(Long lastId, int size, PartySearchCondition partySearchCondition) {
 		List<PartySummaryResponse> parties = partyRepository.getParties(lastId, size + 1, partySearchCondition);
@@ -48,8 +44,7 @@ public class PartyService {
 
 	public PartyDetailResponse getPartyDetailResponse(Long id, Member actor) {
 		Party party = getPartyById(id);
-		ThemeStat themeStat = themeStatRepository.findById(party.getTheme().getId())
-			.orElseThrow(() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND));
+		ThemeStat themeStat = themeService.getThemeStatById(id);
 		return PartyDetailResponse.from(party, themeStat, actor);
 	}
 
@@ -102,7 +97,7 @@ public class PartyService {
 	@Transactional
 	public void acceptPartyMember(Long id, Long memberId, Member actor) {
 		Party party = getPartyById(id);
-		Member member = memberService.getMemberById(memberId);
+		Member member = memberService.getMember(memberId);
 
 		partyValidationService.validateAccept(party, member, actor);
 

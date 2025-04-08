@@ -1,15 +1,15 @@
 package com.ddobang.backend.domain.member.service;
 
-import java.util.Map;
-import java.util.Optional;
-
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.exception.MemberErrorCode;
+import com.ddobang.backend.domain.member.exception.MemberException;
+import com.ddobang.backend.domain.member.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.repository.MemberRepository;
-
-import lombok.RequiredArgsConstructor;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -68,5 +68,10 @@ public class MemberService {
 
 	public Optional<Member> findByKakaoId(String kakaoId) {
 		return memberRepository.findByKakaoId(kakaoId);
+	}
+
+	public Member getMember(Long memberId) {
+		return memberRepository.findById(memberId)
+				.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 	}
 }
