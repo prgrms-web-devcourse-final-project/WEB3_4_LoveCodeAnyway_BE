@@ -15,6 +15,6 @@ public record ThemeForMemberRequest(
 	@NotBlank(message = "매장 이름은 공백일 수 없습니다.")
 	String storeName,
 	String thumbnailUrl,
-	List<String> tags
+	List<Long> tagIds
 ) {
 }
