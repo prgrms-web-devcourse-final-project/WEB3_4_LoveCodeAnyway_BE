@@ -41,7 +41,7 @@ public class DiaryStat {
 	private int deviceRatio;
 
 	// 탈출 관련 데이터
-	private int hintCount;
+	private Integer hintCount;
 	private boolean escapeResult;
 	private int elapsedTime;
 
@@ -58,7 +58,7 @@ public class DiaryStat {
 		int question,
 		int interior,
 		int deviceRatio,
-		int hintCount,
+		Integer hintCount,
 		boolean escapeResult,
 		int elapsedTime
 	) {

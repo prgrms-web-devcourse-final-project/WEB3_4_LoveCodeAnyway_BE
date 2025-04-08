@@ -52,7 +52,7 @@ public record DiaryRequestDto(
 	int deviceRatio,
 
 	@PositiveOrZero
-	int hintCount,
+	Integer hintCount,
 
 	boolean escapeResult,
 
