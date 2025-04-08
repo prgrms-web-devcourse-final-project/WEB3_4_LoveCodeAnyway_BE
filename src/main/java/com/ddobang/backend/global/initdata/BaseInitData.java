@@ -138,7 +138,7 @@ public class BaseInitData {
 				.price(25000)
 				.status(i % 3 != 0 ? Theme.Status.OPENED : Theme.Status.CLOSED)
 				.reservationUrl("https://example.com/theme/" + i)
-				.thumbnailUrl("https://placehold.co/600x400?text=Theme" + i)
+				.thumbnailUrl("https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif")
 				.store(i % 2 == 0 ? store1 : store2)
 				.themeTags(i % 4 != 0 ? List.of(tag1, tag2) : List.of(tag3))
 				.build()))
