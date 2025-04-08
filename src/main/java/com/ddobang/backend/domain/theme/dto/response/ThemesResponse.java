@@ -1,4 +1,4 @@
-package com.ddobang.backend.domain.theme.dto;
+package com.ddobang.backend.domain.theme.dto.response;
 
 import java.util.List;
 

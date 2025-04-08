@@ -4,3 +4,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+# Custom settings
+custom:
+  fileUpload:
+    dirPath: c:/temp/ddobang_test
+
+jwt:
+  access-token-expiration: 60000  # 1분
+  refresh-token-expiration: 300000  # 5분

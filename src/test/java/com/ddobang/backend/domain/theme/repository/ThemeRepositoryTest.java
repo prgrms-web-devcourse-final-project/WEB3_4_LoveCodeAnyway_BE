@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,8 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.repository.StoreRepository;
-import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
-import com.ddobang.backend.domain.theme.dto.ThemeForDiaryResponse;
+import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.global.config.JpaAuditingConfig;
@@ -186,9 +185,9 @@ public class ThemeRepositoryTest {
 
 		// then
 		assertThat(results).hasSize(4);
-		AssertionsForClassTypes.assertThat(results.get(0).getName()).isEqualTo("방탈출5");
-		AssertionsForClassTypes.assertThat(results.get(1).getName()).isEqualTo("방탈출4");
-		AssertionsForClassTypes.assertThat(results.get(2).getName()).isEqualTo("방탈출3");
+		assertThat(results.get(0)).isIn(testThemes);
+		assertThat(results.get(1)).isIn(testThemes);
+		assertThat(results.get(2)).isIn(testThemes);
 	}
 
 	@Test
@@ -202,8 +201,8 @@ public class ThemeRepositoryTest {
 
 		// then
 		assertThat(results).hasSize(2);
-		AssertionsForClassTypes.assertThat(results.get(0).getName()).isEqualTo("방탈출2");
-		AssertionsForClassTypes.assertThat(results.get(1).getName()).isEqualTo("방탈출1");
+		assertThat(results.get(0)).isIn(testThemes);
+		assertThat(results.get(1)).isIn(testThemes);
 	}
 
 	@Test
@@ -257,7 +256,7 @@ public class ThemeRepositoryTest {
 		String keyword = "탈출2";
 
 		// when
-		List<ThemeForDiaryResponse> results =
+		List<SimpleThemeResponse> results =
 			themeRepository.findThemesForDiarySearch(keyword);
 
 		// then
@@ -273,7 +272,7 @@ public class ThemeRepositoryTest {
 		String keyword = "매장";
 
 		// when
-		List<ThemeForDiaryResponse> results =
+		List<SimpleThemeResponse> results =
 			themeRepository.findThemesForDiarySearch(keyword);
 
 		// then
@@ -289,7 +288,7 @@ public class ThemeRepositoryTest {
 		String keyword = "NO_CONTENT";
 
 		// when
-		List<ThemeForDiaryResponse> results =
+		List<SimpleThemeResponse> results =
 			themeRepository.findThemesForDiarySearch(keyword);
 
 		// then

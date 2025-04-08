@@ -25,10 +25,10 @@ import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
+import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
-import com.ddobang.backend.domain.theme.exception.ThemeException;
-import com.ddobang.backend.domain.theme.repository.ThemeRepository;
+import com.ddobang.backend.domain.theme.service.ThemeService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,14 +37,12 @@ import lombok.RequiredArgsConstructor;
 public class DiaryService {
 	private final DiaryRepository diaryRepository;
 	private final DiaryStatRepository diaryStatRepository;
-	private final ThemeRepository themeRepository;
 	private final MemberRepository memberRepository;
+	private final ThemeService themeService;
 
 	@Transactional
 	public DiaryDto write(DiaryRequestDto diaryRequestDto) {
-		Theme theme = themeRepository.findById(diaryRequestDto.themeId()).orElseThrow(
-			() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
-		);
+		Theme theme = themeService.getThemeById(diaryRequestDto.themeId());
 		Member actor = memberRepository.findById(1L).get();
 
 		int elapsedTime = calculateElapsedTime(
@@ -92,9 +90,7 @@ public class DiaryService {
 	@Transactional
 	public DiaryDto modify(long id, DiaryRequestDto diaryRequestDto) {
 		Diary diary = findById(id);
-		Theme theme = themeRepository.findById(diaryRequestDto.themeId()).orElseThrow(
-			() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND)
-		);
+		Theme theme = themeService.getThemeById(diaryRequestDto.themeId());
 
 		int elapsedTime = calculateElapsedTime(
 			diaryRequestDto.timeType(),
@@ -171,5 +167,10 @@ public class DiaryService {
 			.stream()
 			.map(DiaryListDto::of)
 			.toList();
+	}
+
+	@Transactional
+	public SimpleThemeResponse saveThemeForDiary(ThemeForMemberRequest request) {
+		return themeService.saveForMember(request);
 	}
 }

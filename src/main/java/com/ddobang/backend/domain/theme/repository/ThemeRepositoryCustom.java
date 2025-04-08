@@ -2,7 +2,8 @@ package com.ddobang.backend.domain.theme.repository;
 
 import java.util.List;
 
-import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 
 /**
@@ -14,4 +15,6 @@ public interface ThemeRepositoryCustom {
 	List<Theme> findThemesByFilter(ThemeFilterRequest request, int page, int size);
 
 	List<Theme> findThemesForPartySearch(String keyword);
+
+	List<SimpleThemeResponse> findThemesForAdminSearch(ThemeFilterRequest request, int page, int size);
 }

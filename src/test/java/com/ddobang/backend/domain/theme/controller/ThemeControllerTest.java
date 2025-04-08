@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.region.entity.Region;
 import com.ddobang.backend.domain.store.entity.Store;
-import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
@@ -287,7 +287,7 @@ public class ThemeControllerTest {
 		result
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.name").value(themes.get(0).getName()))
-			.andExpect(jsonPath("$.data.storeName").value(store2.getName()))
+			.andExpect(jsonPath("$.data.storeInfo.name").value(store2.getName()))
 			.andExpect(jsonPath("$.data.runtime").value(themes.get(0).getRuntime()))
 			.andExpect(jsonPath("$.data.recommendedParticipants").value("4~5인"))
 			.andExpect(jsonPath("$.data.tags[0]").value(tag1.getName()))
@@ -312,7 +312,7 @@ public class ThemeControllerTest {
 		result
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.name").value(themes.get(6).getName()))
-			.andExpect(jsonPath("$.data.storeName").value(store2.getName()))
+			.andExpect(jsonPath("$.data.storeInfo.name").value(store2.getName()))
 			.andExpect(jsonPath("$.data.runtime").value(themes.get(6).getRuntime()))
 			.andExpect(jsonPath("$.data.recommendedParticipants").value("4~5인"))
 			.andExpect(jsonPath("$.data.tags[0]").value(tag1.getName()))

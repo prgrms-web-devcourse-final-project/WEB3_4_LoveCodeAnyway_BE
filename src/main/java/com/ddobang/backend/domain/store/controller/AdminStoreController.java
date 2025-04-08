@@ -1,15 +1,20 @@
 package com.ddobang.backend.domain.store.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ddobang.backend.domain.store.dto.StoreRequest;
+import com.ddobang.backend.domain.store.dto.StoreResponse;
 import com.ddobang.backend.domain.store.service.StoreService;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SuccessResponse;
@@ -56,5 +61,13 @@ public class AdminStoreController {
 
 		storeService.delete(id);
 		return ResponseFactory.ok(id + "번 매장 삭제에 성공했습니다.");
+	}
+
+	@Operation(summary = "관리자 전용 매장 검색 API", description = "테마를 저장할 때 매핑할 매장 검색")
+	@GetMapping
+	public ResponseEntity<SuccessResponse<List<StoreResponse>>> getStoresByKeyword(
+		@RequestParam(defaultValue = "") String keyword
+	) {
+		return ResponseFactory.ok(storeService.getStoresByKeyword(keyword));
 	}
 }

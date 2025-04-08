@@ -4,6 +4,8 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.ddobang.backend.domain.region.entity.Region;
 import com.ddobang.backend.domain.store.dto.StoreRequest;
+import com.ddobang.backend.domain.store.dto.StoreResponse;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.exception.StoreErrorCode;
 import com.ddobang.backend.domain.store.exception.StoreException;
@@ -176,5 +179,28 @@ public class AdminStoreControllerTest {
 		result.andExpect(handler().handlerType(AdminStoreController.class))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value(id + "번 매장 삭제에 성공했습니다."));
+	}
+
+	@Test
+	@DisplayName("매장 검색 성공 테스트")
+	void getStoresByKeywordTest() throws Exception {
+		// given
+		String keyword = "매장";
+		StoreResponse storeResponse1 = new StoreResponse(1L, "매장1", "서울시 마포구", Store.Status.OPENED);
+		StoreResponse storeResponse2 = new StoreResponse(2L, "매장2", "서울시 강서구", Store.Status.INACTIVE);
+		when(storeService.getStoresByKeyword(keyword)).thenReturn(List.of(storeResponse1, storeResponse2));
+
+		// when
+		ResultActions result = mockMvc.perform(get("/api/v1/admin/stores")
+			.param("keyword", keyword)
+			.contentType(MediaType.APPLICATION_JSON));
+
+		// then
+		result.andExpect(handler().handlerType(AdminStoreController.class))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(2))
+			.andExpect(jsonPath("$.data[0].name").value(storeResponse1.name()))
+			.andExpect(jsonPath("$.data[1].status").value(storeResponse2.status().name()));
+
 	}
 }

@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.ddobang.backend.domain.alarm.exception.SseException;
 import com.ddobang.backend.global.response.ErrorResponse;
@@ -87,6 +88,19 @@ public class GlobalExceptionHandler {
 		if (e.getCauseIoException() != null) {
 			log.debug("Caused by IOException: {}", e.getCauseIoException().getMessage());
 		}
+
+		return ResponseFactory.error(errorCode);
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
+		MethodArgumentTypeMismatchException e) {
+		ErrorCode errorCode = GlobalErrorCode.INVALID_REQUEST;
+
+		log.warn("[ServiceException] status={}, code={}, message={}",
+			errorCode.getStatus().value(),
+			errorCode.getErrorCode(),
+			errorCode.getMessage());
 
 		return ResponseFactory.error(errorCode);
 	}

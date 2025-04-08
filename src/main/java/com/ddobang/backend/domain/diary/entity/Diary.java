@@ -68,6 +68,10 @@ public class Diary extends BaseTime {
 		this.diaryStat = diaryStat;
 	}
 
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
+
 	public void modify(
 		Theme theme,
 		DiaryRequestDto diaryRequestDto

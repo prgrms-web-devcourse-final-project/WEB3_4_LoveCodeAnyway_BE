@@ -18,6 +18,8 @@ import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
 import com.ddobang.backend.domain.diary.dto.response.DiaryListDto;
 import com.ddobang.backend.domain.diary.service.DiaryService;
+import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
+import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SuccessResponse;
@@ -105,4 +107,18 @@ public class DiaryController {
 			diaryService.getDiariesByMonth(year, month)
 		);
 	}
+
+	@Operation(summary = "탈출일지에서 테마 등록", description = "등록되지 않은 테마를 탈출일지에 작성하기 위해 테마를 등록합니다.")
+	@PostMapping("/theme")
+	public ResponseEntity<SuccessResponse<SimpleThemeResponse>> saveThemeForDiary(
+		@RequestBody @Valid ThemeForMemberRequest request
+	) {
+		SimpleThemeResponse theme = diaryService.saveThemeForDiary(request);
+
+		return ResponseFactory.created(
+			"테마 등록에 성공했습니다.",
+			theme
+		);
+	}
+
 }
