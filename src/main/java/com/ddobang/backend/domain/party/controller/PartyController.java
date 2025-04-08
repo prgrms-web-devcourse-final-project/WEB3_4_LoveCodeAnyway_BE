@@ -101,7 +101,7 @@ public class PartyController {
 		return ResponseFactory.noContent();
 	}
 
-	@PatchMapping("/{id}/unexcuted")
+	@PatchMapping("/{id}/unexecuted")
 	@Operation(summary = "모임 미실행 완료")
 	public ResponseEntity<Void> unexecuteParty(@PathVariable Long id) {
 		partyService.unexecuteParty(id, partyAuthHelper.getCurrentMember());

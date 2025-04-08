@@ -7,6 +7,7 @@ import com.ddobang.backend.domain.party.entity.PartyMember;
 import com.ddobang.backend.domain.region.entity.Region;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.entity.Theme;
+import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import jakarta.persistence.EntityManager;
 
@@ -89,6 +90,12 @@ public class TestDataHelper {
         return Store.builder()
                 .region(region)
                 .name(name)
+                .build();
+    }
+
+    public static ThemeStat createThemeStat(Theme theme) {
+        return ThemeStat.builder()
+                .theme(theme)
                 .build();
     }
 

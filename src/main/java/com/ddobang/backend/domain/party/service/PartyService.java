@@ -49,7 +49,7 @@ public class PartyService {
 	public PartyDetailResponse getPartyDetailResponse(Long id, Member actor) {
 		Party party = getPartyById(id);
 		ThemeStat themeStat = themeStatRepository.findById(party.getTheme().getId())
-			.orElseThrow(() -> new ThemeException(ThemeErrorCode.THEME_NOT_FOUND));
+			.orElseThrow(() -> new ThemeException(ThemeErrorCode.THEME_STAT_NOT_FOUND));
 		return PartyDetailResponse.from(party, themeStat, actor);
 	}
 
@@ -102,7 +102,7 @@ public class PartyService {
 	@Transactional
 	public void acceptPartyMember(Long id, Long memberId, Member actor) {
 		Party party = getPartyById(id);
-		Member member = memberService.getMemberById(memberId);
+		Member member = memberService.getMember(memberId);
 
 		partyValidationService.validateAccept(party, member, actor);
 
