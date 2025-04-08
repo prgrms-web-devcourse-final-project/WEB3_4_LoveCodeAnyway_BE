@@ -47,3 +47,6 @@ mysql-data
 # 민감정보
 application-secret.yml
 .env
+
+# yml 임시 파일 제외
+*.yml~
