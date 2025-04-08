@@ -15,7 +15,7 @@ variable "team_tag" {
 
 variable "app_1_domain" {
   description = "app_1 domain"
-  default     = "ddobang.site" // API 서버 도메인
+  default     = "api.dev4-team02.n-e.kr" // API 서버 도메인
 }
 
 variable "app_1_db_name" {
