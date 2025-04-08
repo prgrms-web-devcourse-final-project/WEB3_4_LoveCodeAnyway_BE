@@ -1,6 +1,8 @@
-name: JaCoCo Test Coverage
+name: Test Coverage
 
 on:
+  push:
+    branches: [ feature/* , dev ]
   pull_request:
     branches: [ dev ]
 
