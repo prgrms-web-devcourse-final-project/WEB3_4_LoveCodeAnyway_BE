@@ -31,7 +31,7 @@ import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.upload.exception.UploadErrorCode;
 import com.ddobang.backend.domain.upload.exception.UploadException;
 import com.ddobang.backend.domain.upload.types.FileUploadTarget;
-import com.ddobang.backend.global.entity.Attachment;
+import com.ddobang.backend.domain.board.entity.Attachment;
 import com.ddobang.backend.global.util.Ut;
 
 import lombok.RequiredArgsConstructor;

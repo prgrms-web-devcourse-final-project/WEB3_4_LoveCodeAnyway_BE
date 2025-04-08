@@ -1,6 +1,4 @@
-package com.ddobang.backend.global.entity;
-
-import com.ddobang.backend.domain.board.entity.Post;
+package com.ddobang.backend.domain.board.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
