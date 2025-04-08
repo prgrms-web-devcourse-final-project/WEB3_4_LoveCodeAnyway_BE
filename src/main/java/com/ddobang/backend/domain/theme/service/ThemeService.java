@@ -1,31 +1,26 @@
 package com.ddobang.backend.domain.theme.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.service.StoreService;
 import com.ddobang.backend.domain.theme.dto.ThemeStatDto;
 import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.dto.request.ThemeForAdminRequest;
 import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
-import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
-import com.ddobang.backend.domain.theme.dto.response.ThemeDetailResponse;
-import com.ddobang.backend.domain.theme.dto.response.ThemeForAdminResponse;
-import com.ddobang.backend.domain.theme.dto.response.ThemeForPartyResponse;
-import com.ddobang.backend.domain.theme.dto.response.ThemesResponse;
+import com.ddobang.backend.domain.theme.dto.response.*;
 import com.ddobang.backend.domain.theme.entity.Theme;
+import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
 import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.global.response.SliceDto;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -131,5 +126,9 @@ public class ThemeService {
 		int size) {
 		List<SimpleThemeResponse> themes = themeRepository.findThemesForAdminSearch(filterRequest, page, size);
 		return SliceDto.of(themes, size);
+	}
+
+	public ThemeStat getThemeStatById(Long id) {
+		return themeStatRepository.findById(id).orElse(null);
 	}
 }

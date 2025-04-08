@@ -81,9 +81,9 @@ public record PartyDetailResponse(
 			.themeThumbnailUrl(theme.getThumbnailUrl())
 			.themeTagMappings(theme.getThemeTagMappings())
 
-			.noHintEscapeRate(themeStat.getNoHintEscapeRate())
-			.escapeResult(themeStat.getEscapeResult())
-			.escapeTimeAvg(themeStat.getEscapeTimeAvg())
+			.noHintEscapeRate(themeStat != null ? themeStat.getNoHintEscapeRate() : 0)
+			.escapeResult(themeStat != null ? themeStat.getEscapeResult() : 0)
+			.escapeTimeAvg(themeStat != null ? themeStat.getEscapeTimeAvg() : 0)
 
 			.storeName(store.getName())
 			.storeAddress(store.getAddress())
