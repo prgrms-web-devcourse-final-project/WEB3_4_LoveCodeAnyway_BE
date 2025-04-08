@@ -72,4 +72,10 @@ public class ThemeController {
 
 		return ResponseFactory.ok(themesForDiary);
 	}
+	
+	@Operation(summary = "ci-cd 테스트용 api")
+	@GetMapping("/test")
+	public ResponseEntity<SuccessResponse<Void>> test() {
+		return ResponseFactory.ok("ci-cd 테스트 성공");
+	}
 }
