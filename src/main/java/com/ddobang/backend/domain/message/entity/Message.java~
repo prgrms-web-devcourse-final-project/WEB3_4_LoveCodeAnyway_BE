@@ -59,6 +59,7 @@ public class Message extends BaseTime {
 		return isSender(member) || isReceiver(member);
 	}
 
+
 	// 메시지의 발신자인지 확인
 	public boolean isSender(Member member) {
 		return this.sender.getId().equals(member.getId());

@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-public class DiaryStats {
+public class DiaryStat {
 	@Id
 	private Long id;
 
