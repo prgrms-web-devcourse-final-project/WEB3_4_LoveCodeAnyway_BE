@@ -6,7 +6,6 @@ on:
     branches: [ dev ]
     types: [ opened, reopened, synchronize ]
 
-
 jobs:
   code-review:
     runs-on: ubuntu-latest
@@ -49,7 +48,42 @@ jobs:
             const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash"});            
 
             // Pull Request 전용 프롬프트
-            const prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to extract the exact line number by referring to the "@@ -x,y +a,b @@" part in the diff and use the actual changed line number (not the context lines). The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment }, "side": "RIGHT", "diff_hunk": "{ include the actual diff hunk with @@ markers }"}\] format must be respected. Include ONLY lines that are actually changed in the diff.\n<git diff>${diff_output}</git diff>`;
+            const prompt = `
+            Explain in korean. You are a senior software engineer performing a code review based on a git diff.
+            
+            TASK:
+            Review the code changes in the provided git diff thoroughly from different perspectives.
+            Analyze code quality, potential bugs, security issues, and suggest improvements.
+            
+            JSON OUTPUT FORMAT REQUIREMENTS:
+            - You MUST output a valid JSON array of comment objects
+            - Each comment MUST contain these fields:
+              - "path": file path from the diff
+              - "line": exact line number of changed code (not context lines)
+              - "text": your review comment in Korean
+              - "side": always use "RIGHT"
+              - "diff_hunk": include the exact diff section with @@ markers
+            
+            JSON FORMATTING RULES:
+            - Escape all backslashes with another backslash (\\\\)
+            - Escape quotes within strings with a backslash (\\")
+            - Use only standard escape sequences (\\n, \\t, \\r)
+            - Ensure the final output can be parsed by 'jq'
+            - Make sure special characters are properly escaped
+            - Do not include backtick (```) markers in your output
+            
+            IMPORTANT GUIDELINES:
+            - Focus ONLY on lines that were actually changed in the diff
+            - Extract the exact line number by analyzing the "@@ -x,y +a,b @@" markers
+            - Only comment if there's a meaningful issue or improvement
+            - Be specific and constructive in your feedback
+            - Prioritize significant issues over minor style preferences
+            
+            Here is the git diff for review:
+            <git diff>${diff_output}</git diff>
+            
+            Output your response as a JSON array ONLY, with no explanations or markdown formatting before or after.
+            `;
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
@@ -62,11 +96,28 @@ jobs:
       - name: Format and add PR review comments
         id: store
         run: |
+          # JSON 결과 확인
+          echo "Raw Gemini output:"
+          cat review_result.txt
+          
           # JSON 파싱이 가능하도록 처리
-          COMMENT=$(sed '/^```/d' review_result.txt | jq -c .)
+          # 마크다운 코드 블록 제거
+          sed '/^```/d' review_result.txt > cleaned_review.txt
+          
+          # 잘못된 이스케이프 문자 수정
+          perl -pe 's/\\(?!["\\/bfnrt])/\\\\/g' cleaned_review.txt > fixed_review.txt
+          
+          # 결과 확인
+          echo "Attempting to parse JSON:"
+          cat fixed_review.txt
+          
+          # JSON 파싱 시도
+          COMMENT=$(cat fixed_review.txt | jq -c . 2>/dev/null || echo "[{\"path\":\".github/workflows/gemini_code_review.yml\", \"line\": 1, \"text\": \"Gemini가 유효하지 않은 JSON 형식을 생성했습니다. 프롬프트를 확인해주세요.\", \"side\": \"RIGHT\", \"diff_hunk\": \"@@ -1,1 +1,1 @@\"}]")
+          
           # 결과 확인을 위한 로깅
           echo "Processing comment payload:"
           echo "$COMMENT" | jq .
+          
           echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
       - name: Add Pull Request Review Comment
