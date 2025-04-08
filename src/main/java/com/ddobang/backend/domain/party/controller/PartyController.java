@@ -1,18 +1,5 @@
 package com.ddobang.backend.domain.party.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.ddobang.backend.domain.party.PartyAuthHelper;
 import com.ddobang.backend.domain.party.dto.PartyDto;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
@@ -23,11 +10,12 @@ import com.ddobang.backend.domain.party.service.PartyService;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SliceDto;
 import com.ddobang.backend.global.response.SuccessResponse;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,12 +25,12 @@ public class PartyController {
 	private final PartyService partyService;
 	private final PartyAuthHelper partyAuthHelper;
 
-	@GetMapping
+	@PostMapping("/search")
 	@Operation(summary = "모임 목록 조회 (무한 스크롤)")
 	public ResponseEntity<SuccessResponse<SliceDto<PartySummaryResponse>>> getParties(
 		@RequestParam(required = false) Long lastId,
 		@RequestParam(defaultValue = "10") int size,
-		@ModelAttribute PartySearchCondition partySearchCondition
+		@RequestBody PartySearchCondition partySearchCondition
 	) {
 		return ResponseFactory.ok(partyService.getParties(lastId, size, partySearchCondition));
 	}
