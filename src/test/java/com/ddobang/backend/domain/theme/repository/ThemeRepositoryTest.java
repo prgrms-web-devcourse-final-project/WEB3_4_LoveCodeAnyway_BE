@@ -17,8 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.repository.StoreRepository;
-import com.ddobang.backend.domain.theme.dto.ThemeFilterRequest;
-import com.ddobang.backend.domain.theme.dto.ThemeForDiaryResponse;
+import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
+import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.global.config.JpaAuditingConfig;
@@ -256,7 +256,7 @@ public class ThemeRepositoryTest {
 		String keyword = "탈출2";
 
 		// when
-		List<ThemeForDiaryResponse> results =
+		List<SimpleThemeResponse> results =
 			themeRepository.findThemesForDiarySearch(keyword);
 
 		// then
@@ -272,7 +272,7 @@ public class ThemeRepositoryTest {
 		String keyword = "매장";
 
 		// when
-		List<ThemeForDiaryResponse> results =
+		List<SimpleThemeResponse> results =
 			themeRepository.findThemesForDiarySearch(keyword);
 
 		// then
@@ -288,7 +288,7 @@ public class ThemeRepositoryTest {
 		String keyword = "NO_CONTENT";
 
 		// when
-		List<ThemeForDiaryResponse> results =
+		List<SimpleThemeResponse> results =
 			themeRepository.findThemesForDiarySearch(keyword);
 
 		// then

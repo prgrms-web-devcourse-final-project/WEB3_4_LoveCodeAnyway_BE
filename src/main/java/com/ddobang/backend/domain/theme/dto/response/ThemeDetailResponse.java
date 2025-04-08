@@ -1,8 +1,10 @@
-package com.ddobang.backend.domain.theme.dto;
+package com.ddobang.backend.domain.theme.dto.response;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.ddobang.backend.domain.store.entity.Store;
+import com.ddobang.backend.domain.theme.dto.ThemeStatDto;
 import com.ddobang.backend.domain.theme.entity.Theme;
 
 import lombok.Builder;
@@ -15,27 +17,43 @@ import lombok.Builder;
 @Builder
 public record ThemeDetailResponse(
 	String name,
-	String storeName,
+	String description,
 	int runtime,
-	String recommendedParticipants,
-	List<String> tags,
-	String thumbnailUrl,
 	float officialDifficulty,
+	int price,
+	String recommendedParticipants,
+	String thumbnailUrl,
+	String reservationUrl,
+	List<String> tags,
+	StoreInfo storeInfo,
 	ThemeStatDto diaryBasedThemeStat
 ) {
 	public static ThemeDetailResponse of(Theme theme, ThemeStatDto themeStatDto) {
 		return ThemeDetailResponse.builder()
 			.name(theme.getName())
-			.storeName(theme.getStore().getName())
+			.description(theme.getDescription())
 			.runtime(theme.getRuntime())
+			.officialDifficulty(theme.getOfficialDifficulty())
+			.price(theme.getPrice())
 			.recommendedParticipants(
 				theme.getMinParticipants() + "~" + theme.getMaxParticipants() + "인")
 			.thumbnailUrl(theme.getThumbnailUrl())
+			.reservationUrl(theme.getReservationUrl())
 			.tags(theme.getThemeTagMappings().stream()
 				.map(ttm -> ttm.getThemeTag().getName())
 				.collect(Collectors.toList()))
-			.officialDifficulty(theme.getOfficialDifficulty())
+			.storeInfo(StoreInfo.of(theme.getStore()))
 			.diaryBasedThemeStat(themeStatDto)
 			.build();
+	}
+
+	private record StoreInfo(
+		String name,
+		String phoneNumber,
+		String address
+	) {
+		public static StoreInfo of(Store store) {
+			return new StoreInfo(store.getName(), store.getPhoneNumber(), store.getAddress());
+		}
 	}
 }

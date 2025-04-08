@@ -6,6 +6,7 @@ import java.util.List;
 import org.hibernate.validator.constraints.Length;
 
 import com.ddobang.backend.domain.store.entity.Store;
+import com.ddobang.backend.domain.theme.dto.request.ThemeForAdminRequest;
 import com.ddobang.backend.global.entity.BaseTime;
 
 import jakarta.persistence.CascadeType;
@@ -21,8 +22,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -51,17 +52,18 @@ public class Theme extends BaseTime {
 
 	private int runtime;
 
-	@Min(1)
+	@PositiveOrZero
 	@Max(8)
 	private int minParticipants;
-	@Min(1)
-	@Max(8)
+	@PositiveOrZero
+	@Max(20)
 	private int maxParticipants;
 	@PositiveOrZero
 	@Max(9_999_999)
 	private int price;
 
 	@Enumerated(EnumType.STRING)
+	@NotNull
 	private Status status;
 
 	public enum Status {
@@ -72,6 +74,7 @@ public class Theme extends BaseTime {
 
 	private String thumbnailUrl;
 
+	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "store_id")
 	private Store store;
@@ -94,8 +97,51 @@ public class Theme extends BaseTime {
 		this.reservationUrl = reservationUrl;
 		this.thumbnailUrl = thumbnailUrl;
 		this.store = store;
-		themeTags.forEach(themeTag ->
-			themeTagMappings.add(new ThemeTagMapping(this, themeTag)));
+
+		if (themeTags != null) {
+			themeTags.forEach(themeTag ->
+				themeTagMappings.add(new ThemeTagMapping(this, themeTag)));
+		}
 	}
 
+	public static Theme of(ThemeForAdminRequest request, Store store, List<ThemeTag> themeTags) {
+		return Theme.builder()
+			.name(request.name())
+			.description(request.description())
+			.officialDifficulty(request.officialDifficulty())
+			.runtime(request.runtime())
+			.minParticipants(request.minParticipants())
+			.maxParticipants(request.maxParticipants())
+			.price(request.price())
+			.status(Status.valueOf(request.status()))
+			.reservationUrl(request.reservationUrl())
+			.thumbnailUrl(request.thumbnailUrl())
+			.store(store)
+			.themeTags(themeTags)
+			.build();
+	}
+
+	public void modify(ThemeForAdminRequest request, Store store, List<ThemeTag> themeTags) {
+		this.name = request.name();
+		this.description = request.description();
+		this.officialDifficulty = request.officialDifficulty();
+		this.runtime = request.runtime();
+		this.minParticipants = request.minParticipants();
+		this.maxParticipants = request.maxParticipants();
+		this.price = request.price();
+		this.status = Status.valueOf(request.status());
+		this.reservationUrl = request.reservationUrl();
+		this.thumbnailUrl = request.thumbnailUrl();
+		this.store = store;
+
+		if (themeTags != null) {
+			this.themeTagMappings.clear();
+			themeTags.forEach(themeTag ->
+				themeTagMappings.add(new ThemeTagMapping(this, themeTag)));
+		}
+	}
+
+	public void delete() {
+		this.status = Status.DELETED;
+	}
 }

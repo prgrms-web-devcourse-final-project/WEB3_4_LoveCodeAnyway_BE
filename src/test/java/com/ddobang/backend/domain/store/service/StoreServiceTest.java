@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.ddobang.backend.domain.region.entity.Region;
 import com.ddobang.backend.domain.region.service.RegionService;
 import com.ddobang.backend.domain.store.dto.StoreRequest;
+import com.ddobang.backend.domain.store.dto.StoreResponse;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.exception.StoreErrorCode;
 import com.ddobang.backend.domain.store.exception.StoreException;
@@ -142,5 +144,22 @@ public class StoreServiceTest {
 
 		// then
 		assertThat(store.getStatus()).isEqualTo(Store.Status.DELETED);
+	}
+
+	@Test
+	@DisplayName("매장 검색 테스트")
+	void getStoresByKeywordTest() {
+		// given
+		StoreResponse storeResponse = new StoreResponse(1L, "매장1", "서울시 마포구", Store.Status.OPENED);
+
+		String keyword = "매장";
+		when(storeRepository.findStoresByKeyword(keyword)).thenReturn(List.of(storeResponse));
+
+		// when
+		List<StoreResponse> result = storeService.getStoresByKeyword(keyword);
+
+		// then
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0)).isEqualTo(storeResponse);
 	}
 }
