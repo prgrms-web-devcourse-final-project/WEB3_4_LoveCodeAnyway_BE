@@ -14,9 +14,7 @@
  import com.ddobang.backend.domain.store.entity.Store;
  import com.ddobang.backend.domain.store.repository.StoreRepository;
  import com.ddobang.backend.domain.theme.entity.Theme;
- import com.ddobang.backend.domain.theme.entity.ThemeStat;
  import com.ddobang.backend.domain.theme.repository.ThemeRepository;
- import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
  import org.junit.jupiter.api.BeforeEach;
  import org.junit.jupiter.api.DisplayName;
  import org.junit.jupiter.api.Test;
@@ -65,9 +63,6 @@
      private MemberRepository memberRepository;
 
      @Autowired
-     private ThemeStatRepository themeStatRepository;
-
-     @Autowired
      private PartyAuthHelper partyAuthHelper;
 
      private Theme theme;
@@ -79,7 +74,6 @@
          Region region = regionRepository.save(TestDataHelper.createRegion("서울", "강남"));
          Store store = storeRepository.save(TestDataHelper.createStore(region, "테스트매장"));
          theme = themeRepository.save(TestDataHelper.createTheme("공포", "무서운 테마", Theme.Status.OPENED, store, List.of()));
-         ThemeStat themeStat = themeStatRepository.save(TestDataHelper.createThemeStat(theme));
          host = memberRepository.save(TestDataHelper.createMember("host.jpg", "호스트"));
 
          PartyRequest request = TestDataHelper.partyReq("테스트모임", theme.getId());
