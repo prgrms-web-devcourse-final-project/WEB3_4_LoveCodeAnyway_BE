@@ -39,6 +39,8 @@ public class DiaryService {
 	private final DiaryStatRepository diaryStatRepository;
 	private final MemberRepository memberRepository;
 	private final ThemeService themeService;
+	private static final String TIME_TYPE_REMAINING = "REMAINING";
+	private static final String TIME_TYPE_ELAPSED = "ELAPSED";
 
 	@Transactional
 	public DiaryDto write(DiaryRequestDto diaryRequestDto) {
@@ -110,27 +112,6 @@ public class DiaryService {
 		diaryRepository.delete(diary);
 	}
 
-	private int calculateElapsedTime(String timeType, int themeRuntime, String time) {
-		if (time == null) {
-			return 0;
-		}
-
-		if (!Pattern.matches("^\\d{1,3}:\\d{1,2}$", time)) {
-			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_FORMAT);
-		}
-
-		if (!"remaining".equals(timeType) && !"elapsed".equals(timeType)) {
-			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_TYPE);
-		}
-
-		String[] timeBits = time.split(":");
-		int timeSeconds = Integer.parseInt(timeBits[0]) * 60 + Integer.parseInt(timeBits[1]);
-
-		return "remaining".equals(timeType)
-			? themeRuntime * 60 - timeSeconds
-			: timeSeconds;
-	}
-
 	@Transactional(readOnly = true)
 	public Page<DiaryListDto> getAllItems(DiaryFilterRequest request, int page, int pageSize) {
 		if (request.isInvalidDateRange()) {
@@ -170,5 +151,26 @@ public class DiaryService {
 	@Transactional
 	public SimpleThemeResponse saveThemeForDiary(ThemeForMemberRequest request) {
 		return themeService.saveForMember(request);
+	}
+
+	private int calculateElapsedTime(String timeType, int themeRuntime, String time) {
+		if (time == null) {
+			return 0;
+		}
+
+		if (!Pattern.matches("^\\d{1,3}:\\d{1,2}$", time)) {
+			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_FORMAT);
+		}
+
+		if (!TIME_TYPE_REMAINING.equals(timeType) && !TIME_TYPE_ELAPSED.equals(timeType)) {
+			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_TYPE);
+		}
+
+		String[] timeBits = time.split(":");
+		int timeSeconds = Integer.parseInt(timeBits[0]) * 60 + Integer.parseInt(timeBits[1]);
+
+		return TIME_TYPE_REMAINING.equals(timeType)
+			? themeRuntime * 60 - timeSeconds
+			: timeSeconds;
 	}
 }
