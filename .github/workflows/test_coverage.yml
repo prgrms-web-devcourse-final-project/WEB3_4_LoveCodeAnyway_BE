@@ -14,6 +14,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # 전체 히스토리 다운로드 (커버리지 비교를 위해)
+      
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
 
       - name: Set up JDK 21
         uses: actions/setup-java@v3
