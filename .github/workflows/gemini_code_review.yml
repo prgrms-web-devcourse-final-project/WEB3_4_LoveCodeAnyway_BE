@@ -4,7 +4,8 @@ on:
   # dev 브랜치로 들어오는 Pull Request 시에만 실행
   pull_request:
     branches: [ dev ]
-    types: [ opened, reopened, synchronize ]
+    types: [ opened, reopened ]
+
 
 jobs:
   code-review:
@@ -35,7 +36,7 @@ jobs:
           echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
 
       # Gemini를 사용한 코드 분석
-      - name: Run Gemini-2.0-flash
+      - name: Run Gemini-2.5-flash
         id: gemini_review
         uses: actions/github-script@v7
         with:
@@ -127,4 +128,3 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           repo-token-user-login: 'github-actions[bot]'
           allow-repeats: false
-        continue-on-error: true
