@@ -1,5 +1,11 @@
 package com.ddobang.backend.domain.theme.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.service.StoreService;
 import com.ddobang.backend.domain.theme.dto.ThemeStatDto;
@@ -12,7 +18,6 @@ import com.ddobang.backend.domain.theme.dto.response.ThemeForAdminResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeForPartyResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeTagResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemesResponse;
-import com.ddobang.backend.domain.theme.dto.response.*;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
@@ -21,12 +26,8 @@ import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.global.response.SliceDto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
