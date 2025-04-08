@@ -4,7 +4,7 @@ on:
   # dev 브랜치로 들어오는 Pull Request 시에만 실행
   pull_request:
     branches: [ dev ]
-    types: [ opened, reopened ]
+    types: [ opened, reopened, synchronize ]
 
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
         run: |
           git fetch origin "${{ github.event.pull_request.base.ref }}"
           git fetch origin "${{ github.event.pull_request.head.ref }}"
-          git diff --unified=0 "origin/${{ github.event.pull_request.base.ref }}" > "diff.txt"
+          git diff --unified=5 "origin/${{ github.event.pull_request.base.ref }}" "origin/${{ github.event.pull_request.head.ref }}" > "diff.txt"
           echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
 
       # Gemini를 사용한 코드 분석
@@ -49,7 +49,7 @@ jobs:
             const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash"});            
 
             // Pull Request 전용 프롬프트
-            const prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to calculate the exact line number by referring to the "@@ -0,0 +0,0 @@" part. The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment }, "side": "RIGHT"}\] format must be respected.\n<git diff>${diff_output}</git diff>`;
+            const prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to extract the exact line number by referring to the "@@ -x,y +a,b @@" part in the diff and use the actual changed line number (not the context lines). The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment }, "side": "RIGHT", "diff_hunk": "{ include the actual diff hunk with @@ markers }"}\] format must be respected. Include ONLY lines that are actually changed in the diff.\n<git diff>${diff_output}</git diff>`;
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
@@ -64,6 +64,9 @@ jobs:
         run: |
           # JSON 파싱이 가능하도록 처리
           COMMENT=$(sed '/^```/d' review_result.txt | jq -c .)
+          # 결과 확인을 위한 로깅
+          echo "Processing comment payload:"
+          echo "$COMMENT" | jq .
           echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
       - name: Add Pull Request Review Comment
@@ -73,3 +76,4 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           repo-token-user-login: 'github-actions[bot]'
           allow-repeats: false
+        continue-on-error: true
