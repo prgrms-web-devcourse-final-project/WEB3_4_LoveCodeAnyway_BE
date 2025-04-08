@@ -4,7 +4,10 @@ import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.theme.entity.Theme;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import lombok.Builder;
@@ -22,9 +25,9 @@ public class DiaryStat {
 	@MapsId
 	private Diary diary;
 
-	// @ManyToOne(fetch = FetchType.LAZY)
-	// @JoinColumn(name = "theme_id", insertable = false, updatable = false)
-	// private Theme theme;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "theme_id", insertable = false, updatable = false)
+	private Theme theme;
 
 	// 평가 관련 필드
 	private int difficulty;
@@ -43,7 +46,7 @@ public class DiaryStat {
 	private int elapsedTime;
 
 	@Builder
-	public DiaryStats(
+	public DiaryStat(
 		Diary diary,
 		Theme theme,
 		int difficulty,
