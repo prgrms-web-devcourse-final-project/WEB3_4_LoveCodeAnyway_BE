@@ -222,6 +222,32 @@ public class DiaryControllerTest {
 	}
 
 	@Test
+	@DisplayName("탈출일지 등록, 남은 시간이 테마 진행시간보다 클 때")
+	@WithMockUser(roles = "USER")
+	void t1_5() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/api/v1/diaries")
+				.content("""
+					{
+						"themeId": 1,
+						"timeType": "REMAINING",
+						"elapsedTime": "70:00"
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("write"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("남은 시간은 테마 시간보다 작아야합니다."));
+	}
+
+	@Test
 	@DisplayName("탈출일지 단건 조회")
 	@WithMockUser(roles = "USER")
 	void t2() throws Exception {
@@ -512,6 +538,32 @@ public class DiaryControllerTest {
 			.andExpect(handler().methodName("modify"))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.message").value("잘못 된 시간 형식입니다."));
+	}
+
+	@Test
+	@DisplayName("탈출일지 등록, 남은 시간이 테마 진행시간보다 클 때")
+	@WithMockUser(roles = "USER")
+	void t3_6() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/api/v1/diaries")
+				.content("""
+					{
+						"themeId": 1,
+						"timeType": "REMAINING",
+						"elapsedTime": "70:00"
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("write"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("남은 시간은 테마 시간보다 작아야합니다."));
 	}
 
 	@Test

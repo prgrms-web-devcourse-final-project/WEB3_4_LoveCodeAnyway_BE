@@ -39,8 +39,9 @@ public class DiaryService {
 	private final DiaryStatRepository diaryStatRepository;
 	private final MemberRepository memberRepository;
 	private final ThemeService themeService;
-	private static final String TIME_TYPE_REMAINING = "REMAINING";
-	private static final String TIME_TYPE_ELAPSED = "ELAPSED";
+	private final String TIME_MINUTES_SECONDS_PATTERN = "^\\d{1,3}:\\d{1,2}$";
+	private final String TIME_TYPE_REMAINING = "REMAINING";
+	private final String TIME_TYPE_ELAPSED = "ELAPSED";
 
 	@Transactional
 	public DiaryDto write(DiaryRequestDto diaryRequestDto) {
@@ -158,7 +159,7 @@ public class DiaryService {
 			return 0;
 		}
 
-		if (!Pattern.matches("^\\d{1,3}:\\d{1,2}$", time)) {
+		if (!Pattern.matches(TIME_MINUTES_SECONDS_PATTERN, time)) {
 			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_FORMAT);
 		}
 
@@ -168,6 +169,10 @@ public class DiaryService {
 
 		String[] timeBits = time.split(":");
 		int timeSeconds = Integer.parseInt(timeBits[0]) * 60 + Integer.parseInt(timeBits[1]);
+
+		if (TIME_TYPE_REMAINING.equals(timeType) && themeRuntime * 60 < timeSeconds) {
+			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_REMAINING_TIME);
+		}
 
 		return TIME_TYPE_REMAINING.equals(timeType)
 			? themeRuntime * 60 - timeSeconds
