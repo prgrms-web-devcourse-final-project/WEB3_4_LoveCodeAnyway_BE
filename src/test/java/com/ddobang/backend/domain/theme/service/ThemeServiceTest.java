@@ -172,12 +172,11 @@ public class ThemeServiceTest {
 	@Test
 	@DisplayName("사용자 전용 테마 저장 성공")
 	void saveThemeForMember_success() {
+		// given
 		ThemeForMemberRequest request = new ThemeForMemberRequest(
-			"테마A", "매장A", "url", List.of("태그1", "태그2")
-		);
+			"테마A", "매장A", "url", List.of(1L));
 
-		when(themeTagService.getByName("태그1")).thenReturn(tag1);
-		when(themeTagService.getByName("태그2")).thenReturn(tag2);
+		when(themeTagService.getTagsByIds(anyList())).thenReturn(List.of(tag1));
 		when(storeService.saveForMember(any())).thenReturn(store);
 		when(themeRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -185,24 +184,5 @@ public class ThemeServiceTest {
 
 		assertThat(response.themeName()).isEqualTo("테마A");
 		assertThat(response.storeName()).isEqualTo("매장1");
-	}
-
-	@Test
-	@DisplayName("사용자 전용 테마 저장 실패 - 존재하지 않는 태그")
-	void saveThemeForMember_fail_tagNotFound() {
-		// given
-		ThemeForMemberRequest request = new ThemeForMemberRequest(
-			"테마A", "매장A", "url", List.of("없는태그")
-		);
-
-		// when
-		ThemeErrorCode errorCode = ThemeErrorCode.THEME_TAG_NOT_FOUND;
-		when(themeTagService.getByName("없는태그")).thenThrow(
-			new ThemeException(errorCode));
-
-		// then
-		assertThatThrownBy(() -> themeService.saveForMember(request))
-			.isInstanceOf(ThemeException.class)
-			.hasMessageContaining(errorCode.getMessage());
 	}
 }

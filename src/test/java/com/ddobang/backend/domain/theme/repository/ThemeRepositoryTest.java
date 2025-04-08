@@ -125,7 +125,7 @@ public class ThemeRepositoryTest {
 	@DisplayName("태그 이름으로 필터링된 테마 조회")
 	void findThemesByTagName() {
 		// given
-		ThemeFilterRequest request = new ThemeFilterRequest(null, List.of("태그1"), null, null);
+		ThemeFilterRequest request = new ThemeFilterRequest(null, List.of(tag1.getId()), null, null);
 
 		// when
 		List<Theme> results = themeRepository.findThemesByFilter(request, 0, 10);
@@ -165,7 +165,7 @@ public class ThemeRepositoryTest {
 	@DisplayName("복합 조건 필터링 - 태그, 인원수, 키워드")
 	void findThemesWithMultipleFilters() {
 		// given
-		ThemeFilterRequest request = new ThemeFilterRequest(null, List.of("태그1"), 1, "방탈출");
+		ThemeFilterRequest request = new ThemeFilterRequest(null, List.of(1L), 1, "방탈출");
 
 		// when
 		List<Theme> results = themeRepository.findThemesByFilter(request, 0, 10);
