@@ -29,17 +29,3 @@ logging:
     org.springframework.security.oauth2: DEBUG
     org.springframework.security.oauth2.client: DEBUG
     org.springframework.security.oauth2.core: DEBUG
-
-springdoc:
-  swagger-ui:
-    enabled: true
-    path: /swagger-ui
-    display-request-duration: true
-  default-produces-media-type: application/json
-  paths-to-match: /**
-
-oauth:
-  kakao:
-    base-uri: http://localhost:8080
-
-# custom.sse.timeout 설정은 application.yml로 이동했습니다.
