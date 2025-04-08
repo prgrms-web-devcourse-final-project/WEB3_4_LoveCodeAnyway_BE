@@ -286,7 +286,7 @@ class PartyServiceTest {
         Member applicant = TestDataHelper.createMember("imgUrl", "신청자");
         party.addPartyMember(applicant);
         when(partyRepository.findById(partyId)).thenReturn(Optional.of(party));
-        when(memberService.getMemberById(memberId)).thenReturn(applicant);
+        when(memberService.getMember(memberId)).thenReturn(applicant);
 
         // when
         partyService.acceptPartyMember(partyId, memberId, host);
@@ -296,7 +296,7 @@ class PartyServiceTest {
         assertEquals(PartyMemberStatus.ACCEPTED, party.getPartyMemberStatus(applicant));
 
         verify(partyRepository).findById(partyId);
-        verify(memberService).getMemberById(memberId);
+        verify(memberService).getMember(memberId);
     }
 
     @Test
