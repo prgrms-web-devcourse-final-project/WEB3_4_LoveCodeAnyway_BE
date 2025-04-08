@@ -78,7 +78,6 @@ public class Diary extends BaseTime {
 	) {
 		this.theme = theme;
 		this.escapeDate = diaryRequestDto.escapeDate();
-		this.imageUrl = diaryRequestDto.imageUrl();
 		this.participants = diaryRequestDto.participants();
 		this.review = diaryRequestDto.review();
 	}

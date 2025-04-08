@@ -12,7 +12,6 @@ import lombok.Builder;
 public record DiaryRequestDto(
 	@NotNull(message = "테마를 선택해주세요.")
 	Long themeId,
-	String imageUrl,
 	LocalDate escapeDate,
 	String participants,
 
@@ -54,7 +53,7 @@ public record DiaryRequestDto(
 
 	@PositiveOrZero
 	int hintCount,
-	
+
 	boolean escapeResult,
 
 	@NotBlank(message = "탈출 시간 타입을 선택해주세요.")
