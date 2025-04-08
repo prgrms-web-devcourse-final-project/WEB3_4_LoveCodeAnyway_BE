@@ -74,6 +74,10 @@ sourceSets {
         }
     }
 }
+// clean 시 Q클래스 디렉토리 삭제
+clean {
+    delete file(querydslDir)
+}
 
 // Q클래스를 생성할 디렉토리 지정
 tasks.withType(JavaCompile).configureEach {
