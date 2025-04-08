@@ -1,0 +1,51 @@
+name: JaCoCo Test Coverage
+
+on:
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 전체 히스토리 다운로드 (커버리지 비교를 위해)
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Build with Gradle and run tests
+        run: ./gradlew build jacocoTestReport
+
+      - name: JaCoCo Report to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml  # Gradle 경로
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 70
+          min-coverage-changed-files: 80
+          title: 'JaCoCo 테스트 커버리지 리포트'
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          header: jacoco
+          message: |
+            ## 📊 테스트 커버리지 리포트
+            
+            ### 전체 커버리지: ${{ steps.jacoco.outputs.coverage-overall }}%
+            ### 변경된 파일 커버리지: ${{ steps.jacoco.outputs.coverage-changed }}%
+            
+            <details>
+              <summary>📝 상세 커버리지 정보</summary>
+            
+              ${{ steps.jacoco.outputs.coverage-report }}
+            </details>
