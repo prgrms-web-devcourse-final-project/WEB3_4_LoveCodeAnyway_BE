@@ -42,7 +42,7 @@ public class Post extends BaseTime {
 	private Member member;
 
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Attachment> attachments = new ArrayList<>();
+	private List<Attachment> attachments;
 
 	private Post(PostRequest postRequest, Member member) {
 		this.type = postRequest.type();
@@ -50,7 +50,9 @@ public class Post extends BaseTime {
 		this.content = postRequest.content();
 		this.member = member;
 		this.deleted = false;
-		this.attachments = postRequest.attachments();;
+		this.attachments = postRequest.attachments() == null
+				? new ArrayList<>()
+				: new ArrayList<>(postRequest.attachments());
 	}
 
 	public static Post of(PostRequest request, Member member) {
