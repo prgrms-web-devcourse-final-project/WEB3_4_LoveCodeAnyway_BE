@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ddobang.backend.domain.region.dto.SubRegionsResponse;
 import com.ddobang.backend.domain.region.entity.Region;
 import com.ddobang.backend.global.config.QuerydslConfig;
 
@@ -49,19 +50,18 @@ public class RegionRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("지역 대분류로 지역 목록 조회 성공 테스트")
-	public void findByMajorRegionTest() {
+	@DisplayName("지역 대분류로 지역 소분류 목록 조회 성공 테스트")
+	public void findSubRegionsByMajorRegionTest() {
 		//given
 		// when
-		List<Region> regions = regionRepository.findByMajorRegion(majorRegion);
+		List<SubRegionsResponse> regions = regionRepository.findSubRegionsByMajorRegion(majorRegion);
 
 		// then
 		assertThat(regions.size()).isEqualTo(2);
-		assertThat(regions.get(0).getMajorRegion()).isEqualTo(majorRegion);
-		assertThat(regions.get(0).getId()).isEqualTo(1L);
-		assertThat(regions.get(0).getSubRegion()).isEqualTo(region1.getSubRegion());
-		assertThat(regions.get(1).getId()).isEqualTo(2L);
-		assertThat(regions.get(1).getSubRegion()).isEqualTo(region2.getSubRegion());
+		assertThat(regions.get(0).id()).isEqualTo(1L);
+		assertThat(regions.get(0).subRegion()).isEqualTo(region1.getSubRegion());
+		assertThat(regions.get(1).id()).isEqualTo(2L);
+		assertThat(regions.get(1).subRegion()).isEqualTo(region2.getSubRegion());
 	}
 
 	@Test
@@ -71,7 +71,7 @@ public class RegionRepositoryTest {
 		String blankMajorRegion = "";
 
 		// when
-		List<Region> regions = regionRepository.findByMajorRegion(blankMajorRegion);
+		List<SubRegionsResponse> regions = regionRepository.findSubRegionsByMajorRegion(blankMajorRegion);
 
 		// then
 		assertThat(regions.isEmpty()).isTrue();
@@ -84,7 +84,7 @@ public class RegionRepositoryTest {
 		String notExistmajorRegion = "경기/인천";
 
 		// when
-		List<Region> regions = regionRepository.findByMajorRegion(notExistmajorRegion);
+		List<SubRegionsResponse> regions = regionRepository.findSubRegionsByMajorRegion(notExistmajorRegion);
 
 		// then
 		assertThat(regions.isEmpty()).isTrue();
