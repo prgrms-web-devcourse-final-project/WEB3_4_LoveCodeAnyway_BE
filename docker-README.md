@@ -5,7 +5,7 @@
 ### 방법 1: docker-compose 사용 (권장)
 
 ```bash
-docker-compose up -d
+ docker-compose up -d
 ```
 
 ### 방법 2: docker run 명령어 사용

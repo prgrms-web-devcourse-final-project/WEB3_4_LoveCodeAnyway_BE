@@ -32,11 +32,11 @@ jobs:
         run: |
           git fetch origin "${{ github.event.pull_request.base.ref }}"
           git fetch origin "${{ github.event.pull_request.head.ref }}"
-          git diff --unified=0 "origin/${{ github.event.pull_request.base.ref }}" > "diff.txt"
+          git diff --unified=3 "origin/${{ github.event.pull_request.base.ref }}" > "diff.txt"
           echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
 
       # Gemini를 사용한 코드 분석
-      - name: Run Gemini-2.5-flash
+      - name: Run Gemini-2.0-flash
         id: gemini_review
         uses: actions/github-script@v7
         with:
@@ -62,8 +62,8 @@ jobs:
       - name: Format and add PR review comments
         id: store
         run: |
-          # JSON 파싱이 가능하도록 처리
-          COMMENT=$(sed '/^```/d' review_result.txt | jq -c .)
+          # JSON 파싱이 가능하도록 처리 (향상된 버전)
+          COMMENT=$(sed -e '/^```/d' -e 's/\\n/\\\\n/g' -e 's/\\t/\\\\t/g' -e 's/\\/\\\\/g' review_result.txt | tr -d '\r' | jq -c '.' || echo "[]")
           echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
       - name: Add Pull Request Review Comment
