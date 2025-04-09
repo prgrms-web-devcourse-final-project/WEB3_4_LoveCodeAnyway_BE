@@ -170,7 +170,7 @@ public class ThemeControllerTest {
 	@DisplayName("공포 태그 필터로 테마 다건 조회 테스트")
 	void getThemesWithTag1FilterTest() throws Exception {
 		// given
-		ThemeFilterRequest request = new ThemeFilterRequest(null, List.of("공포"), null, null);
+		ThemeFilterRequest request = new ThemeFilterRequest(null, List.of(1L), null, null);
 
 		// when
 		ResultActions result = performGetThemesWithFilter(0, request);
@@ -223,7 +223,7 @@ public class ThemeControllerTest {
 	void getThemesWithComplexFilterTest() throws Exception {
 		// given
 		ThemeFilterRequest request = new ThemeFilterRequest(
-			List.of(region2.getId()), List.of(tag2.getName()), 5, "테마 5");
+			List.of(region2.getId()), List.of(2L), 5, "테마 5");
 
 		// when
 		ResultActions result = performGetThemesWithFilter(0, request);
@@ -242,7 +242,7 @@ public class ThemeControllerTest {
 	void cannotFindThemesWithComplexFilterTest() throws Exception {
 		// given
 		ThemeFilterRequest request = new ThemeFilterRequest(
-			List.of(region2.getId()), List.of("감성"), 5, "A");
+			List.of(region2.getId()), List.of(2L), 5, "A");
 
 		// when
 		ResultActions result = performGetThemesWithFilter(0, request);
@@ -463,5 +463,22 @@ public class ThemeControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.length()").value(0))
 		;
+	}
+
+	@Test
+	@DisplayName("테마 태그 목록 조회 테스트")
+	void getAllThemeTagsTest() throws Exception {
+		// given
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/tags")
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(3))
+			.andExpect(jsonPath("$.data[0].name").value(tag1.getName()))
+			.andExpect(jsonPath("$.data[2].name").value(tag3.getName()));
 	}
 }

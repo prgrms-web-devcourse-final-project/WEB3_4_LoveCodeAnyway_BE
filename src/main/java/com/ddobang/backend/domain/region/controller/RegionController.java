@@ -2,6 +2,7 @@ package com.ddobang.backend.domain.region.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ddobang.backend.domain.region.dto.SubRegionsResponse;
 import com.ddobang.backend.domain.region.service.RegionService;
+import com.ddobang.backend.global.response.ResponseFactory;
+import com.ddobang.backend.global.response.SuccessResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,12 +27,10 @@ public class RegionController {
 	private final RegionService regionService;
 
 	@GetMapping
-	public List<SubRegionsResponse> getSubRegionsByMajorRegion(
+	public ResponseEntity<SuccessResponse<List<SubRegionsResponse>>> getSubRegionsByMajorRegion(
 		@RequestParam String majorRegion
 	) {
-
-		return regionService.getSubRegionsByRegions(
-			regionService.findByMajorRegion(majorRegion)
-		);
+		List<SubRegionsResponse> subRegions = regionService.getSubRegionsByMajorRegion(majorRegion);
+		return ResponseFactory.ok(subRegions);
 	}
 }

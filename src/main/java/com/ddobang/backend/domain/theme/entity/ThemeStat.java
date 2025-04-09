@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
@@ -31,6 +32,9 @@ public class ThemeStat {
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "theme_id")
 	private Theme theme;
+
+	@Version
+	private Long version;
 
 	@PositiveOrZero
 	@Max(5)

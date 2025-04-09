@@ -3,6 +3,7 @@ package com.ddobang.backend.global.exception;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -98,6 +99,17 @@ public class GlobalExceptionHandler {
 		ErrorCode errorCode = GlobalErrorCode.INVALID_REQUEST;
 
 		log.warn("[ServiceException] status={}, code={}, message={}",
+			errorCode.getStatus().value(),
+			errorCode.getErrorCode(),
+			errorCode.getMessage());
+
+		return ResponseFactory.error(errorCode);
+	}
+
+	@ExceptionHandler(OptimisticLockingFailureException.class)
+	public ResponseEntity<ErrorResponse> handleOptimisticLockingFailure(OptimisticLockingFailureException e) {
+		ErrorCode errorCode = GlobalErrorCode.OPTIMISTIC_LOCKING_FAILURE;
+		log.warn("[OptimisticLockingFailureException] status={}, code={}, message={}",
 			errorCode.getStatus().value(),
 			errorCode.getErrorCode(),
 			errorCode.getMessage());
