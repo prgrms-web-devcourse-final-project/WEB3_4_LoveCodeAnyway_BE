@@ -62,8 +62,8 @@ jobs:
       - name: Format and add PR review comments
         id: store
         run: |
-          # JSON 파싱이 가능하도록 처리
-          COMMENT=$(sed '/^```/d' review_result.txt | jq -c .)
+          # JSON 파싱이 가능하도록 처리 (향상된 버전)
+          COMMENT=$(sed -e '/^```/d' -e 's/\\n/\\\\n/g' -e 's/\\t/\\\\t/g' -e 's/\\/\\\\/g' review_result.txt | tr -d '\r' | jq -c '.' || echo "[]")
           echo "comment=$COMMENT" >> $GITHUB_OUTPUT
 
       - name: Add Pull Request Review Comment

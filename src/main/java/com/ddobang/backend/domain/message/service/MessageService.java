@@ -1,6 +1,7 @@
 package com.ddobang.backend.domain.message.service;
 
-import org.springframework.data.domain.Page;
+import java.util.List;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,6 @@ import com.ddobang.backend.domain.message.repository.MessageRepository;
 import com.ddobang.backend.global.response.SliceDto;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 @Service
 @Transactional
@@ -65,31 +64,31 @@ public class MessageService {
 	@Transactional(readOnly = true)
 	public SliceDto<MessageDto> getReceivedMessagesWithCursor(Member member, Long lastMessageId, int size) {
 		Pageable pageable = PageRequest.of(0, size + 1); // +1로 다음 페이지 존재여부 확인
-		
+
 		List<Message> messages = messageRepository.findByReceiverIdAndIdLessThanOrderByIdDesc(
 			member.getId(), lastMessageId, pageable);
-		
+
 		// MessageDto로 변환
 		var messageDtos = messages.stream()
 			.map(MessageDto::fromEntity)
 			.toList();
-		
+
 		return SliceDto.of(messageDtos, size);
 	}
-	
+
 	// 커서 기반 무한 스크롤을 위한 보낸 메시지 목록 조회
 	@Transactional(readOnly = true)
 	public SliceDto<MessageDto> getSentMessagesWithCursor(Member member, Long lastMessageId, int size) {
 		Pageable pageable = PageRequest.of(0, size + 1); // +1로 다음 페이지 존재여부 확인
-		
+
 		List<Message> messages = messageRepository.findBySenderIdAndIdLessThanOrderByIdDesc(
 			member.getId(), lastMessageId, pageable);
-		
+
 		// MessageDto로 변환
 		var messageDtos = messages.stream()
 			.map(MessageDto::fromEntity)
 			.toList();
-		
+
 		return SliceDto.of(messageDtos, size);
 	}
 
