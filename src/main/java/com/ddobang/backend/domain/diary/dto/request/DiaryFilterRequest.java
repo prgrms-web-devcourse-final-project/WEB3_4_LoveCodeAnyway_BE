@@ -15,4 +15,9 @@ public record DiaryFilterRequest(
 	Boolean isNoHint,
 	String keyword
 ) {
+	public boolean isInvalidDateRange() {
+		return this.startDate() != null
+			&& this.endDate() != null
+			&& this.startDate().isAfter(this.endDate());
+	}
 }

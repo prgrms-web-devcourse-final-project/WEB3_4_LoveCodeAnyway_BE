@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Min;
  */
 public record ThemeFilterRequest(
 	List<Long> regionId,
-	List<String> tagNames,
+	List<Long> tagIds,
 	@Min(1) @Max(8)
 	Integer participants,
 	String keyword

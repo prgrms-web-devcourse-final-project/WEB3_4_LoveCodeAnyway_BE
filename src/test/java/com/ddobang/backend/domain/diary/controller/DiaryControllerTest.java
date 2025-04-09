@@ -50,7 +50,7 @@ public class DiaryControllerTest {
 				.content("""
 					{
 						"themeId": 1,
-						"timeType": "elapsed"
+						"timeType": "ELAPSED"
 					}
 					""".stripIndent())
 				.contentType(
@@ -126,7 +126,7 @@ public class DiaryControllerTest {
 				.content("""
 					{
 						"themeId": 1,
-						"timeType": "elapsed",
+						"timeType": "ELAPSED",
 						"difficulty": 6,
 						"fear": 6,
 						"activity": 6,
@@ -204,7 +204,7 @@ public class DiaryControllerTest {
 				.content("""
 					{
 						"themeId": 1,
-						"timeType": "remaining",
+						"timeType": "REMAINING",
 						"elapsedTime": "WRONG TIME"
 					}
 					""".stripIndent())
@@ -219,6 +219,32 @@ public class DiaryControllerTest {
 			.andExpect(handler().methodName("write"))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.message").value("잘못 된 시간 형식입니다."));
+	}
+
+	@Test
+	@DisplayName("탈출일지 등록, 남은 시간이 테마 진행시간보다 클 때")
+	@WithMockUser(roles = "USER")
+	void t1_5() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/api/v1/diaries")
+				.content("""
+					{
+						"themeId": 1,
+						"timeType": "REMAINING",
+						"elapsedTime": "70:00"
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("write"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("남은 시간은 테마 시간보다 작아야합니다."));
 	}
 
 	@Test
@@ -284,7 +310,6 @@ public class DiaryControllerTest {
 				.content("""
 					{
 						"themeId": 1,
-						"imageUrl": "https://placehold.co/320x320?text=o_o",
 						"escapeDate": "2025-02-20",
 						"participants": "내 칭구1, 내 칭구2",
 						"difficulty": 5,
@@ -298,7 +323,7 @@ public class DiaryControllerTest {
 						"deviceRatio": 50,
 						"hintCount": 0,
 						"escapeResult": true,
-						"timeType": "elapsed",
+						"timeType": "ELAPSED",
 						"elapsedTime": "65:00",
 						"review": "완전 완전 재밌었다!!"
 					}
@@ -321,7 +346,7 @@ public class DiaryControllerTest {
 			.andExpect(jsonPath("$.data.themeName").value(diary.getTheme().getName()))
 			.andExpect(jsonPath("$.data.thumbnailUrl").value(diary.getTheme().getThumbnailUrl()))
 			.andExpect(jsonPath("$.data.storeName").value(diary.getTheme().getStore().getName()))
-			.andExpect(jsonPath("$.data.imageUrl").value("https://placehold.co/320x320?text=o_o"))
+			.andExpect(jsonPath("$.data.imageUrl").isEmpty())
 			.andExpect(jsonPath("$.data.escapeDate").value("2025-02-20"))
 			.andExpect(jsonPath("$.data.participants").value("내 칭구1, 내 칭구2"))
 			.andExpect(jsonPath("$.data.difficulty").value(5))
@@ -350,7 +375,6 @@ public class DiaryControllerTest {
 				.content("""
 					{
 						"themeId": 1,
-						"imageUrl": "https://placehold.co/320x320?text=o_o",
 						"escapeDate": "2025-02-20",
 						"participants": "내 칭구1, 내 칭구2",
 						"difficulty": 5,
@@ -364,7 +388,7 @@ public class DiaryControllerTest {
 						"deviceRatio": 50,
 						"hintCount": 0,
 						"escapeResult": true,
-						"timeType": "elapsed",
+						"timeType": "ELAPSED",
 						"elapsedTime": 34500,
 						"review": "완전 완전 재밌었다!!"
 					}
@@ -390,11 +414,10 @@ public class DiaryControllerTest {
 			.perform(put("/api/v1/diaries/1")
 				.content("""
 					{
-						"imageUrl": "https://placehold.co/320x320?text=o_o",
 						"escapeDate": "2025-02-20",
 						"hintCount": 0,
 						"escapeResult": true,
-						"timeType": "elapsed",
+						"timeType": "ELAPSED",
 						"elapsedTime": 34500,
 						"review": "완전 완전 재밌었다!!"
 					}
@@ -500,7 +523,7 @@ public class DiaryControllerTest {
 				.content("""
 					{
 						"themeId": 1,
-						"timeType": "remaining",
+						"timeType": "REMAINING",
 						"elapsedTime": "WRONG TIME"
 					}
 					""".stripIndent())
@@ -515,6 +538,32 @@ public class DiaryControllerTest {
 			.andExpect(handler().methodName("modify"))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.message").value("잘못 된 시간 형식입니다."));
+	}
+
+	@Test
+	@DisplayName("탈출일지 등록, 남은 시간이 테마 진행시간보다 클 때")
+	@WithMockUser(roles = "USER")
+	void t3_6() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(post("/api/v1/diaries")
+				.content("""
+					{
+						"themeId": 1,
+						"timeType": "REMAINING",
+						"elapsedTime": "70:00"
+					}
+					""".stripIndent())
+				.contentType(
+					new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8)
+				)
+			)
+			.andDo(print());
+
+		resultActions
+			.andExpect(handler().handlerType(DiaryController.class))
+			.andExpect(handler().methodName("write"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("남은 시간은 테마 시간보다 작아야합니다."));
 	}
 
 	@Test

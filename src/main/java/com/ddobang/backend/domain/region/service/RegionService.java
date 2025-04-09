@@ -22,21 +22,14 @@ public class RegionService {
 
 	private final RegionRepository regionRepository;
 
-	public List<Region> findByMajorRegion(String majorRegion) {
+	public List<SubRegionsResponse> getSubRegionsByMajorRegion(String majorRegion) {
 
-		List<Region> regions = regionRepository.findByMajorRegion(majorRegion);
-		if (regions.isEmpty()) {
+		List<SubRegionsResponse> subRegions = regionRepository.findSubRegionsByMajorRegion(majorRegion);
+		if (subRegions.isEmpty()) {
 			throw new RegionException(RegionErrorCode.REGION_NOT_FOUND);
 		}
 
-		return regions;
-	}
-
-	public List<SubRegionsResponse> getSubRegionsByRegions(List<Region> regions) {
-
-		return regions.stream()
-			.map(SubRegionsResponse::of)
-			.toList();
+		return subRegions;
 	}
 
 	public Region findById(Long id) {
