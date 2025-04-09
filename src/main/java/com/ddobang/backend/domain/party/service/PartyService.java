@@ -60,7 +60,7 @@ public class PartyService {
 	public PartyDto createParty(PartyRequest request, Member actor) {
 		Theme theme = themeService.getThemeById(request.themeId());
 		Party party = Party.of(request, theme, actor);
-		return PartyDto.toDto(partyRepository.save(party));
+		return PartyDto.from(partyRepository.save(party));
 	}
 
 	@Transactional
@@ -69,7 +69,7 @@ public class PartyService {
 		partyValidationService.validateModifiable(party, actor);
 		Theme theme = themeService.getThemeById(request.themeId());
 		party.modifyParty(request, theme);
-		return PartyDto.toDto(party);
+		return PartyDto.from(party);
 	}
 
 	@Transactional

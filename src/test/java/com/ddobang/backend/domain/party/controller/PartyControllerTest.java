@@ -2,7 +2,7 @@
 
  import com.ddobang.backend.domain.member.entity.Member;
  import com.ddobang.backend.domain.member.repository.MemberRepository;
- import com.ddobang.backend.domain.party.PartyAuthHelper;
+ import com.ddobang.backend.domain.AuthHelper;
  import com.ddobang.backend.domain.party.dto.request.PartyRequest;
  import com.ddobang.backend.domain.party.entity.Party;
  import com.ddobang.backend.domain.party.repository.PartyRepository;
@@ -63,7 +63,7 @@
      private MemberRepository memberRepository;
 
      @Autowired
-     private PartyAuthHelper partyAuthHelper;
+     private AuthHelper authHelper;
 
      private Theme theme;
      private Member host;
@@ -97,7 +97,7 @@
      @WithMockUser(roles = "USER")
      void getPartyTest() throws Exception {
 
-         when(partyAuthHelper.getCurrentMember()).thenReturn(host);
+         when(authHelper.getCurrentMember()).thenReturn(host);
 
          mockMvc.perform(get("/api/v1/parties/{id}", party.getId()))
                  .andExpect(handler().handlerType(PartyController.class))
@@ -109,7 +109,7 @@
      @DisplayName("모임 등록")
      void createPartyTest() throws Exception {
 
-         when(partyAuthHelper.getCurrentMember()).thenReturn(host);
+         when(authHelper.getCurrentMember()).thenReturn(host);
 
          String content = String.format("""
             {
@@ -135,7 +135,7 @@
      @Test
      @DisplayName("모임 수정")
      void modifyPartyTest() throws Exception {
-         when(partyAuthHelper.getCurrentMember()).thenReturn(host);
+         when(authHelper.getCurrentMember()).thenReturn(host);
 
          String content = String.format("""
             {
@@ -161,7 +161,7 @@
      @Test
      @DisplayName("모임 삭제")
      void softDeletePartyTest() throws Exception {
-         when(partyAuthHelper.getCurrentMember()).thenReturn(host);
+         when(authHelper.getCurrentMember()).thenReturn(host);
 
          mockMvc.perform(delete("/api/v1/parties/{id}", party.getId()))
                  .andExpect(handler().handlerType(PartyController.class))
@@ -176,7 +176,7 @@
          Member applicant = memberRepository.save(TestDataHelper.createMember("imgUrl", "신청자"));
          memberRepository.flush();
 
-         when(partyAuthHelper.getCurrentMember()).thenReturn(applicant);
+         when(authHelper.getCurrentMember()).thenReturn(applicant);
 
          mockMvc.perform(post("/api/v1/parties/{id}/apply", party.getId()))
                  .andExpect(handler().handlerType(PartyController.class))
@@ -190,7 +190,7 @@
      void cancelAppliedPartyTest() throws Exception {
          Member applicant = memberRepository.save(TestDataHelper.createMember("imgUrl", "신청자"));
 
-         when(partyAuthHelper.getCurrentMember()).thenReturn(applicant);
+         when(authHelper.getCurrentMember()).thenReturn(applicant);
 
          mockMvc.perform(post("/api/v1/parties/{id}/apply", party.getId()))
                  .andExpect(status().isNoContent());
@@ -207,12 +207,12 @@
      void acceptPartyMemberTest() throws Exception {
          Member member = memberRepository.save(TestDataHelper.createMember("imgUrl", "모임원"));
 
-         when(partyAuthHelper.getCurrentMember()).thenReturn(member);
+         when(authHelper.getCurrentMember()).thenReturn(member);
 
          mockMvc.perform(post("/api/v1/parties/{id}/apply", party.getId()))
                  .andExpect(status().isNoContent());
 
-         when(partyAuthHelper.getCurrentMember()).thenReturn(host);
+         when(authHelper.getCurrentMember()).thenReturn(host);
 
          mockMvc.perform(post("/api/v1/parties/{id}/accept/{memberId}", party.getId(), member.getId()))
                  .andExpect(handler().handlerType(PartyController.class))
@@ -224,7 +224,7 @@
      @DisplayName("모임 실행 완료")
      @WithMockUser(roles = "USER")
      void executePartyTest() throws Exception {
-         when(partyAuthHelper.getCurrentMember()).thenReturn(host);
+         when(authHelper.getCurrentMember()).thenReturn(host);
 
          party.updateStatus(PartyStatus.PENDING);
          partyRepository.save(party);
@@ -239,7 +239,7 @@
      @DisplayName("모임 미실행 완료")
      @WithMockUser(roles = "USER")
      void unexecutePartyTest() throws Exception {
-         when(partyAuthHelper.getCurrentMember()).thenReturn(host);
+         when(authHelper.getCurrentMember()).thenReturn(host);
 
          party.updateStatus(PartyStatus.PENDING);
          partyRepository.save(party);

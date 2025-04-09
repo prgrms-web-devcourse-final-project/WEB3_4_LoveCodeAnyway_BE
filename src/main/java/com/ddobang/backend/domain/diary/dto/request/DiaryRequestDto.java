@@ -49,10 +49,10 @@ public record DiaryRequestDto(
 
 	@PositiveOrZero
 	@Max(value = 100, message = "장치 비율은 최대 100% 이하여야 합니다.")
-	int deviceRatio,
+	Integer deviceRatio,
 
 	@PositiveOrZero
-	int hintCount,
+	Integer hintCount,
 
 	boolean escapeResult,
 

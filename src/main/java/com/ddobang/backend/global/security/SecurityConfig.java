@@ -1,13 +1,19 @@
 package com.ddobang.backend.global.security;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import com.ddobang.backend.global.security.jwt.JwtAuthenticationFilter;
@@ -23,6 +29,9 @@ public class SecurityConfig {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
+	/**
+	 * SecurityFilterChain 설정
+	 */
 	@Bean
 	public SecurityFilterChain securityFilterChain(
 		HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
@@ -50,10 +59,12 @@ public class SecurityConfig {
 					.requestMatchers("/api/v1/members/check-nickname").permitAll()
 
 					// 공개 API
-					.requestMatchers("/api/v1/regions").permitAll()
+					.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight 요청 허용
+					.requestMatchers(HttpMethod.GET, "/api/v1/regions").permitAll()      // 지역 조회
 					.requestMatchers("/api/v1/themes").permitAll()
 					.requestMatchers("/api/v1/themes/*").permitAll()
 					.requestMatchers("/api/v1/parties").permitAll()
+					.requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll() // 회원가입
 					.requestMatchers("/api/v1/parties/*").permitAll()
 					.requestMatchers("/api/v1/stores/*").permitAll()
 
@@ -76,5 +87,26 @@ public class SecurityConfig {
 			);
 
 		return http.build();
+	}
+
+	/**
+	 * CORS 설정
+	 * @return CorsConfigurationSource
+	 */
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOrigins(List.of(
+			"http://localhost:3000",                       // 로컬 개발용
+			"https://ddobang.site",                        // 배포 주소
+			"https://web-1-2-pitching-mate-fe.vercel.app"  // Vercel 배포 주소
+		));
+		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+		configuration.setAllowedHeaders(List.of("*"));
+		configuration.setAllowCredentials(true); // 인증 정보 전송 허용
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
 	}
 }

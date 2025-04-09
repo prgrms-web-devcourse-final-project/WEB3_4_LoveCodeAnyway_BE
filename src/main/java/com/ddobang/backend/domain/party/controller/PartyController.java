@@ -1,6 +1,18 @@
 package com.ddobang.backend.domain.party.controller;
 
-import com.ddobang.backend.domain.party.PartyAuthHelper;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ddobang.backend.domain.AuthHelper;
 import com.ddobang.backend.domain.party.dto.PartyDto;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
@@ -15,8 +27,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,7 +36,7 @@ import java.util.List;
 @Tag(name = "Party Controller")
 public class PartyController {
 	private final PartyService partyService;
-	private final PartyAuthHelper partyAuthHelper;
+	private final AuthHelper authHelper;
 
 	@GetMapping("/main")
 	@Operation(summary = "메인 페이지용 모집 중 모임 12개 조회")
@@ -47,61 +57,61 @@ public class PartyController {
 	@GetMapping("/{id}")
 	@Operation(summary = "모임 상세 조회")
 	public ResponseEntity<SuccessResponse<PartyDetailResponse>> getParty(@PathVariable Long id) {
-		return ResponseFactory.ok(partyService.getPartyDetailResponse(id, partyAuthHelper.getCurrentMember()));
+		return ResponseFactory.ok(partyService.getPartyDetailResponse(id, authHelper.getCurrentMember()));
 	}
 
 	@PostMapping
 	@Operation(summary = "모임 등록")
 	public ResponseEntity<SuccessResponse<PartyDto>> createParty(@RequestBody @Valid PartyRequest request) {
-		return ResponseFactory.created(partyService.createParty(request, partyAuthHelper.getCurrentMember()));
+		return ResponseFactory.created(partyService.createParty(request, authHelper.getCurrentMember()));
 	}
 
 	@PutMapping("/{id}")
 	@Operation(summary = "모임 수정")
 	public ResponseEntity<SuccessResponse<PartyDto>> modifyParty(@PathVariable Long id,
 		@RequestBody @Valid PartyRequest request) {
-		return ResponseFactory.ok(partyService.modifyParty(id, request, partyAuthHelper.getCurrentMember()));
+		return ResponseFactory.ok(partyService.modifyParty(id, request, authHelper.getCurrentMember()));
 	}
 
 	@DeleteMapping("/{id}")
 	@Operation(summary = "소프트 딜리트 (모임 삭제)")
 	public ResponseEntity<Void> softDeleteParty(@PathVariable Long id) {
-		partyService.softDeleteParty(id, partyAuthHelper.getCurrentMember());
+		partyService.softDeleteParty(id, authHelper.getCurrentMember());
 		return ResponseFactory.noContent();
 	}
 
 	@PostMapping("/{id}/apply")
 	@Operation(summary = "모임 참가 신청")
 	public ResponseEntity<Void> applyParty(@PathVariable Long id) {
-		partyService.applyParty(id, partyAuthHelper.getCurrentMember());
+		partyService.applyParty(id, authHelper.getCurrentMember());
 		return ResponseFactory.noContent();
 	}
 
 	@DeleteMapping("/{id}/cancel")
 	@Operation(summary = "모임 참가 신청 취소")
 	public ResponseEntity<Void> cancelAppliedParty(@PathVariable Long id) {
-		partyService.cancelAppliedParty(id, partyAuthHelper.getCurrentMember());
+		partyService.cancelAppliedParty(id, authHelper.getCurrentMember());
 		return ResponseFactory.noContent();
 	}
 
 	@PostMapping("/{id}/accept/{memberId}")
 	@Operation(summary = "모임 신청 승인")
 	public ResponseEntity<Void> acceptPartyMember(@PathVariable Long id, @PathVariable Long memberId) {
-		partyService.acceptPartyMember(id, memberId, partyAuthHelper.getCurrentMember());
+		partyService.acceptPartyMember(id, memberId, authHelper.getCurrentMember());
 		return ResponseFactory.noContent();
 	}
 
 	@PatchMapping("/{id}/executed")
 	@Operation(summary = "모임 실행 완료")
 	public ResponseEntity<Void> executeParty(@PathVariable Long id) {
-		partyService.executeParty(id, partyAuthHelper.getCurrentMember());
+		partyService.executeParty(id, authHelper.getCurrentMember());
 		return ResponseFactory.noContent();
 	}
 
 	@PatchMapping("/{id}/unexecuted")
 	@Operation(summary = "모임 미실행 완료")
 	public ResponseEntity<Void> unexecuteParty(@PathVariable Long id) {
-		partyService.unexecuteParty(id, partyAuthHelper.getCurrentMember());
+		partyService.unexecuteParty(id, authHelper.getCurrentMember());
 		return ResponseFactory.noContent();
 	}
 }

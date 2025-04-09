@@ -63,7 +63,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
 		// 태그 필터링 시 사용될 서브 쿼리
 		// 요청에 포함된 태그들 중 하나라도 포함되면 통과
-		if (request.tagNames() != null && !request.tagNames().isEmpty()) {
+		if (request.tagIds() != null && !request.tagIds().isEmpty()) {
 			QThemeTagMapping subMapping = new QThemeTagMapping("subMapping");
 			QThemeTag subTag = new QThemeTag("subTag");
 
@@ -73,7 +73,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 				.join(subMapping.themeTag, subTag)    // 테마 태그에 조인
 				.where(
 					subMapping.theme.eq(diary.theme),    // 지금 조회 중인 테마와 매핑된 태그인지 확인
-					subTag.name.in(request.tagNames())    // 사용자가 요청한 필터에 포함되는 태그인지 확인
+					subTag.id.in(request.tagIds())    // 사용자가 요청한 필터에 포함되는 태그인지 확인
 				)
 				.exists()    // where 조건 만족 시 true
 			);
@@ -87,9 +87,9 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 		// 성공 여부 필터링
 		// 값이 success / fail이 아니거나 null 일 경우 전체 조회
 		if (request.isSuccess() != null) {
-			if ("success".equalsIgnoreCase(request.isSuccess())) {
+			if ("success" .equalsIgnoreCase(request.isSuccess())) {
 				builder.and(diary.diaryStat.escapeResult.eq(true));
-			} else if ("fail".equalsIgnoreCase(request.isSuccess())) {
+			} else if ("fail" .equalsIgnoreCase(request.isSuccess())) {
 				builder.and(diary.diaryStat.escapeResult.eq(false));
 			}
 		}
@@ -153,7 +153,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 			}
 		}
 
-		if (request.tagNames() != null && !request.tagNames().isEmpty()) {
+		if (request.tagIds() != null && !request.tagIds().isEmpty()) {
 			query.join(theme.themeTagMappings, themeTagMapping);
 			query.join(themeTagMapping.themeTag, themeTag);
 			if (fetchJoin) {
