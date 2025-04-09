@@ -274,10 +274,10 @@ public class PartyRepositoryTest {
         Theme theme = TestDataHelper.createTheme(em, "잠실 테마", "설명", Theme.Status.OPENED, store, List.of());
         Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
 
-        LocalDate targetDate = LocalDate.of(2025, 4, 10);
-        LocalDateTime scheduledAt = LocalDate.of(2025, 4, 10).atTime(17, 0);
+        LocalDate targetDate = LocalDate.now().plusDays(3);
+        LocalDateTime scheduledAt = targetDate.atTime(17, 0);
 
-        TestDataHelper.createParty(em, TestDataHelper.partyReq("4월 10일 파티", theme.getId(), scheduledAt), theme, host);
+        TestDataHelper.createParty(em, TestDataHelper.partyReq("3일 뒤 파티", theme.getId(), scheduledAt), theme, host);
 
         em.flush();
         em.clear();
@@ -288,7 +288,7 @@ public class PartyRepositoryTest {
 
         // then
         assertThat(results).hasSize(1);
-        assertThat(results.getFirst().title()).isEqualTo("4월 10일 파티");
+        assertThat(results.getFirst().title()).isEqualTo("3일 뒤 파티");
     }
 
     @Test
@@ -301,7 +301,7 @@ public class PartyRepositoryTest {
         Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
 
         // 같은 날짜, 다른 시간
-        LocalDate targetDate = LocalDate.of(2025, 4, 10);
+        LocalDate targetDate = LocalDate.now().plusDays(3);
 
         TestDataHelper.createParty(em, TestDataHelper.partyReq("오전 파티", theme.getId(), targetDate.atTime(9, 0)), theme, host);
         TestDataHelper.createParty(em, TestDataHelper.partyReq("오후 파티", theme.getId(), targetDate.atTime(20, 0)), theme, host);
@@ -334,7 +334,7 @@ public class PartyRepositoryTest {
         em.flush();
         em.clear();
 
-        PartySearchCondition condition = new PartySearchCondition(null, null, null, List.of("공포"));
+        PartySearchCondition condition = new PartySearchCondition(null, null, null, List.of(horror.getId()));
         List<PartySummaryResponse> results = partyRepository.getParties(null, 10, condition);
 
         assertThat(results).hasSize(1);
@@ -363,7 +363,7 @@ public class PartyRepositoryTest {
         em.clear();
 
         // when
-        PartySearchCondition condition = new PartySearchCondition(null, null, null, List.of("스릴러"));
+        PartySearchCondition condition = new PartySearchCondition(null, null, null, List.of(thriller.getId()));
         List<PartySummaryResponse> results = partyRepository.getParties(null, 10, condition);
 
         // then
@@ -389,7 +389,7 @@ public class PartyRepositoryTest {
 
         Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
 
-        LocalDate targetDate = LocalDate.of(2025, 4, 10);
+        LocalDate targetDate = LocalDate.now().plusDays(3);
 
         TestDataHelper.createParty(em, partyReq("조건 만족 파티", horrorTheme.getId(), targetDate.atTime(18, 0)), horrorTheme, host);
         TestDataHelper.createParty(em, partyReq("지역 다른 파티", romanceTheme.getId(), targetDate.atTime(18, 0)), romanceTheme, host);
@@ -404,7 +404,7 @@ public class PartyRepositoryTest {
                 null,
                 List.of(regionA.getId()),
                 List.of(targetDate),
-                List.of("공포")
+                List.of(horror.getId())
         );
 
         List<PartySummaryResponse> results = partyRepository.getParties(null, 10, condition);
@@ -429,7 +429,7 @@ public class PartyRepositoryTest {
 
         Member host = TestDataHelper.createMember(em, "img.jpg", "공포호스트");
 
-        LocalDate targetDate = LocalDate.of(2025, 4, 10);
+        LocalDate targetDate = LocalDate.now().plusDays(3);
         LocalDateTime scheduledAt = targetDate.atTime(19, 0);
 
         TestDataHelper.createParty(em, partyReq("미스터리 공포 파티", horrorTheme.getId(), scheduledAt), horrorTheme, host);
@@ -446,7 +446,7 @@ public class PartyRepositoryTest {
                 "미스터리",
                 List.of(region.getId()),
                 List.of(targetDate),
-                List.of("공포")
+                List.of(horror.getId())
         );
 
         List<PartySummaryResponse> results = partyRepository.getParties(null, 10, condition);
@@ -497,7 +497,7 @@ public class PartyRepositoryTest {
 
         Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
 
-        LocalDate targetDate = LocalDate.of(2025, 4, 10);
+        LocalDate targetDate = LocalDate.now().plusDays(3);
 
         List<Party> parties = new ArrayList<>();
         for (int i = 1; i <= 3; i++) {
@@ -514,7 +514,7 @@ public class PartyRepositoryTest {
                 null,
                 List.of(region.getId()),
                 List.of(targetDate),
-                List.of("공포")
+                List.of(horror.getId())
         );
 
         List<PartySummaryResponse> results = partyRepository.getParties(lastId, 1, condition);

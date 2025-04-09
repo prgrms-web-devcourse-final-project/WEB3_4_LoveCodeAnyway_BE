@@ -250,4 +250,14 @@
                  .andExpect(handler().methodName("unexecuteParty"))
                  .andExpect(status().isNoContent());
      }
+
+     @Test
+     @DisplayName("메인 페이지 모임 목록 조회")
+     void getPartiesForMainTest() throws Exception {
+         mockMvc.perform(get("/api/v1/parties/main")
+                         .contentType(MediaType.APPLICATION_JSON))
+                 .andExpect(handler().handlerType(PartyController.class))
+                 .andExpect(handler().methodName("getMainParties"))
+                 .andExpect(status().isOk());
+     }
  }

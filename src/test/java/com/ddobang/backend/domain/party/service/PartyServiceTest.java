@@ -5,6 +5,7 @@ import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.domain.party.dto.PartyDto;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
+import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.party.exception.PartyException;
@@ -30,11 +31,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PartyServiceTest {
@@ -211,7 +214,7 @@ class PartyServiceTest {
         partyService.softDeleteParty(partyId, host);
 
         // then
-        assertTrue(party.getIsDeleted());
+        assertTrue(party.getDeleted());
         assertEquals("모임", party.getTitle());
 
         // verify
@@ -329,5 +332,45 @@ class PartyServiceTest {
         assertEquals(PartyStatus.CANCELLED, party.getStatus());
 
         verify(partyRepository).findById(partyId);
+    }
+
+    @Test
+    @DisplayName("메인 페이지")
+    void getPartiesForMainTest() {
+        // given
+        List<Party> mockParties = IntStream.range(0, 12)
+                .mapToObj(i -> {
+                    LocalDateTime scheduledAt = LocalDateTime.now().plusDays(i);
+                    PartyRequest request = new PartyRequest(
+                            theme.getId(),
+                            "Party " + i,
+                            "내용 " + i,
+                            scheduledAt,
+                            5,
+                            6,
+                            true
+                    );
+                    return Party.of(request, theme, host);
+                })
+                .collect(Collectors.toList());
+
+        when(partyRepository.findTop12ByStatusOrderByScheduledAtAsc(PartyStatus.RECRUITING))
+                .thenReturn(mockParties);
+
+        // when
+        List<PartyMainResponse> result = partyService.getUpcomingParties();
+
+        // then
+        assertThat(result).hasSize(12);
+        assertThat(result.getFirst().title()).isEqualTo("Party 0");
+        assertThat(result.get(11).title()).isEqualTo("Party 11");
+
+        for (int i = 1; i < result.size(); i++) {
+            assertThat(result.get(i).scheduledAt())
+                    .isAfterOrEqualTo(result.get(i - 1).scheduledAt());
+        }
+
+        verify(partyRepository, times(1))
+                .findTop12ByStatusOrderByScheduledAtAsc(PartyStatus.RECRUITING);
     }
 }

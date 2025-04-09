@@ -7,6 +7,6 @@ public record PartySearchCondition(
 	String keyword,
 	List<Long> regionIds,
 	List<LocalDate> dates,
-	List<String> tags
+	List<Long> tagsIds
 ) {
 }
