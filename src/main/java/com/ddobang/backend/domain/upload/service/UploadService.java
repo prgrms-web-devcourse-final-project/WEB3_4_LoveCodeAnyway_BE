@@ -5,7 +5,7 @@ import com.ddobang.backend.domain.board.entity.Post;
 import com.ddobang.backend.domain.board.exception.BoardErrorCode;
 import com.ddobang.backend.domain.board.exception.BoardException;
 import com.ddobang.backend.domain.board.repository.AttachmentRepository;
-import com.ddobang.backend.domain.board.repository.BoardRepository;
+import com.ddobang.backend.domain.board.repository.PostRepository;
 import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.exception.DiaryErrorCode;
 import com.ddobang.backend.domain.diary.exception.DiaryException;
@@ -41,7 +41,7 @@ import static com.ddobang.backend.domain.upload.exception.UploadErrorCode.UPLOAD
 public class UploadService {
 	private final MemberRepository memberRepository;
 	private final DiaryRepository diaryRepository;
-	private final BoardRepository boardRepository;
+	private final PostRepository postRepository;
 	private final AttachmentRepository attachmentRepository;
 
 	@Value("${custom.fileUpload.dirPath}")
@@ -160,8 +160,8 @@ public class UploadService {
 			}
 
 			case BOARD -> {
-				Post post = boardRepository.findById(parentId)
-					.orElseThrow(() -> new BoardException(BoardErrorCode.BOARD_NOT_FOUND));
+				Post post = postRepository.findById(parentId)
+					.orElseThrow(() -> new BoardException(BoardErrorCode.POST_NOT_FOUND));
 				Attachment attachment = Attachment.of(path.toString(), originalName, post);
 
 				post.getAttachments().add(attachment);

@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import com.ddobang.backend.domain.board.entity.Post;
 
 @Repository
-public interface BoardRepository extends JpaRepository<Post, Long> {
+public interface BoardRepository extends JpaRepository<Post, Long>, BoardRepositoryCustom {
 }

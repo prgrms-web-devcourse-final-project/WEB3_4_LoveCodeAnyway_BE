@@ -22,7 +22,7 @@ public record PartyDto(
 	Long themeId,
 	String themeName
 ) {
-	public static PartyDto toDto(Party party) {
+	public static PartyDto from(Party party) {
 		return new PartyDto(
 			party.getId(),
 			party.getTitle(),
