@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: ddobang-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/ddobang?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=ddobang_user
+      - SPRING_DATASOURCE_PASSWORD=ddobang_pass
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+      - SERVER_SERVLET_CONTEXT_PATH=/
+      - SPRINGDOC_SWAGGER_UI_PATH=/swagger-ui
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: ddobang-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ddobang
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_USER: ddobang_user
+      MYSQL_PASSWORD: ddobang_pass
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
