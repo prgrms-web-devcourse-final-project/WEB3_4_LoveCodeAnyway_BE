@@ -57,15 +57,19 @@ public class Message extends BaseTime {
 	// 보낸 사람이거나 받은 사람인 경우에만 접근 가능
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	// @param member 권한 확인할 사용자
 >>>>>>> 28d9d05 (feat: Docker 구현)
 =======
 >>>>>>> 85c27b2 (gemini review plz)
+=======
+>>>>>>> 45202747ff86670562ad0fbd2d93c59b97c8d4a5
 	public boolean hasAccessPermission(Member member) {
 		return isSender(member) || isReceiver(member);
 	}
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 	// 메시지의 발신자인지 확인
 <<<<<<< HEAD
@@ -76,6 +80,10 @@ public class Message extends BaseTime {
 
 	// 메시지의 발신자인지 확인
 >>>>>>> 85c27b2 (gemini review plz)
+=======
+
+	// 메시지의 발신자인지 확인
+>>>>>>> 45202747ff86670562ad0fbd2d93c59b97c8d4a5
 	public boolean isSender(Member member) {
 		return this.sender.getId().equals(member.getId());
 	}
@@ -83,11 +91,14 @@ public class Message extends BaseTime {
 	// 메시지의 수신자인지 확인
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	// @param member 확인할 사용자
 >>>>>>> 28d9d05 (feat: Docker 구현)
 =======
 >>>>>>> 85c27b2 (gemini review plz)
+=======
+>>>>>>> 45202747ff86670562ad0fbd2d93c59b97c8d4a5
 	public boolean isReceiver(Member member) {
 		return this.receiver.getId().equals(member.getId());
 	}
@@ -96,11 +107,14 @@ public class Message extends BaseTime {
 	// 받은 사람만 읽음 상태 변경 가능
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	// @param member 권한 확인할 사용자
 >>>>>>> 28d9d05 (feat: Docker 구현)
 =======
 >>>>>>> 85c27b2 (gemini review plz)
+=======
+>>>>>>> 45202747ff86670562ad0fbd2d93c59b97c8d4a5
 	public boolean hasReadPermission(Member member) {
 		return isReceiver(member);
 	}
@@ -109,11 +123,14 @@ public class Message extends BaseTime {
 	// 받은 사람만 삭제 가능
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	// @param member 권한 확인할 사용자
 >>>>>>> 28d9d05 (feat: Docker 구현)
 =======
 >>>>>>> 85c27b2 (gemini review plz)
+=======
+>>>>>>> 45202747ff86670562ad0fbd2d93c59b97c8d4a5
 	public boolean hasDeletePermission(Member member) {
 		return isReceiver(member);
 	}
