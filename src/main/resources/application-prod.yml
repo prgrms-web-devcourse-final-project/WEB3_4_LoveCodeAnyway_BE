@@ -23,7 +23,7 @@ spring:
         format_sql: false
         highlight_sql: false
         use_sql_comments: false
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+
 # logging
 logging:
   level:

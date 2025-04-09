@@ -4,7 +4,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.H2Dialect
 
 # Custom settings
 custom:
