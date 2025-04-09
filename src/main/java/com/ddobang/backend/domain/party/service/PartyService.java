@@ -6,6 +6,7 @@ import com.ddobang.backend.domain.party.dto.PartyDto;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartyDetailResponse;
+import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.party.exception.PartyErrorCode;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +32,12 @@ public class PartyService {
 	private final ThemeService themeService;
 	private final MemberService memberService;
 	private final PartyValidationService partyValidationService;
+
+	public List<PartyMainResponse> getUpcomingParties() {
+		List<Party> parties = partyRepository.findTop12ByStatusOrderByScheduledAtAsc(PartyStatus.RECRUITING);
+		return parties.stream().map(PartyMainResponse::from).collect(Collectors.toList());
+	}
+
 
 	public SliceDto<PartySummaryResponse> getParties(Long lastId, int size, PartySearchCondition partySearchCondition) {
 		List<PartySummaryResponse> parties = partyRepository.getParties(lastId, size + 1, partySearchCondition);
