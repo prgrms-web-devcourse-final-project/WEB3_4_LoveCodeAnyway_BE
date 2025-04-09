@@ -16,10 +16,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.ddobang.backend.domain.diary.repository.DiaryRepository;
-import com.ddobang.backend.domain.member.dto.request.SignupRequest;
 import com.ddobang.backend.domain.member.entity.Gender;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.global.auth.dto.request.SignupRequest;
 import com.ddobang.backend.global.security.jwt.JwtTokenFactory;
 import com.ddobang.backend.global.security.jwt.JwtTokenType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,7 +83,7 @@ class AuthIntegrationTest {
 
 		List<Member> members = memberRepository.findAll();
 		assertThat(members).hasSize(1);
-		assertThat(members.get(0).getNickname()).isEqualTo("또방이");
+		assertThat(members.getFirst().getNickname()).isEqualTo("또방이");
 	}
 
 	@Test
