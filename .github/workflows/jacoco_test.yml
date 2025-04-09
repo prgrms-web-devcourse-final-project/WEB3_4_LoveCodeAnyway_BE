@@ -1,16 +1,23 @@
 name: JaCoCo Test
 
 on:
-  push:
-    branches: [ main, dev, 'feature/*' ]
+  #  push:
+  #    branches: [ main, dev, 'feature/*' ]
   pull_request:
     branches: [ dev, main ]
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 전체 히스토리 가져오기 (변경된 파일 감지에 필요)
+
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
@@ -49,8 +56,8 @@ jobs:
 
       # JaCoCo 테스트 커버리지 보고서 생성
       - name: Generate JaCoCo Test Coverage Report
-        if: success()  # 테스트가 성공했을 때만 실행
-        run: ./gradlew jacocoTestReport
+        if: success()
+        run: ./gradlew jacocoTestReport --info
 
       # 테스트 커버리지 검증
       - name: Verify Test Coverage
@@ -65,13 +72,21 @@ jobs:
           name: jacoco-report
           path: build/reports/jacoco/test/html/
 
-      # 선택 사항: 커버리지 결과를 PR 코멘트에 추가
+      # 테스트 결과 아티팩트로 업로드
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/reports/tests/
+
+      # 커버리지 결과를 PR 코멘트에 추가
       - name: Comment Test Coverage on PR
         if: github.event_name == 'pull_request' && success()
-        uses: madrapps/jacoco-report@v1.3
+        uses: madrapps/jacoco-report@v1.6
         with:
-          paths: build/reports/jacoco/test/jacocoTestReport.xml
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 40
-          min-coverage-changed-files: 60
+          min-coverage-overall: 70
+          min-coverage-changed-files: 80
           title: '📊 테스트 커버리지 리포트'
