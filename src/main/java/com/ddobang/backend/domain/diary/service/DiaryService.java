@@ -25,6 +25,7 @@ import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.domain.stat.calculator.ThemeStatCalculator;
 import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
 import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
@@ -39,6 +40,7 @@ public class DiaryService {
 	private final DiaryStatRepository diaryStatRepository;
 	private final MemberRepository memberRepository;
 	private final ThemeService themeService;
+	private final ThemeStatCalculator themeStatCalculator;
 	private final String TIME_MINUTES_SECONDS_PATTERN = "^\\d{1,3}:\\d{1,2}$";
 	private final String TIME_TYPE_REMAINING = "REMAINING";
 	private final String TIME_TYPE_ELAPSED = "ELAPSED";
@@ -63,6 +65,7 @@ public class DiaryService {
 		);
 
 		diary.setDiaryStat(diaryStat);
+		themeStatCalculator.updateThemeStat(theme);
 
 		return DiaryDto.of(diary);
 	}

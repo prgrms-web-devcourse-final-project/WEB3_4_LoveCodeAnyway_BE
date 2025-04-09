@@ -48,8 +48,10 @@ public record DiaryDto(
 			diary.getDiaryStat().getStory(),
 			diary.getDiaryStat().getQuestion(),
 			diary.getDiaryStat().getInterior(),
-			diary.getDiaryStat().getDeviceRatio(),
-			diary.getDiaryStat().getHintCount(),
+			diary.getDiaryStat().getDeviceRatio() != null
+				? diary.getDiaryStat().getDeviceRatio() : 0,
+			diary.getDiaryStat().getHintCount() != null
+				? diary.getDiaryStat().getHintCount() : 0,
 			diary.getDiaryStat().isEscapeResult(),
 			diary.getDiaryStat().getElapsedTime(),
 			diary.getReview(),

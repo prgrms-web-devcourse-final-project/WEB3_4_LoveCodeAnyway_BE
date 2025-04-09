@@ -20,7 +20,6 @@ import com.ddobang.backend.domain.region.repository.RegionRepository;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.repository.StoreRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
@@ -63,8 +62,6 @@ public class BaseInitData {
 
 	@Getter
 	private List<Theme> themes = new ArrayList<>();
-	@Getter
-	private List<ThemeStat> themeStats = new ArrayList<>();
 
 	@Bean
 	public ApplicationRunner baseInitDataApplicationRunner() {
@@ -143,25 +140,6 @@ public class BaseInitData {
 				.themeTags(i % 4 != 0 ? List.of(tag1, tag2) : List.of(tag3))
 				.build()))
 			.toList();
-
-		// 5. 테마 통계 5개 저장
-		themeStats = IntStream.range(0, 5)
-			.mapToObj(i -> themeStatRepository.save(ThemeStat.builder()
-				.theme(themes.get(i))
-				.difficulty(3)
-				.fear(2)
-				.activity(4)
-				.satisfaction(5)
-				.production(3)
-				.story(4)
-				.question(3)
-				.interior(4)
-				.deviceRatio(75)
-				.noHintEscapeRate(80)
-				.escapeResult(60)
-				.escapeTimeAvg(3600)
-				.build()))
-			.toList();
 	}
 
 	// Diary init data
@@ -171,7 +149,7 @@ public class BaseInitData {
 			return;
 		}
 
-		for (int i = 1; i <= 10; i++) {
+		for (int i = 1; i <= 9; i++) {
 			diaryService.write(
 				DiaryRequestDto.builder()
 					.themeId((long)i)

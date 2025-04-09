@@ -633,17 +633,17 @@ public class DiaryControllerTest {
 			DiaryListDto diary = diaries.get(i);
 
 			resultActions
-				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
-				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
-				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
-				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
-				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+				.andExpect(jsonPath("$.data.items[%d].id" .formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId" .formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName" .formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl" .formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags" .formatted(i))
 					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
-				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
-				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
-				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
-				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
-				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+				.andExpect(jsonPath("$.data.items[%d].storeName" .formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate" .formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime" .formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount" .formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult" .formatted(i)).value(diary.escapeResult()));
 		}
 	}
 
@@ -686,17 +686,17 @@ public class DiaryControllerTest {
 			DiaryListDto diary = diaries.get(i);
 
 			resultActions
-				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
-				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
-				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
-				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
-				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+				.andExpect(jsonPath("$.data.items[%d].id" .formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId" .formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName" .formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl" .formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags" .formatted(i))
 					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
-				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
-				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
-				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
-				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
-				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+				.andExpect(jsonPath("$.data.items[%d].storeName" .formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate" .formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime" .formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount" .formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult" .formatted(i)).value(diary.escapeResult()));
 		}
 	}
 
@@ -739,17 +739,17 @@ public class DiaryControllerTest {
 			DiaryListDto diary = diaries.get(i);
 
 			resultActions
-				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
-				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
-				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
-				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
-				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+				.andExpect(jsonPath("$.data.items[%d].id" .formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId" .formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName" .formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl" .formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags" .formatted(i))
 					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
-				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
-				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
-				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
-				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
-				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+				.andExpect(jsonPath("$.data.items[%d].storeName" .formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate" .formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime" .formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount" .formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult" .formatted(i)).value(diary.escapeResult()));
 		}
 	}
 
@@ -761,7 +761,7 @@ public class DiaryControllerTest {
 			.perform(post("/api/v1/diaries/list")
 				.content("""
 					{
-						"tagNames": ["공포", "판타지"]
+						"tagIds": [1, 2]
 					}
 					""")
 				.contentType(
@@ -771,7 +771,7 @@ public class DiaryControllerTest {
 			.andDo(print());
 
 		DiaryFilterRequest request = DiaryFilterRequest.builder()
-			.tagNames(List.of("공포", "판타지"))
+			.tagIds(List.of(1L, 2L))
 			.build();
 
 		Page<DiaryListDto> diariesPage = diaryService
@@ -792,17 +792,17 @@ public class DiaryControllerTest {
 			DiaryListDto diary = diaries.get(i);
 
 			resultActions
-				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
-				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
-				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
-				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
-				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+				.andExpect(jsonPath("$.data.items[%d].id" .formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId" .formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName" .formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl" .formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags" .formatted(i))
 					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
-				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
-				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
-				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
-				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
-				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+				.andExpect(jsonPath("$.data.items[%d].storeName" .formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate" .formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime" .formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount" .formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult" .formatted(i)).value(diary.escapeResult()));
 		}
 	}
 
@@ -847,17 +847,17 @@ public class DiaryControllerTest {
 			DiaryListDto diary = diaries.get(i);
 
 			resultActions
-				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
-				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
-				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
-				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
-				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+				.andExpect(jsonPath("$.data.items[%d].id" .formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId" .formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName" .formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl" .formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags" .formatted(i))
 					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
-				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
-				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
-				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
-				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
-				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+				.andExpect(jsonPath("$.data.items[%d].storeName" .formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate" .formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime" .formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount" .formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult" .formatted(i)).value(diary.escapeResult()));
 		}
 	}
 
@@ -925,17 +925,17 @@ public class DiaryControllerTest {
 			DiaryListDto diary = diaries.get(i);
 
 			resultActions
-				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
-				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
-				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
-				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
-				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+				.andExpect(jsonPath("$.data.items[%d].id" .formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId" .formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName" .formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl" .formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags" .formatted(i))
 					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
-				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
-				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
-				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
-				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
-				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+				.andExpect(jsonPath("$.data.items[%d].storeName" .formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate" .formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime" .formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount" .formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult" .formatted(i)).value(diary.escapeResult()));
 		}
 	}
 
@@ -978,17 +978,17 @@ public class DiaryControllerTest {
 			DiaryListDto diary = diaries.get(i);
 
 			resultActions
-				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
-				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
-				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
-				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
-				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+				.andExpect(jsonPath("$.data.items[%d].id" .formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId" .formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName" .formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl" .formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags" .formatted(i))
 					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
-				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
-				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
-				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
-				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
-				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+				.andExpect(jsonPath("$.data.items[%d].storeName" .formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate" .formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime" .formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount" .formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult" .formatted(i)).value(diary.escapeResult()));
 		}
 	}
 
@@ -996,7 +996,7 @@ public class DiaryControllerTest {
 	@DisplayName("""
 		탈출일지 다건 조회, with 다중 필터 검색(
 			강남, 홍대,
-			공포,
+			판타지,
 			2024-03-20 ~ 2024-06-20,
 			성공, 노힌트,
 			방탈출 A
@@ -1009,7 +1009,7 @@ public class DiaryControllerTest {
 				.content("""
 					{
 						"regionId": [1, 2],
-						"tagNames": ["공포"],
+						"tagIds": [3],
 						"startDate": "2024-03-20",
 						"endDate": "2024-06-20",
 						"isSuccess": "success",
@@ -1025,7 +1025,7 @@ public class DiaryControllerTest {
 
 		DiaryFilterRequest request = DiaryFilterRequest.builder()
 			.regionId(List.of(1L, 2L))
-			.tagNames(List.of("공포"))
+			.tagIds(List.of(3L))
 			.startDate(LocalDate.of(2024, 3, 20))
 			.endDate(LocalDate.of(2024, 6, 20))
 			.isSuccess("success")
@@ -1051,17 +1051,17 @@ public class DiaryControllerTest {
 			DiaryListDto diary = diaries.get(i);
 
 			resultActions
-				.andExpect(jsonPath("$.data.items[%d].id".formatted(i)).value(diary.id()))
-				.andExpect(jsonPath("$.data.items[%d].themeId".formatted(i)).value(diary.themeId()))
-				.andExpect(jsonPath("$.data.items[%d].themeName".formatted(i)).value(diary.themeName()))
-				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
-				.andExpect(jsonPath("$.data.items[%d].tags".formatted(i))
+				.andExpect(jsonPath("$.data.items[%d].id" .formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data.items[%d].themeId" .formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data.items[%d].themeName" .formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data.items[%d].thumbnailUrl" .formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data.items[%d].tags" .formatted(i))
 					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
-				.andExpect(jsonPath("$.data.items[%d].storeName".formatted(i)).value(diary.storeName()))
-				.andExpect(jsonPath("$.data.items[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
-				.andExpect(jsonPath("$.data.items[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
-				.andExpect(jsonPath("$.data.items[%d].hintCount".formatted(i)).value(diary.hintCount()))
-				.andExpect(jsonPath("$.data.items[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+				.andExpect(jsonPath("$.data.items[%d].storeName" .formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data.items[%d].escapeDate" .formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data.items[%d].elapsedTime" .formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data.items[%d].hintCount" .formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data.items[%d].escapeResult" .formatted(i)).value(diary.escapeResult()));
 		}
 	}
 
@@ -1085,17 +1085,17 @@ public class DiaryControllerTest {
 			DiaryListDto diary = diaries.get(i);
 
 			resultActions
-				.andExpect(jsonPath("$.data[%d].id".formatted(i)).value(diary.id()))
-				.andExpect(jsonPath("$.data[%d].themeId".formatted(i)).value(diary.themeId()))
-				.andExpect(jsonPath("$.data[%d].themeName".formatted(i)).value(diary.themeName()))
-				.andExpect(jsonPath("$.data[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
-				.andExpect(jsonPath("$.data[%d].tags".formatted(i))
+				.andExpect(jsonPath("$.data[%d].id" .formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data[%d].themeId" .formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data[%d].themeName" .formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data[%d].thumbnailUrl" .formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data[%d].tags" .formatted(i))
 					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
-				.andExpect(jsonPath("$.data[%d].storeName".formatted(i)).value(diary.storeName()))
-				.andExpect(jsonPath("$.data[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
-				.andExpect(jsonPath("$.data[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
-				.andExpect(jsonPath("$.data[%d].hintCount".formatted(i)).value(diary.hintCount()))
-				.andExpect(jsonPath("$.data[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+				.andExpect(jsonPath("$.data[%d].storeName" .formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data[%d].escapeDate" .formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data[%d].elapsedTime" .formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data[%d].hintCount" .formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data[%d].escapeResult" .formatted(i)).value(diary.escapeResult()));
 		}
 	}
 
@@ -1120,17 +1120,17 @@ public class DiaryControllerTest {
 			DiaryListDto diary = diaries.get(i);
 
 			resultActions
-				.andExpect(jsonPath("$.data[%d].id".formatted(i)).value(diary.id()))
-				.andExpect(jsonPath("$.data[%d].themeId".formatted(i)).value(diary.themeId()))
-				.andExpect(jsonPath("$.data[%d].themeName".formatted(i)).value(diary.themeName()))
-				.andExpect(jsonPath("$.data[%d].thumbnailUrl".formatted(i)).value(diary.thumbnailUrl()))
-				.andExpect(jsonPath("$.data[%d].tags".formatted(i))
+				.andExpect(jsonPath("$.data[%d].id" .formatted(i)).value(diary.id()))
+				.andExpect(jsonPath("$.data[%d].themeId" .formatted(i)).value(diary.themeId()))
+				.andExpect(jsonPath("$.data[%d].themeName" .formatted(i)).value(diary.themeName()))
+				.andExpect(jsonPath("$.data[%d].thumbnailUrl" .formatted(i)).value(diary.thumbnailUrl()))
+				.andExpect(jsonPath("$.data[%d].tags" .formatted(i))
 					.value(Matchers.containsInAnyOrder(diary.tags().toArray())))
-				.andExpect(jsonPath("$.data[%d].storeName".formatted(i)).value(diary.storeName()))
-				.andExpect(jsonPath("$.data[%d].escapeDate".formatted(i)).value(diary.escapeDate().toString()))
-				.andExpect(jsonPath("$.data[%d].elapsedTime".formatted(i)).value(diary.elapsedTime()))
-				.andExpect(jsonPath("$.data[%d].hintCount".formatted(i)).value(diary.hintCount()))
-				.andExpect(jsonPath("$.data[%d].escapeResult".formatted(i)).value(diary.escapeResult()));
+				.andExpect(jsonPath("$.data[%d].storeName" .formatted(i)).value(diary.storeName()))
+				.andExpect(jsonPath("$.data[%d].escapeDate" .formatted(i)).value(diary.escapeDate().toString()))
+				.andExpect(jsonPath("$.data[%d].elapsedTime" .formatted(i)).value(diary.elapsedTime()))
+				.andExpect(jsonPath("$.data[%d].hintCount" .formatted(i)).value(diary.hintCount()))
+				.andExpect(jsonPath("$.data[%d].escapeResult" .formatted(i)).value(diary.escapeResult()));
 		}
 	}
 

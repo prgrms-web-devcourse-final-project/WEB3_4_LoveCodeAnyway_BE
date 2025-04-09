@@ -8,7 +8,7 @@ import lombok.Builder;
 @Builder
 public record DiaryFilterRequest(
 	List<Long> regionId,
-	List<String> tagNames,
+	List<Long> tagIds,
 	LocalDate startDate,
 	LocalDate endDate,
 	String isSuccess,
