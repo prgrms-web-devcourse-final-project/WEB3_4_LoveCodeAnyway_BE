@@ -43,6 +43,7 @@ public class ThemeStatCalculator {
 		themeStatRepository.save(themeStat);
 	}
 
+	// 테마 평가 및 통계 계산 메서드(힌트 갯수 제외 0은 계산에서 제외합니다.)
 	private ThemeStatResult calculateThemeStat(Theme theme, List<DiaryStat> diaryStats) {
 		long totalCount = diaryStats.size();
 
