@@ -1,15 +1,18 @@
 package com.ddobang.backend.domain.member.service;
 
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
+
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.exception.MemberErrorCode;
 import com.ddobang.backend.domain.member.exception.MemberException;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.Optional;
+import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -70,8 +73,22 @@ public class MemberService {
 		return memberRepository.findByKakaoId(kakaoId);
 	}
 
+	public boolean existsByKakaoId(String kakaoId) {
+		return memberRepository.existsByKakaoId(kakaoId);
+	}
+
+	public boolean existsByNickname(@NotBlank(message = "닉네임은 필수입니다.") String nickname) {
+		// TODO document why this method is empt
+		return false;
+	}
+
+	// 회원 정보 저장
+	public Member save(Member member) {
+		return memberRepository.save(member);
+	}
+
 	public Member getMember(Long memberId) {
 		return memberRepository.findById(memberId)
-				.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 	}
 }

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ddobang.backend.domain.member.dto.request.SignupRequest;
+import com.ddobang.backend.global.auth.dto.request.SignupRequest;
 import com.ddobang.backend.global.auth.service.AuthService;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SuccessResponse;

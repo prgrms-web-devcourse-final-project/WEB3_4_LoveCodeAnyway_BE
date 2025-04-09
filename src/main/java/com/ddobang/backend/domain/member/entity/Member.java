@@ -62,6 +62,27 @@ public class Member extends BaseTime {
 		this.password = password;
 	}
 
+	public static Member of(String nickname, Gender gender, String introduction, String imageUrl) {
+		return Member.builder()
+			.nickname(nickname)
+			.gender(gender)
+			.introduction(introduction)
+			.profilePictureUrl(imageUrl)
+			.build();
+	}
+
+	// 신규 회원 가입 시 사용
+	public static Member ofWithKakaoId(String nickname, Gender gender, String introduction, String imageUrl,
+		String kakaoId) {
+		return Member.builder()
+			.nickname(nickname)
+			.gender(gender)
+			.introduction(introduction)
+			.profilePictureUrl(imageUrl)
+			.kakaoId(kakaoId)
+			.build();
+	}
+
 	public void setProfilePictureUrl(String profilePictureUrl) {
 		this.profilePictureUrl = profilePictureUrl;
 	}
