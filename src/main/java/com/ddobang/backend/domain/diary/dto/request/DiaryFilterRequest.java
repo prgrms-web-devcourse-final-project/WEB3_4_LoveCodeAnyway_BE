@@ -8,11 +8,16 @@ import lombok.Builder;
 @Builder
 public record DiaryFilterRequest(
 	List<Long> regionId,
-	List<String> tagNames,
+	List<Long> tagIds,
 	LocalDate startDate,
 	LocalDate endDate,
 	String isSuccess,
 	Boolean isNoHint,
 	String keyword
 ) {
+	public boolean isInvalidDateRange() {
+		return this.startDate() != null
+			&& this.endDate() != null
+			&& this.startDate().isAfter(this.endDate());
+	}
 }

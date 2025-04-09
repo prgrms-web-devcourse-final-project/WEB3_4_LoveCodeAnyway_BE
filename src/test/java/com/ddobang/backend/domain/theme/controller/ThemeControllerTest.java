@@ -24,6 +24,7 @@ import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
+import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.global.initdata.BaseInitData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -46,6 +47,9 @@ public class ThemeControllerTest {
 	@Autowired
 	private BaseInitData initThemeMockData;
 	//private InitThemeMockData initThemeMockData;
+
+	@Autowired
+	private ThemeStatRepository themeStatRepository;
 
 	private Region region1; // 서울 / 강남
 	private Region region2; // 서울 / 홍대
@@ -78,7 +82,8 @@ public class ThemeControllerTest {
 		tag3 = initThemeMockData.getTag3();
 
 		themes = initThemeMockData.getThemes();
-		themeStat = initThemeMockData.getThemeStats().getFirst();
+		//themeStat = initThemeMockData.getThemeStats().getFirst();
+		themeStat = themeStatRepository.findAll().getFirst();
 	}
 
 	private ResultActions performGetThemesWithFilter(
@@ -170,7 +175,7 @@ public class ThemeControllerTest {
 	@DisplayName("공포 태그 필터로 테마 다건 조회 테스트")
 	void getThemesWithTag1FilterTest() throws Exception {
 		// given
-		ThemeFilterRequest request = new ThemeFilterRequest(null, List.of("공포"), null, null);
+		ThemeFilterRequest request = new ThemeFilterRequest(null, List.of(1L), null, null);
 
 		// when
 		ResultActions result = performGetThemesWithFilter(0, request);
@@ -223,7 +228,7 @@ public class ThemeControllerTest {
 	void getThemesWithComplexFilterTest() throws Exception {
 		// given
 		ThemeFilterRequest request = new ThemeFilterRequest(
-			List.of(region2.getId()), List.of(tag2.getName()), 5, "테마 5");
+			List.of(region2.getId()), List.of(2L), 5, "테마 5");
 
 		// when
 		ResultActions result = performGetThemesWithFilter(0, request);
@@ -242,7 +247,7 @@ public class ThemeControllerTest {
 	void cannotFindThemesWithComplexFilterTest() throws Exception {
 		// given
 		ThemeFilterRequest request = new ThemeFilterRequest(
-			List.of(region2.getId()), List.of("감성"), 5, "A");
+			List.of(region2.getId()), List.of(2L), 5, "A");
 
 		// when
 		ResultActions result = performGetThemesWithFilter(0, request);
@@ -301,7 +306,7 @@ public class ThemeControllerTest {
 	@DisplayName("테마 상세(테마 통계 없음) 조회 테스트")
 	void getThemeWithNotStatTest() throws Exception {
 		// given
-		long themeId = 7L;
+		long themeId = 10L;
 
 		// when
 		ResultActions result = mvc.perform(get("/api/v1/themes/" + themeId)
@@ -311,10 +316,10 @@ public class ThemeControllerTest {
 		// then
 		result
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.name").value(themes.get(6).getName()))
-			.andExpect(jsonPath("$.data.storeInfo.name").value(store2.getName()))
-			.andExpect(jsonPath("$.data.runtime").value(themes.get(6).getRuntime()))
-			.andExpect(jsonPath("$.data.recommendedParticipants").value("4~5인"))
+			.andExpect(jsonPath("$.data.name").value(themes.get(9).getName()))
+			.andExpect(jsonPath("$.data.storeInfo.name").value(store1.getName()))
+			.andExpect(jsonPath("$.data.runtime").value(themes.get(9).getRuntime()))
+			.andExpect(jsonPath("$.data.recommendedParticipants").value("2~3인"))
 			.andExpect(jsonPath("$.data.tags[0]").value(tag1.getName()))
 			.andExpect(jsonPath("$.data.tags[1]").value(tag2.getName()))
 			.andExpect(jsonPath("$.data.diaryBasedThemeStat").isEmpty());
@@ -463,5 +468,22 @@ public class ThemeControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.length()").value(0))
 		;
+	}
+
+	@Test
+	@DisplayName("테마 태그 목록 조회 테스트")
+	void getAllThemeTagsTest() throws Exception {
+		// given
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/tags")
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(3))
+			.andExpect(jsonPath("$.data[0].name").value(tag1.getName()))
+			.andExpect(jsonPath("$.data[2].name").value(tag3.getName()));
 	}
 }

@@ -1,17 +1,17 @@
 package com.ddobang.backend.domain.upload.controller;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
+import com.ddobang.backend.domain.board.dto.request.PostRequest;
+import com.ddobang.backend.domain.board.entity.Attachment;
+import com.ddobang.backend.domain.board.entity.Post;
+import com.ddobang.backend.domain.board.repository.AttachmentRepository;
+import com.ddobang.backend.domain.board.repository.PostRepository;
+import com.ddobang.backend.domain.board.types.PostType;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.domain.upload.service.UploadService;
+import com.ddobang.backend.domain.upload.types.FileUploadTarget;
+import com.ddobang.backend.global.util.Ut;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,18 +27,18 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.board.entity.Post;
-import com.ddobang.backend.domain.board.repository.AttachmentRepository;
-import com.ddobang.backend.domain.board.repository.BoardRepository;
-import com.ddobang.backend.domain.board.types.PostType;
-import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.repository.MemberRepository;
-import com.ddobang.backend.domain.upload.service.UploadService;
-import com.ddobang.backend.domain.upload.types.FileUploadTarget;
-import com.ddobang.backend.global.entity.Attachment;
-import com.ddobang.backend.global.util.Ut;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
-import jakarta.persistence.EntityManager;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -56,7 +56,7 @@ public class UploadControllerTest {
 	private UploadService uploadService;
 
 	@Autowired
-	private BoardRepository boardRepository;
+	private PostRepository postRepository;
 
 	@Autowired
 	private AttachmentRepository attachmentRepository;
@@ -115,14 +115,8 @@ public class UploadControllerTest {
 	@WithMockUser(roles = "USER")
 	void t1_1() throws Exception {
 		Member member = memberRepository.findById(1L).orElseThrow();
-		Post post = boardRepository.save(
-			Post.builder()
-				.type(PostType.THEME)
-				.member(member)
-				.title("테스트")
-				.content("내용")
-				.build()
-		);
+		PostRequest request = new PostRequest(PostType.THEME, "테스트", "내용", List.of());
+		Post post = postRepository.save(Post.of(request, member));
 
 		ResultActions resultActions = mvc
 			.perform(
@@ -144,7 +138,7 @@ public class UploadControllerTest {
 
 		assertThat(file.exists()).isTrue();
 		assertThat(attachments).hasSize(1);
-		assertThat(attachments.get(0).getOriginalName()).isEqualTo("test-image.png");
+		assertThat(attachments.get(0).getFileName()).isEqualTo("test-image.png");
 		assertThat(attachments.get(0).getUrl()).contains(
 			Path.of(FileUploadTarget.BOARD.getType())
 				.resolve(post.getId().toString())
@@ -333,14 +327,8 @@ public class UploadControllerTest {
 	@WithMockUser(roles = "USER")
 	void t2_1() throws Exception {
 		Member member = memberRepository.findById(1L).orElseThrow();
-		Post post = boardRepository.save(
-			Post.builder()
-				.type(PostType.THEME)
-				.member(member)
-				.title("테스트")
-				.content("내용")
-				.build()
-		);
+		PostRequest request = new PostRequest(PostType.THEME, "테스트", "내용", List.of());
+		Post post = postRepository.save(Post.of(request, member));
 
 		em.flush();
 

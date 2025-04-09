@@ -2,7 +2,6 @@ package com.ddobang.backend.domain.diary.dto.response;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.ddobang.backend.domain.diary.entity.Diary;
 
@@ -26,7 +25,7 @@ public record DiaryListDto(
 			diary.getTheme().getThumbnailUrl(),
 			diary.getTheme().getThemeTagMappings().stream()
 				.map(ttm -> ttm.getThemeTag().getName())
-				.collect(Collectors.toList()),
+				.toList(),
 			diary.getTheme().getStore().getName(),
 			diary.getEscapeDate(),
 			diary.getDiaryStat().getElapsedTime(),

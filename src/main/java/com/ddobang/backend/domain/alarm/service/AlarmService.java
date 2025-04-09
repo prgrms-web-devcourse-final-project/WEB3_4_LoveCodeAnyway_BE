@@ -27,7 +27,7 @@ public class AlarmService {
 	// 사용자 알림 목록 조회
 	public PageDto<AlarmResponse> getAlarms(Long userId, Pageable pageable) {
 		Page<Alarm> alarms = alarmRepository.findByReceiverIdOrderByCreatedAtDesc(userId, pageable);
-		return new PageDto<>(alarms.map(AlarmResponse::from));
+		return PageDto.of(alarms.map(AlarmResponse::from));
 	}
 
 	// 알림 상세조회

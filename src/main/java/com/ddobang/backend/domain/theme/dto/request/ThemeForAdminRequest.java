@@ -19,6 +19,7 @@ import jakarta.validation.constraints.Positive;
 public record ThemeForAdminRequest(
 	@NotNull(message = "매장 정보는 필수입니다.")
 	Long storeId,
+	List<Long> tagIds,
 	@NotBlank(message = "테마 이름은 필수입니다.")
 	String name,
 	String description,
@@ -38,7 +39,6 @@ public record ThemeForAdminRequest(
 	@ValidEnum(enumClass = Theme.Status.class, message = "유효하지 않은 status 입력입니다.")
 	String status,
 	String reservationUrl,
-	String thumbnailUrl,
-	List<String> tags
+	String thumbnailUrl
 ) {
 }
