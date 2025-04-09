@@ -81,4 +81,24 @@ public class ThemeController {
 
 		return ResponseFactory.ok(themeTags);
 	}
+
+	@Operation(summary = "태그별 인기 테마 Top 10 조회 api")
+	@GetMapping("/popular")
+	ResponseEntity<SuccessResponse<List<ThemesResponse>>> getPopularThemes(
+		@RequestParam String tagName
+	) {
+		List<ThemesResponse> popularThemes = themeService.getPopularThemesByTagName(tagName);
+
+		return ResponseFactory.ok(popularThemes);
+	}
+
+	@Operation(summary = "태그별 최신 테마 Top 10 조회 api")
+	@GetMapping("/newest")
+	ResponseEntity<SuccessResponse<List<ThemesResponse>>> getNewestThemes(
+		@RequestParam String tagName
+	) {
+		List<ThemesResponse> newestThemes = themeService.getNewestThemesByTagName(tagName);
+
+		return ResponseFactory.ok(newestThemes);
+	}
 }
