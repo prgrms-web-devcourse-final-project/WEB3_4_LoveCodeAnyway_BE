@@ -66,7 +66,7 @@ public class Party extends BaseTime {
 
 	@NotNull
 	@Column(name = "is_deleted", nullable = false)
-	private Boolean isDeleted;
+	private Boolean deleted;
 
 	@OneToMany(mappedBy = "party", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<PartyMember> partyMembers;
@@ -85,7 +85,7 @@ public class Party extends BaseTime {
 		this.rookieAvailable = request.rookieAvailable();
 		this.status = PartyStatus.RECRUITING;
 		this.partyMembers = new ArrayList<>();
-		this.isDeleted = false;
+		this.deleted = false;
 		this.theme = theme;
 
 		PartyMember partyMember = PartyMember.createHost(this, host);
@@ -166,10 +166,10 @@ public class Party extends BaseTime {
 	}
 
 	public void delete() {
-		if (isDeleted) {
+		if (deleted) {
 			throw new PartyException(PartyErrorCode.PARTY_ALREADY_DELETED);
 		}
-		this.isDeleted = true;
+		this.deleted = true;
 	}
 
 	public Member getHost() {

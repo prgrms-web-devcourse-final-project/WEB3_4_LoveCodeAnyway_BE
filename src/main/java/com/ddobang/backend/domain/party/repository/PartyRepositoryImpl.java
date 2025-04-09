@@ -65,6 +65,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 				.leftJoin(mapping.themeTag, themeTag)
 				.where(
 						party.status.in(RECRUITING, FULL),
+						party.deleted.eq(false),
 						pm.role.eq(HOST),
 						keywordContains(condition.keyword(), party, theme, store, host),
 						regionIn(condition.regionIds(), store),
