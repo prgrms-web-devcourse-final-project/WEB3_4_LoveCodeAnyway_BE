@@ -65,6 +65,8 @@ public class ThemeStat {
 	private int escapeResult;
 	private int escapeTimeAvg;
 
+	private int diaryCount = 0;
+
 	@Builder
 	public ThemeStat(Theme theme, float difficulty, float fear, float activity, float satisfaction, float production,
 		float story, float question, float interior, float deviceRatio, int noHintEscapeRate, int escapeResult,
@@ -82,5 +84,15 @@ public class ThemeStat {
 		this.noHintEscapeRate = noHintEscapeRate;
 		this.escapeResult = escapeResult;
 		this.escapeTimeAvg = escapeTimeAvg;
+	}
+
+	public void incrementDiaryCount() {
+		diaryCount++;
+	}
+
+	public void decrementDiaryCount() {
+		if (diaryCount > 0) {
+			diaryCount--;
+		}
 	}
 }
