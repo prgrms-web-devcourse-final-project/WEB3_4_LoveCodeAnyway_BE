@@ -43,29 +43,30 @@ public class RegionServiceTest {
 	@DisplayName("지역 대분류로 지역 목록 조회 성공 테스트")
 	public void findByMajorRegionTest() {
 		// given
-		List<Region> regions = List.of(region1, region2);
-		when(regionRepository.findByMajorRegion(majorRegion)).thenReturn(regions);
+		SubRegionsResponse response1 = SubRegionsResponse.of(region1);
+		SubRegionsResponse response2 = SubRegionsResponse.of(region2);
+		List<SubRegionsResponse> responses = List.of(response1, response2);
+		when(regionRepository.findSubRegionsByMajorRegion(majorRegion)).thenReturn(responses);
 
 		// when
-		List<Region> result = regionService.findByMajorRegion(majorRegion);
+		List<SubRegionsResponse> result = regionService.getSubRegionsByMajorRegion(majorRegion);
 
 		// then
 		assertThat(result.size()).isEqualTo(2);
-		assertThat(result.get(0).getMajorRegion()).isEqualTo(majorRegion);
-		assertThat(result.get(0).getSubRegion()).isEqualTo("홍대");
-		assertThat(result.get(1).getSubRegion()).isEqualTo("강남");
+		assertThat(result.get(0).subRegion()).isEqualTo("홍대");
+		assertThat(result.get(1).subRegion()).isEqualTo("강남");
 	}
 
 	@Test
 	@DisplayName("지역 대분류로 지역 목록 조회 실패 테스트")
 	public void findByMajorRegionFailTest() {
 		// given
-		when(regionRepository.findByMajorRegion(anyString())).thenReturn(Collections.emptyList());
+		when(regionRepository.findSubRegionsByMajorRegion(anyString())).thenReturn(Collections.emptyList());
 
 		// when
 		RegionException exception = assertThrows(
 			RegionException.class,
-			() -> regionService.findByMajorRegion("NOT_EXIST")
+			() -> regionService.getSubRegionsByMajorRegion("NOT_EXIST")
 		);
 		RegionErrorCode errorCode = RegionErrorCode.REGION_NOT_FOUND;
 
@@ -75,34 +76,6 @@ public class RegionServiceTest {
 		assertThat(exception.getErrorCode().getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
 		assertThat(exception.getMessage()).isEqualTo("지역 정보를 찾을 수 없습니다.");
 		assertThat(exception.getErrorCode()).isEqualTo(errorCode);
-	}
-
-	@Test
-	@DisplayName("List<Region>에서 List<SubRegionsResponse>로 변환 성공 테스트")
-	public void getSubRegionsByRegionsTest() {
-		// given
-		List<Region> regions = List.of(region1, region2);
-
-		// when
-		List<SubRegionsResponse> result = regionService.getSubRegionsByRegions(regions);
-
-		// then
-		assertThat(result.size()).isEqualTo(2);
-		assertThat(result.get(0).subRegion()).isEqualTo("홍대");
-		assertThat(result.get(1).subRegion()).isEqualTo("강남");
-	}
-
-	@Test
-	@DisplayName("EmptyList에서 List<SubRegionsResponse>로 변환 테스트")
-	public void getSubRegionsByRegionsWhenEmptyTest() {
-		// given
-		List<Region> regions = Collections.emptyList();
-
-		// when
-		List<SubRegionsResponse> result = regionService.getSubRegionsByRegions(regions);
-
-		// then
-		assertThat(result.isEmpty()).isTrue();
 	}
 
 	@Test

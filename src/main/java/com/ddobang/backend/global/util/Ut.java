@@ -36,4 +36,31 @@ public class Ut {
 
 		return true;
 	}
+
+	public static class calculator {
+		public static float roundToFirstDecimal(double value) {
+			return (float)Math.round(value * 10) / 10f;
+		}
+
+		public static int roundToInt(double value) {
+			return (int)Math.round(value);
+		}
+
+		public static double calculateAverage(long totalStat, long statCount) {
+			if (totalStat == 0) {
+				return 0;
+			}
+
+			return (double)totalStat / statCount;
+		}
+
+		public static double calculateRate(long totalCount, long resultCount) {
+			if (totalCount == 0 || resultCount == 0) {
+				return 0;
+			}
+
+			return (double)resultCount / totalCount * 100;
+		}
+
+	}
 }

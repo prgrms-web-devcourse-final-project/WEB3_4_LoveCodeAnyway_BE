@@ -20,7 +20,6 @@ import com.ddobang.backend.domain.region.repository.RegionRepository;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.repository.StoreRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
@@ -63,8 +62,6 @@ public class BaseInitData {
 
 	@Getter
 	private List<Theme> themes = new ArrayList<>();
-	@Getter
-	private List<ThemeStat> themeStats = new ArrayList<>();
 
 	@Bean
 	public ApplicationRunner baseInitDataApplicationRunner() {
@@ -138,28 +135,9 @@ public class BaseInitData {
 				.price(25000)
 				.status(i % 3 != 0 ? Theme.Status.OPENED : Theme.Status.CLOSED)
 				.reservationUrl("https://example.com/theme/" + i)
-				.thumbnailUrl("https://placehold.co/600x400?text=Theme" + i)
+				.thumbnailUrl("https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif")
 				.store(i % 2 == 0 ? store1 : store2)
 				.themeTags(i % 4 != 0 ? List.of(tag1, tag2) : List.of(tag3))
-				.build()))
-			.toList();
-
-		// 5. 테마 통계 5개 저장
-		themeStats = IntStream.range(0, 5)
-			.mapToObj(i -> themeStatRepository.save(ThemeStat.builder()
-				.theme(themes.get(i))
-				.difficulty(3)
-				.fear(2)
-				.activity(4)
-				.satisfaction(5)
-				.production(3)
-				.story(4)
-				.question(3)
-				.interior(4)
-				.deviceRatio(75)
-				.noHintEscapeRate(80)
-				.escapeResult(60)
-				.escapeTimeAvg(3600)
 				.build()))
 			.toList();
 	}
@@ -171,11 +149,10 @@ public class BaseInitData {
 			return;
 		}
 
-		for (int i = 1; i <= 10; i++) {
+		for (int i = 1; i <= 9; i++) {
 			diaryService.write(
 				DiaryRequestDto.builder()
 					.themeId((long)i)
-					.imageUrl("https://placehold.co/640x640?text=:P")
 					.escapeDate(LocalDate.of(2024, i, 15))
 					.participants("지인1, 지인2")
 					.difficulty(3)
@@ -189,7 +166,7 @@ public class BaseInitData {
 					.deviceRatio(70)
 					.hintCount(i % 3)
 					.escapeResult(i % 2 == 0 ? true : false)
-					.timeType("remaining")
+					.timeType("REMAINING")
 					.elapsedTime("15:25")
 					.review("너무 재밌었다!!")
 					.build()

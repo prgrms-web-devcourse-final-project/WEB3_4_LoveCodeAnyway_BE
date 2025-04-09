@@ -1,12 +1,23 @@
 package com.ddobang.backend.domain.theme.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.service.StoreService;
 import com.ddobang.backend.domain.theme.dto.ThemeStatDto;
 import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.dto.request.ThemeForAdminRequest;
 import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
-import com.ddobang.backend.domain.theme.dto.response.*;
+import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemeDetailResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemeForAdminResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemeForPartyResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemeTagResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemesResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
@@ -15,12 +26,8 @@ import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.global.response.SliceDto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -76,7 +83,7 @@ public class ThemeService {
 	 */
 	@Transactional
 	public SimpleThemeResponse saveForMember(ThemeForMemberRequest request) {
-		List<ThemeTag> themeTags = request.tags().stream().map(themeTagService::getByName).toList();
+		List<ThemeTag> themeTags = themeTagService.getTagsByIds(request.tagIds());
 		Store store = storeService.saveForMember(Store.builder().name(request.storeName()).build());
 
 		Theme savedTheme = themeRepository.save(Theme.builder()
@@ -92,7 +99,7 @@ public class ThemeService {
 
 	@Transactional
 	public void saveForAdmin(ThemeForAdminRequest request) {
-		List<ThemeTag> themeTags = request.tags().stream().map(themeTagService::getByName).toList();
+		List<ThemeTag> themeTags = themeTagService.getTagsByIds(request.tagIds());
 		Store store = storeService.findById(request.storeId());
 
 		themeRepository.save(Theme.of(request, store, themeTags));
@@ -101,7 +108,7 @@ public class ThemeService {
 	@Transactional
 	public void modify(Long id, ThemeForAdminRequest request) {
 		Theme theme = getThemeById(id);
-		List<ThemeTag> themeTags = request.tags().stream().map(themeTagService::getByName).toList();
+		List<ThemeTag> themeTags = themeTagService.getTagsByIds(request.tagIds());
 		Store store = storeService.findById(request.storeId());
 
 		theme.modify(request, store, themeTags);
@@ -126,6 +133,10 @@ public class ThemeService {
 		int size) {
 		List<SimpleThemeResponse> themes = themeRepository.findThemesForAdminSearch(filterRequest, page, size);
 		return SliceDto.of(themes, size);
+	}
+
+	public List<ThemeTagResponse> getAllThemeTags() {
+		return themeTagService.getAllTags();
 	}
 
 	public ThemeStat getThemeStatById(Long id) {

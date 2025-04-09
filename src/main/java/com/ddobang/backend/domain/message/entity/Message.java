@@ -53,4 +53,32 @@ public class Message extends BaseTime {
 	public void changeToRead() {
 		this.isRead = true;
 	}
+
+	// 메시지에 접근 권한이 있는지 확인
+	// 보낸 사람이거나 받은 사람인 경우에만 접근 가능
+	public boolean hasAccessPermission(Member member) {
+		return isSender(member) || isReceiver(member);
+	}
+
+	// 메시지의 발신자인지 확인
+	public boolean isSender(Member member) {
+		return this.sender.getId().equals(member.getId());
+	}
+
+	// 메시지의 수신자인지 확인
+	public boolean isReceiver(Member member) {
+		return this.receiver.getId().equals(member.getId());
+	}
+
+	// 읽음 상태 변경 권한이 있는지 확인
+	// 받은 사람만 읽음 상태 변경 가능
+	public boolean hasReadPermission(Member member) {
+		return isReceiver(member);
+	}
+
+	// 삭제 권한이 있는지 확인
+	// 받은 사람만 삭제 가능
+	public boolean hasDeletePermission(Member member) {
+		return isReceiver(member);
+	}
 }

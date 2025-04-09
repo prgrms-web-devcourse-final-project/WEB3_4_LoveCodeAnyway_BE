@@ -15,6 +15,7 @@ import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeDetailResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeForPartyResponse;
+import com.ddobang.backend.domain.theme.dto.response.ThemeTagResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemesResponse;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 import com.ddobang.backend.global.response.ResponseFactory;
@@ -71,5 +72,13 @@ public class ThemeController {
 		List<SimpleThemeResponse> themesForDiary = themeService.getThemesForDiarySearch(keyword);
 
 		return ResponseFactory.ok(themesForDiary);
+	}
+
+	@Operation(summary = "태그 목록 조회 api")
+	@GetMapping("/tags")
+	ResponseEntity<SuccessResponse<List<ThemeTagResponse>>> getAllThemeTags() {
+		List<ThemeTagResponse> themeTags = themeService.getAllThemeTags();
+
+		return ResponseFactory.ok(themeTags);
 	}
 }

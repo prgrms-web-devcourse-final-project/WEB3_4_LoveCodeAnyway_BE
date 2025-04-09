@@ -47,11 +47,9 @@ public class RegionControllerTest {
 	@DisplayName("지역 대분류로 지역 목록 조회 성공 테스트")
 	public void findByMajorRegionTest() throws Exception {
 		// given
-		List<Region> regions = List.of(region1, region2);
 		SubRegionsResponse response1 = SubRegionsResponse.of(region1);
 		SubRegionsResponse response2 = SubRegionsResponse.of(region2);
-		when(regionService.findByMajorRegion(majorRegion)).thenReturn(regions);
-		when(regionService.getSubRegionsByRegions(anyList()))
+		when(regionService.getSubRegionsByMajorRegion(majorRegion))
 			.thenReturn(List.of(response1, response2));
 
 		// when
@@ -64,8 +62,8 @@ public class RegionControllerTest {
 			.andExpect(handler().handlerType(RegionController.class))
 			.andExpect(handler().methodName("getSubRegionsByMajorRegion"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$[0].subRegion").value("홍대"))
-			.andExpect(jsonPath("$[1].subRegion").value("강남"));
+			.andExpect(jsonPath("$.data[0].subRegion").value("홍대"))
+			.andExpect(jsonPath("$.data[1].subRegion").value("강남"));
 	}
 
 	@Test
@@ -73,7 +71,7 @@ public class RegionControllerTest {
 	public void findByMajorRegionFailTest() throws Exception {
 		// given
 		doThrow(new RegionException(RegionErrorCode.REGION_NOT_FOUND))
-			.when(regionService).findByMajorRegion(anyString());
+			.when(regionService).getSubRegionsByMajorRegion(anyString());
 
 		// when
 		ResultActions result = mockMvc.perform(get("/api/v1/regions")
