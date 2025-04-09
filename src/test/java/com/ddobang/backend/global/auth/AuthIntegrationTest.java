@@ -85,5 +85,12 @@ class AuthIntegrationTest {
 		assertThat(members).hasSize(1);
 		assertThat(members.get(0).getNickname()).isEqualTo("또방이");
 	}
-}
 
+	@Test
+	@DisplayName("카카오 로그인 진입 시 OAuth2 인증 URL로 리다이렉트")
+	void login_redirectToKakaoAuthorization() throws Exception {
+		mockMvc.perform(get("/api/v1/auth/login"))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(header().string("Location", "/oauth2/authorization/kakao"));
+	}
+}
