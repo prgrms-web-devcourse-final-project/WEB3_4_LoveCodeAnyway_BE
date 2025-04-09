@@ -41,5 +41,3 @@ springdoc:
 oauth:
   kakao:
     base-uri: http://localhost:8080
-
-# custom.sse.timeout 설정은 application.yml로 이동했습니다.
