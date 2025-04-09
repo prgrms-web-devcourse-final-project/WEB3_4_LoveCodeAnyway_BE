@@ -12,7 +12,6 @@ public class DiaryConverter {
 			.theme(theme)
 			.author(author)
 			.escapeDate(dto.escapeDate())
-			.imageUrl(dto.imageUrl())
 			.participants(dto.participants())
 			.review(dto.review())
 			.build();

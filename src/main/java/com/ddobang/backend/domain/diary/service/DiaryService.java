@@ -39,11 +39,14 @@ public class DiaryService {
 	private final DiaryStatRepository diaryStatRepository;
 	private final MemberRepository memberRepository;
 	private final ThemeService themeService;
+	private final String TIME_MINUTES_SECONDS_PATTERN = "^\\d{1,3}:\\d{1,2}$";
+	private final String TIME_TYPE_REMAINING = "REMAINING";
+	private final String TIME_TYPE_ELAPSED = "ELAPSED";
 
 	@Transactional
 	public DiaryDto write(DiaryRequestDto diaryRequestDto) {
 		Theme theme = themeService.getThemeById(diaryRequestDto.themeId());
-		Member actor = memberRepository.findById(1L).get();
+		Member actor = memberRepository.findById(1L).orElseThrow();
 
 		int elapsedTime = calculateElapsedTime(
 			diaryRequestDto.timeType(),
@@ -110,37 +113,14 @@ public class DiaryService {
 		diaryRepository.delete(diary);
 	}
 
-	private int calculateElapsedTime(String timeType, int themeRuntime, String time) {
-		if (time == null) {
-			return 0;
-		}
-
-		if (!Pattern.matches("^\\d{1,3}:\\d{1,2}$", time)) {
-			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_FORMAT);
-		}
-
-		if (!timeType.equals("remaining") && !timeType.equals("elapsed")) {
-			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_TYPE);
-		}
-
-		String[] timeBits = time.split(":");
-		int timeSeconds = Integer.parseInt(timeBits[0]) * 60 + Integer.parseInt(timeBits[1]);
-
-		return timeType.equals("remaining")
-			? themeRuntime * 60 - timeSeconds
-			: timeSeconds;
-	}
-
 	@Transactional(readOnly = true)
 	public Page<DiaryListDto> getAllItems(DiaryFilterRequest request, int page, int pageSize) {
-		if (request.startDate() != null
-			&& request.endDate() != null
-			&& request.startDate().isAfter(request.endDate())) {
+		if (request.isInvalidDateRange()) {
 			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_DATE_RANGE);
 		}
 
 		Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Order.desc("id")));
-		Member actor = memberRepository.findById(1L).get();
+		Member actor = memberRepository.findById(1L).orElseThrow();
 
 		return diaryRepository.findDiariesByFilter(actor, request, pageable)
 			.map(DiaryListDto::of);
@@ -172,5 +152,30 @@ public class DiaryService {
 	@Transactional
 	public SimpleThemeResponse saveThemeForDiary(ThemeForMemberRequest request) {
 		return themeService.saveForMember(request);
+	}
+
+	private int calculateElapsedTime(String timeType, int themeRuntime, String time) {
+		if (time == null) {
+			return 0;
+		}
+
+		if (!Pattern.matches(TIME_MINUTES_SECONDS_PATTERN, time)) {
+			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_FORMAT);
+		}
+
+		if (!TIME_TYPE_REMAINING.equals(timeType) && !TIME_TYPE_ELAPSED.equals(timeType)) {
+			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_TIME_TYPE);
+		}
+
+		String[] timeBits = time.split(":");
+		int timeSeconds = Integer.parseInt(timeBits[0]) * 60 + Integer.parseInt(timeBits[1]);
+
+		if (TIME_TYPE_REMAINING.equals(timeType) && themeRuntime * 60 < timeSeconds) {
+			throw new DiaryException(DiaryErrorCode.DIARY_INVALID_REMAINING_TIME);
+		}
+
+		return TIME_TYPE_REMAINING.equals(timeType)
+			? themeRuntime * 60 - timeSeconds
+			: timeSeconds;
 	}
 }
