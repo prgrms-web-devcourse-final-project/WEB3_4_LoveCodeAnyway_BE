@@ -1,4 +1,15 @@
-package com.ddobang.backend.domain.board.dto.response;
+package com.ddobang.backend.domain.board.dto;
 
-public record PostReplyResponse() {
+import com.ddobang.backend.domain.board.entity.PostReply;
+
+public record PostReplyDto(
+        Long id,
+        String content
+) {
+    public static PostReplyDto from(PostReply postReply) {
+        return new PostReplyDto(
+                postReply.getId(),
+                postReply.getContent()
+        );
+    }
 }

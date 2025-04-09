@@ -1,4 +1,11 @@
 package com.ddobang.backend.domain.board.dto.request;
 
-public record AdminPostSearchCondition() {
+import com.ddobang.backend.domain.board.types.PostType;
+
+public record AdminPostSearchCondition(
+        PostType type,
+        Boolean answered,
+        Boolean deleted,
+        String keyword
+) {
 }

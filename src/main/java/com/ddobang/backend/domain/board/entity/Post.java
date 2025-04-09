@@ -34,6 +34,10 @@ public class Post extends BaseTime {
 	private String content;
 
 	@NotNull
+	@Column(name = "answered", nullable = false)
+	private boolean answered;
+
+	@NotNull
 	@Column(name = "is_deleted", nullable = false)
 	private boolean deleted;
 
@@ -44,22 +48,46 @@ public class Post extends BaseTime {
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Attachment> attachments;
 
+	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<PostReply> replies;
+
 	private Post(PostRequest postRequest, Member member) {
 		this.type = postRequest.type();
 		this.title = postRequest.title();
 		this.content = postRequest.content();
 		this.member = member;
+		this.answered = false;
 		this.deleted = false;
 		this.attachments = postRequest.attachments() == null
 				? new ArrayList<>()
 				: new ArrayList<>(postRequest.attachments());
+		this.replies = new ArrayList<>();
 	}
 
 	public static Post of(PostRequest request, Member member) {
 		return new Post(request, member);
 	}
 
+	public void update(PostRequest postRequest) {
+		this.type = postRequest.type();
+		this.title = postRequest.title();
+		this.content = postRequest.content();
+	}
+
 	public void delete() {
 		this.deleted = true;
+	}
+
+	public void addReply(PostReply reply) {
+		this.replies.add(reply);
+		this.answered = true;
+	}
+
+	public void removeReply(PostReply reply) {
+		this.replies.remove(reply);
+
+		if (this.replies.isEmpty()) {
+			this.answered = false;
+		}
 	}
 }

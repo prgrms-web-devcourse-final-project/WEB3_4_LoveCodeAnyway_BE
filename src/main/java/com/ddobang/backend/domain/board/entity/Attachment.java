@@ -20,7 +20,7 @@ public class Attachment {
 	private String url;
 
 	@Column(nullable = false)
-	private String originalName;
+	private String fileName;
 
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "post_id", nullable = false)
@@ -28,15 +28,15 @@ public class Attachment {
 
 	private Attachment(
 			String url,
-			String originalName,
+			String fileName,
 			Post post
 	) {
 		this.url = url;
-		this.originalName = originalName;
+		this.fileName = fileName;
 		this.post = post;
 	}
 
-	public static Attachment of(String url, String originalName, Post post) {
-		return new Attachment(url, originalName, post);
+	public static Attachment of(String url, String fileName, Post post) {
+		return new Attachment(url, fileName, post);
 	}
 }

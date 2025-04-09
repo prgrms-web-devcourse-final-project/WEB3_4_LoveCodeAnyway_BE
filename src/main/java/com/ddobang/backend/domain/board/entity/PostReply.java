@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Answer extends BaseTime {
+public class PostReply extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,8 +23,16 @@ public class Answer extends BaseTime {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    public Answer(Post post, String content) {
+    private PostReply(Post post, String content) {
         this.post = post;
+        this.content = content;
+    }
+
+    public static PostReply of(Post post, String content) {
+        return new PostReply(post, content);
+    }
+
+    public void updateContent(String content) {
         this.content = content;
     }
 }
