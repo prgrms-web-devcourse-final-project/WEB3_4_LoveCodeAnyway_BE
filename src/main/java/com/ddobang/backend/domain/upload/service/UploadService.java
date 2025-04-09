@@ -1,25 +1,11 @@
 package com.ddobang.backend.domain.upload.service;
 
-import static com.ddobang.backend.domain.upload.exception.UploadErrorCode.*;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Set;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
+import com.ddobang.backend.domain.board.entity.Attachment;
 import com.ddobang.backend.domain.board.entity.Post;
 import com.ddobang.backend.domain.board.exception.BoardErrorCode;
 import com.ddobang.backend.domain.board.exception.BoardException;
 import com.ddobang.backend.domain.board.repository.AttachmentRepository;
-import com.ddobang.backend.domain.board.repository.BoardRepository;
+import com.ddobang.backend.domain.board.repository.PostRepository;
 import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.exception.DiaryErrorCode;
 import com.ddobang.backend.domain.diary.exception.DiaryException;
@@ -31,11 +17,23 @@ import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.upload.exception.UploadErrorCode;
 import com.ddobang.backend.domain.upload.exception.UploadException;
 import com.ddobang.backend.domain.upload.types.FileUploadTarget;
-import com.ddobang.backend.global.entity.Attachment;
 import com.ddobang.backend.global.util.Ut;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Set;
+import java.util.UUID;
+
+import static com.ddobang.backend.domain.upload.exception.UploadErrorCode.UPLOAD_FILE_NOT_FOUND;
 
 @Slf4j
 @Service
@@ -43,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UploadService {
 	private final MemberRepository memberRepository;
 	private final DiaryRepository diaryRepository;
-	private final BoardRepository boardRepository;
+	private final PostRepository postRepository;
 	private final AttachmentRepository attachmentRepository;
 
 	@Value("${custom.fileUpload.dirPath}")
@@ -162,13 +160,9 @@ public class UploadService {
 			}
 
 			case BOARD -> {
-				Post post = boardRepository.findById(parentId)
-					.orElseThrow(() -> new BoardException(BoardErrorCode.BOARD_NOT_FOUND));
-				Attachment attachment = Attachment.builder()
-					.url(path.toString())
-					.originalName(originalName)
-					.post(post)
-					.build();
+				Post post = postRepository.findById(parentId)
+					.orElseThrow(() -> new BoardException(BoardErrorCode.POST_NOT_FOUND));
+				Attachment attachment = Attachment.of(path.toString(), originalName, post);
 
 				post.getAttachments().add(attachment);
 			}
