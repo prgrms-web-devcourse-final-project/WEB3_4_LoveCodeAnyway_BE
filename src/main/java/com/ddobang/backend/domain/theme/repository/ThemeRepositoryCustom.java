@@ -17,4 +17,8 @@ public interface ThemeRepositoryCustom {
 	List<Theme> findThemesForPartySearch(String keyword);
 
 	List<SimpleThemeResponse> findThemesForAdminSearch(ThemeFilterRequest request, int page, int size);
+
+	List<Theme> findTop10PopularThemesByTagName(String tagName);
+
+	List<Theme> findTop10NewestThemesByTagName(String tagName);
 }
