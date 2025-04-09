@@ -175,7 +175,6 @@ public class BaseInitData {
 			diaryService.write(
 				DiaryRequestDto.builder()
 					.themeId((long)i)
-					.imageUrl("https://placehold.co/640x640?text=:P")
 					.escapeDate(LocalDate.of(2024, i, 15))
 					.participants("지인1, 지인2")
 					.difficulty(3)
@@ -189,7 +188,7 @@ public class BaseInitData {
 					.deviceRatio(70)
 					.hintCount(i % 3)
 					.escapeResult(i % 2 == 0 ? true : false)
-					.timeType("remaining")
+					.timeType("REMAINING")
 					.elapsedTime("15:25")
 					.review("너무 재밌었다!!")
 					.build()
