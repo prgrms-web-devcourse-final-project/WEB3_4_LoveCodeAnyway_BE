@@ -47,8 +47,7 @@ public class MessageService {
 			() -> new MessageException(MessageErrorCode.MESSAGE_NOT_FOUND));
 
 		// 권한 체크 (보낸 사람 또는 받은 사람인지)
-		if (!message.getSender().getId().equals(member.getId()) &&
-			!message.getReceiver().getId().equals(member.getId())) {
+		if (!message.canAccess(member)) {
 			throw new MessageException(MessageErrorCode.MESSAGE_ACCESS_FORBIDDEN);
 		}
 
@@ -79,7 +78,7 @@ public class MessageService {
 			.orElseThrow(() -> new MessageException(MessageErrorCode.MESSAGE_NOT_FOUND));
 
 		// 수신자만 읽음 상태 변경 가능
-		if (!message.getReceiver().getId().equals(member.getId())) {
+		if (!message.canMarkAsRead(member)) {
 			throw new MessageException(MessageErrorCode.MESSAGE_READ_FORBIDDEN);
 		}
 
@@ -98,7 +97,7 @@ public class MessageService {
 			.orElseThrow(() -> new MessageException(MessageErrorCode.MESSAGE_NOT_FOUND));
 
 		// 수신자만 삭제 가능
-		if (!message.getReceiver().getId().equals(member.getId())) {
+		if (!message.canDelete(member)) {
 			throw new MessageException(MessageErrorCode.MESSAGE_DELETE_FORBIDDEN);
 		}
 
