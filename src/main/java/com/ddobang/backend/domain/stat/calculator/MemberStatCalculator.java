@@ -51,7 +51,7 @@ public class MemberStatCalculator {
 			return;
 		}
 
-		// 해당 테마에 대한 통계가 없을 경우 통계 생성
+		// 해당 멤버에 대한 분석 데이터가 없을 경우 분석 데이터 생성
 		if (memberStat.isPresent()) {
 			memberStat.get().update(
 				escapeSummaryStatDto,
