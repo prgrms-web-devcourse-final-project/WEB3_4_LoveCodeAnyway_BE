@@ -66,11 +66,11 @@ public class MemberStatCalculator {
 			Ut.calculator.calculateRate(totalCount, escapeSuccessCount)
 		);
 
-		double noHintSuccessRate = Ut.calculator.roundToInt(
+		double noHintSuccessRate = Ut.calculator.roundToFirstDecimalAsDouble(
 			Ut.calculator.calculateRate(totalCount, noHintSuccessCount)
 		);
 
-		double averageHintCount = Ut.calculator.roundToInt(
+		double averageHintCount = Ut.calculator.roundToFirstDecimalAsDouble(
 			Ut.calculator.calculateAverage(totalHintCount, hintCount)
 		);
 
