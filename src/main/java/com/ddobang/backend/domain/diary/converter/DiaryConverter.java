@@ -21,6 +21,7 @@ public class DiaryConverter {
 		return DiaryStat.builder()
 			.diary(diary)
 			.theme(diary.getTheme())
+			.author(diary.getAuthor())
 			.difficulty(dto.difficulty())
 			.fear(dto.fear())
 			.activity(dto.activity())

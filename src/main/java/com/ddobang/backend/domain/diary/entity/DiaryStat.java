@@ -1,6 +1,7 @@
 package com.ddobang.backend.domain.diary.entity;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.theme.entity.Theme;
 
 import jakarta.persistence.Entity;
@@ -29,6 +30,10 @@ public class DiaryStat {
 	@JoinColumn(name = "theme_id", nullable = false)
 	private Theme theme;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "author_id", nullable = false)
+	private Member author;
+
 	// 평가 관련 필드
 	private int difficulty;
 	private int fear;
@@ -49,6 +54,7 @@ public class DiaryStat {
 	public DiaryStat(
 		Diary diary,
 		Theme theme,
+		Member author,
 		int difficulty,
 		int fear,
 		int activity,
@@ -64,6 +70,7 @@ public class DiaryStat {
 	) {
 		this.diary = diary;
 		this.theme = theme;
+		this.author = author;
 		this.difficulty = difficulty;
 		this.fear = fear;
 		this.activity = activity;

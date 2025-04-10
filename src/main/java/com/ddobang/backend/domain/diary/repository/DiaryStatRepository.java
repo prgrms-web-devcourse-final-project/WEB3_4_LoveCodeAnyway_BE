@@ -10,4 +10,6 @@ import com.ddobang.backend.domain.diary.entity.DiaryStat;
 @Repository
 public interface DiaryStatRepository extends JpaRepository<DiaryStat, Long> {
 	List<DiaryStat> findByThemeId(Long themeId);
+
+	List<DiaryStat> findByAuthorId(Long memberId);
 }
