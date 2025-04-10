@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.ddobang.backend.domain.diary.entity.DiaryStat;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
+import com.ddobang.backend.domain.member.dto.stat.EscapeProfileStatDto;
 import com.ddobang.backend.domain.member.dto.stat.EscapeSummaryStatDto;
 import com.ddobang.backend.global.util.Ut;
 
@@ -101,5 +102,110 @@ public class MemberStatCalculator {
 			)
 			.daysSinceFirstEscape(daysSinceFirstEscape)
 			.build();
+	}
+
+	// EscapeProfileStat 계산 메서드
+	private EscapeProfileStatDto calculateEscapeProfileStat(List<DiaryStat> diaryStats) {
+		// 자극형 - 공포도, 연출 각각의 가중치
+		double tendencyStimulating = calculateTendencyScore(diaryStats, Map.of(
+			"fear", 0.6,
+			"production", 0.4
+		));
+
+		// 논리형 - 문제, 난이도 각각의 가중치
+		double tendencyLogical = calculateTendencyScore(diaryStats, Map.of(
+			"question", 0.65,
+			"difficulty", 0.35
+		));
+
+		// 서사형 - 스토리, 연출 각각의 가중치
+		double tendencyNarrative = calculateTendencyScore(diaryStats, Map.of(
+			"story", 0.7,
+			"production", 0.3
+		));
+
+		// 활동형 - 활동형 가중치
+		double tendencyActive = calculateTendencyScore(diaryStats, Map.of(
+			"activity", 1.0
+		));
+
+		// 공간중시형 - 인테리어, 연출, 스토리 각각의 가중치
+		double tendencySpatial = calculateTendencyScore(diaryStats, Map.of(
+			"interior", 0.5,
+			"production", 0.3,
+			"story", 0.2
+		));
+
+		return EscapeProfileStatDto.builder()
+			.tendencyStimulating(tendencyStimulating)
+			.tendencyLogical(tendencyLogical)
+			.tendencyNarrative(tendencyNarrative)
+			.tendencyActive(tendencyActive)
+			.tendencySpatial(tendencySpatial)
+			// .genreCountMap(genreCountMap)
+			// .genreSuccessMap(genreSuccessMap)
+			// .difficultyHintAvg1(difficultyHintAvg1)
+			// .difficultyHintAvg2(difficultyHintAvg2)
+			// .difficultyHintAvg3(difficultyHintAvg3)
+			// .difficultyHintAvg4(difficultyHintAvg4)
+			// .difficultyHintAvg5(difficultyHintAvg5)
+			// .difficultySatisAvg1(difficultySatisAvg1)
+			// .difficultySatisAvg2(difficultySatisAvg2)
+			// .difficultySatisAvg3(difficultySatisAvg3)
+			// .difficultySatisAvg4(difficultySatisAvg4)
+			// .difficultySatisAvg5(difficultySatisAvg5)
+			.build();
+	}
+
+	// 성향 분석 계산 메서드
+	private double calculateTendencyScore(List<DiaryStat> diaryStats, Map<String, Double> weights) {
+		double weightedSum = 0; // 가중 평균 점수 * 만족도 점수
+		double weightSum = 0; // 만족도 점수의 합
+
+		for (DiaryStat stat : diaryStats) {
+			boolean allScoresValid = true; // 모든 항목이 존재 하는지 여부
+			double causeScoreSum = 0; // 기준 항목 점수 * 가중치의 합
+
+			for (Map.Entry<String, Double> entry : weights.entrySet()) {
+				double score = (double)getScoreByKey(stat, entry.getKey());
+
+				if (score <= 0) {
+					allScoresValid = false;
+
+					break; // 하나라도 값이 0인 경우 해당 기록은 제외
+				}
+				causeScoreSum += score * entry.getValue();
+			}
+
+			if (allScoresValid) {
+				int satisfaction = stat.getSatisfaction();
+
+				if (satisfaction > 0) {
+					/**
+					 * 기준 항목들의 가중 평균 점수"가 높았을 때, 그 테마에 대한 만족도가 얼마나 높았는가? 에 대한 계산
+					 * 가중 평균 점수(원인 - 기준 항목들이 얼마나 부합했는지의 수치화) * 만족도(결과 - 그로 인해 얼마나 만족했는지) = 해당 기록의 성향 기여도
+					 * 만족도 점수의 합 = 기준값
+					 * */
+					weightedSum += causeScoreSum * satisfaction;
+					weightSum += satisfaction;
+				}
+			}
+		}
+
+		return weightSum == 0 ? 0
+			: Ut.calculator.roundToFirstDecimalAsDouble(weightedSum / weightSum);
+	}
+
+	private Integer getScoreByKey(DiaryStat stat, String key) {
+		return switch (key) {
+			case "fear" -> stat.getFear();
+			case "production" -> stat.getProduction();
+			case "difficulty" -> stat.getDifficulty();
+			case "activity" -> stat.getActivity();
+			case "story" -> stat.getStory();
+			case "interior" -> stat.getInterior();
+			case "question" -> stat.getQuestion();
+			default -> null;
+		};
 	}
 }
