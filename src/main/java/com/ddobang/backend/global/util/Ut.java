@@ -39,7 +39,11 @@ public class Ut {
 
 	public static class calculator {
 		public static float roundToFirstDecimal(double value) {
-			return (float)Math.round(value * 10) / 10f;
+			return (float)roundToFirstDecimalAsDouble(value);
+		}
+
+		public static double roundToFirstDecimalAsDouble(double value) {
+			return Math.round(value * 10) / 10.0;
 		}
 
 		public static int roundToInt(double value) {
