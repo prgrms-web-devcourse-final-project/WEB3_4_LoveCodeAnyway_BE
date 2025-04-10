@@ -263,10 +263,11 @@
 
      @Test
      @DisplayName("참여한 모임 목록 조회")
+     @WithMockUser(roles = "USER")
      void getJoinedPartiesTest() throws Exception {
          when(authHelper.getCurrentMember()).thenReturn(host);
 
-         mockMvc.perform(get("/api/v1/parties/joins"))
+         mockMvc.perform(get("/api/v1/parties/joins/{id}", host.getId()))
                  .andExpect(handler().handlerType(PartyController.class))
                  .andExpect(handler().methodName("getJoinedParties"))
                  .andExpect(status().isOk());

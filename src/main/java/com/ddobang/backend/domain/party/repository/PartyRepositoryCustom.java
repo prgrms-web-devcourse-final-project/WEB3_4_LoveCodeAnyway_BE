@@ -10,5 +10,5 @@ import java.util.List;
 
 public interface PartyRepositoryCustom {
 	List<PartySummaryResponse> getParties(Long lastId, int size, PartySearchCondition partySearchCondition);
-	Page<PartySummaryResponse> findByMemberJoined(Member member, Pageable pageable);
+	Page<PartySummaryResponse> findByMemberJoined(Member member, Pageable pageable, boolean myList);
 }

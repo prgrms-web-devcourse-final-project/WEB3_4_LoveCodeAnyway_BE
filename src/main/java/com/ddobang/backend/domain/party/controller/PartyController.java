@@ -2,7 +2,6 @@ package com.ddobang.backend.domain.party.controller;
 
 import com.ddobang.backend.domain.AuthHelper;
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.domain.party.dto.PartyDto;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
@@ -29,7 +28,6 @@ import java.util.List;
 @Tag(name = "Party Controller")
 public class PartyController {
 	private final PartyService partyService;
-	private final MemberService memberService;
 	private final AuthHelper authHelper;
 
 	@GetMapping("/main")
@@ -109,14 +107,19 @@ public class PartyController {
 		return ResponseFactory.noContent();
 	}
 
-	@GetMapping("/joins")
-	@Operation(summary = "내가 참여한 모임 목록 또는 다른 사용자가 참여한 모임 목록 조회")
+	@GetMapping("/joins/{id}")
+	@Operation(summary = "참여한 모임 목록 조회")
 	public ResponseEntity<SuccessResponse<PageDto<PartySummaryResponse>>> getJoinedParties(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size,
-			@RequestParam(required = false) Long memberId
+			@PathVariable Long id
 	) {
-		Member member = (memberId != null) ? memberService.getMember(memberId) : authHelper.getCurrentMember();
-		return ResponseFactory.ok(partyService.getJoinedParties(member, page, size));
+		Member actor = authHelper.getCurrentMember();
+
+		if (id.equals(actor.getId())) {
+			return ResponseFactory.ok(partyService.getMyJoinedParties(actor, page, size));
+		} else {
+			return ResponseFactory.ok(partyService.getOtherJoinedParties(id, page, size));
+		}
 	}
 }

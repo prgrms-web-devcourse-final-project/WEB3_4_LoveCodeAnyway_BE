@@ -382,20 +382,20 @@ class PartyServiceTest {
         // given
         int page = 0;
         int size = 1;
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page, size);
         PartySummaryResponse expectedResponse = PartySummaryResponse.from(party);
         Page<PartySummaryResponse> expectedPage = new PageImpl<>(List.of(expectedResponse), pageable, 1);
 
-        when(partyRepository.findByMemberJoined(host, pageable)).thenReturn(expectedPage);
+        when(partyRepository.findByMemberJoined(host, pageable, true)).thenReturn(expectedPage);
 
         // when
-        PageDto<PartySummaryResponse> result = partyService.getJoinedParties(host, page, size);
+        PageDto<PartySummaryResponse> result = partyService.getMyJoinedParties(host, page, size);
 
         // then
         assertNotNull(result);
         assertEquals(expectedPage.getContent().size(), result.items().size());
         assertEquals(1, result.items().size());
         assertEquals(expectedResponse, result.items().getFirst());
-        verify(partyRepository).findByMemberJoined(host, pageable);
+        verify(partyRepository).findByMemberJoined(host, pageable, true);
     }
 }

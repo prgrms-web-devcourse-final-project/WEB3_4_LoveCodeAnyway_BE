@@ -24,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -136,9 +135,16 @@ public class PartyService {
 		party.updateStatus(PartyStatus.CANCELLED);
 	}
 
-	public PageDto<PartySummaryResponse> getJoinedParties(Member member, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-		Page<PartySummaryResponse> joinedParties = partyRepository.findByMemberJoined(member, pageable);
+	public PageDto<PartySummaryResponse> getOtherJoinedParties(Long memberId, int page, int size) {
+		Member member = memberService.getMember(memberId);
+		Pageable pageable = PageRequest.of(page, size);
+		Page<PartySummaryResponse> joinedParties = partyRepository.findByMemberJoined(member, pageable, false);
+		return PageDto.of(joinedParties);
+	}
+
+	public PageDto<PartySummaryResponse> getMyJoinedParties(Member actor, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<PartySummaryResponse> joinedParties = partyRepository.findByMemberJoined(actor, pageable, true);
 		return PageDto.of(joinedParties);
 	}
 }

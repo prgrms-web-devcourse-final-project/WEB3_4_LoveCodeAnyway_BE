@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.ddobang.backend.domain.party.types.PartyMemberRole.HOST;
@@ -128,7 +129,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 	}
 
 	@Override
-	public Page<PartySummaryResponse> findByMemberJoined(Member member, Pageable pageable) {
+	public Page<PartySummaryResponse> findByMemberJoined(Member member, Pageable pageable, boolean myList) {
 		QParty party = QParty.party;
 		QPartyMember pm = QPartyMember.partyMember;
 		QStore store = QStore.store;
@@ -136,37 +137,37 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 		QMember host = QMember.member;
 
 		BooleanBuilder builder = new BooleanBuilder();
-		builder.and(pm.status.eq(PartyMemberStatus.ACCEPTED));
-		builder.and(party.status.eq(PartyStatus.COMPLETED));
-		builder.and(pm.member.eq(member));
+
+		builder.and(getCompletedAndAcceptedCondition(member, party, pm));
+		if(myList) {
+			builder.or(getFullAndAcceptedCondition(member, party, pm));
+			builder.or(getRecruitingAndAcceptedOrApplicantCondition(member, party, pm));
+		}
 
 		List<PartySummaryResponse> content = queryFactory
 				.select(Projections.constructor(PartySummaryResponse.class,
 						party.id,
 						party.title,
 						party.scheduledAt,
-
 						party.participantsNeeded.subtract(party.acceptedParticipantsCount),
 						party.totalParticipants,
 						party.rookieAvailable,
-
 						store.name,
-
 						theme.id,
 						theme.name,
 						theme.thumbnailUrl,
-
 						host.id,
 						host.nickname,
 						host.profilePictureUrl
-						))
-						.from(party)
+				))
+				.from(party)
 				.leftJoin(party.partyMembers, pm)
 				.join(party.theme, theme)
 				.join(theme.store, store)
 				.join(pm.member, host)
 				.where(builder)
-				.orderBy(party.createdAt.desc())
+				.orderBy(party.scheduledAt.desc())
+				.distinct()
 				.offset(pageable.getOffset())
 				.limit(pageable.getPageSize())
 				.fetch();
@@ -179,5 +180,26 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 				.fetchOne();
 
 		return new PageImpl<>(content, pageable, count != null ? count : 0L);
+	}
+
+	private BooleanExpression getFullAndAcceptedCondition(Member member, QParty party, QPartyMember pm) {
+		return party.scheduledAt.after(LocalDateTime.now())
+				.and(party.status.eq(PartyStatus.FULL))
+				.and(pm.status.eq(PartyMemberStatus.ACCEPTED))
+				.and(pm.member.eq(member));
+	}
+
+	private BooleanExpression getRecruitingAndAcceptedOrApplicantCondition(Member member, QParty party, QPartyMember pm) {
+		return party.scheduledAt.after(LocalDateTime.now())
+				.and(party.status.eq(PartyStatus.RECRUITING))
+				.and(pm.status.in(PartyMemberStatus.ACCEPTED, PartyMemberStatus.APPLICANT))
+				.and(pm.member.eq(member));
+	}
+
+	private BooleanExpression getCompletedAndAcceptedCondition(Member member, QParty party, QPartyMember pm) {
+		return party.scheduledAt.before(LocalDateTime.now())
+				.and(party.status.eq(PartyStatus.COMPLETED))
+				.and(pm.status.eq(PartyMemberStatus.ACCEPTED))
+				.and(pm.member.eq(member));
 	}
 }
