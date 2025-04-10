@@ -1,5 +1,6 @@
 package com.ddobang.backend.domain.member.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -7,9 +8,15 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.entity.MemberTag;
+import com.ddobang.backend.domain.member.entity.MemberTagMapping;
 import com.ddobang.backend.domain.member.exception.MemberErrorCode;
 import com.ddobang.backend.domain.member.exception.MemberException;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.domain.member.repository.MemberTagMappingRepository;
+import com.ddobang.backend.global.auth.dto.request.SignupRequest;
+import com.ddobang.backend.global.exception.auth.AuthErrorCode;
+import com.ddobang.backend.global.exception.auth.AuthException;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -80,8 +87,13 @@ public class MemberService {
 	}
 
 	public boolean existsByNickname(@NotBlank(message = "닉네임은 필수입니다.") String nickname) {
-		// TODO document why this method is empt
-		return false;
+		return memberRepository.existsByNickname(nickname);
+	}
+
+	// 회원ID로 회원 조회
+	public Member getById(Long memberId) {
+		return memberRepository.findById(memberId)
+			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 	}
 
 	// 닉네임으로 회원 조회
@@ -132,5 +144,4 @@ public class MemberService {
 			memberTagMappingRepository.save(mapping);
 		}
 	}
-
 }
