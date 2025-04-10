@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.member.entity;
 
+import org.jetbrains.annotations.TestOnly;
+
 import com.ddobang.backend.global.entity.BaseTime;
 
 import jakarta.persistence.Column;
@@ -26,7 +28,7 @@ public class Member extends BaseTime {
 	private String nickname;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 10)
+	@Column(length = 10)
 	private Gender gender;
 
 	private String introduction;
@@ -85,5 +87,11 @@ public class Member extends BaseTime {
 
 	public void setProfilePictureUrl(String profilePictureUrl) {
 		this.profilePictureUrl = profilePictureUrl;
+	}
+
+	@TestOnly
+	public Member(String nickname, String password) {
+		this.nickname = nickname;
+		this.password = password;
 	}
 }

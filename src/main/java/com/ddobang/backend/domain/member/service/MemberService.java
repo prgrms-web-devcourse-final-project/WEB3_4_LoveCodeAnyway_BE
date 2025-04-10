@@ -82,6 +82,12 @@ public class MemberService {
 		return false;
 	}
 
+	// 닉네임으로 회원 조회
+	public Member getByNickname(String nickname) {
+		return memberRepository.findByNickname(nickname)
+			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+	}
+
 	// 회원 정보 저장
 	public Member save(Member member) {
 		return memberRepository.save(member);

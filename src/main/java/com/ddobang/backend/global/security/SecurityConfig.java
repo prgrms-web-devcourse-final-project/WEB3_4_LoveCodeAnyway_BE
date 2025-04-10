@@ -15,6 +15,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
+import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.global.security.jwt.JwtAuthenticationFilter;
 import com.ddobang.backend.global.security.jwt.JwtExceptionFilter;
 import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 	private final JwtTokenProvider jwtTokenProvider;
+	private final MemberService memberService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
 	/**
@@ -51,15 +53,20 @@ public class SecurityConfig {
 						"/webjars/**").permitAll()
 
 					// 관리자 관련 API
-					.requestMatchers("/api/v1/admin/login").permitAll() // 로그인만 공개
-					.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+					.requestMatchers("/admin/login").permitAll() // 로그인만 공개
+					.requestMatchers("/admin/**").hasRole("ADMIN")
+					// TODO : 관리자 관련 API 추가
 
 					// 닉네임 중복 체크
 					.requestMatchers("/api/v1/members/check-nickname").permitAll()
 
+					// 로그인 관련 API 허용
+					.requestMatchers(HttpMethod.GET, "/api/v1/auth/login").permitAll() // 카카오 로그인 URL
+
 					// 공개 API
 					.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight 요청 허용
 					.requestMatchers(HttpMethod.GET, "/api/v1/regions").permitAll()      // 지역 조회
+					.requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll() // 회원가입
 					.requestMatchers("/api/v1/themes").permitAll()
 					.requestMatchers("/api/v1/themes/*").permitAll()
 					.requestMatchers("/api/v1/parties").permitAll()
@@ -77,7 +84,8 @@ public class SecurityConfig {
 			)
 
 			// 인증 필터 등록
-			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, memberService),
+				UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(new JwtExceptionFilter(), JwtAuthenticationFilter.class)
 
 			// 개발용 설정
@@ -97,6 +105,7 @@ public class SecurityConfig {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(List.of(
 			"http://localhost:3000",                       // 로컬 개발용
+			"https://www.ddobang.site",                        // 배포 주소
 			"https://ddobang.site",                        // 배포 주소
 			"https://web-1-2-pitching-mate-fe.vercel.app"  // Vercel 배포 주소
 		));
