@@ -1,8 +1,10 @@
 package com.ddobang.backend.domain.stat.calculator;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.diary.entity.DiaryStat;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
@@ -20,31 +22,57 @@ public class ThemeStatCalculator {
 	private final DiaryStatRepository diaryStatRepository;
 	private final ThemeStatRepository themeStatRepository;
 
+	@Transactional
 	public void updateThemeStat(Theme theme) {
-		List<DiaryStat> diaryStats = diaryStatRepository.findByThemeId(theme.getId());
-		ThemeStatResult stats = calculateThemeStat(theme, diaryStats);
+		Long themeId = theme.getId();
+		List<DiaryStat> diaryStats = diaryStatRepository.findByThemeId(themeId);
+		ThemeStatResult stats = calculateThemeStat(diaryStats);
+		Optional<ThemeStat> themeStat = themeStatRepository.findById(themeId);
 
-		ThemeStat themeStat = ThemeStat.builder()
-			.theme(theme)
-			.difficulty(stats.difficultyAvg())
-			.fear(stats.fearAvg())
-			.activity(stats.activityAvg())
-			.satisfaction(stats.satisfactionAvg())
-			.production(stats.productionAvg())
-			.story(stats.storyAvg())
-			.question(stats.questionAvg())
-			.interior(stats.interiorAvg())
-			.deviceRatio(stats.deviceRatioAvg())
-			.noHintEscapeRate(stats.noHintEscapeRate())
-			.escapeResult(stats.escapedRate())
-			.escapeTimeAvg(stats.escapeTimeAvg())
-			.build();
+		// 해당 테마에 대한 일지가 없을 경우 통계 삭제
+		if (diaryStats.isEmpty()) {
+			themeStat.ifPresent(themeStatRepository::delete);
+			return;
+		}
 
-		themeStatRepository.save(themeStat);
+		// 해당 테마에 대한 통계가 없을 경우 통계 생성
+		if (themeStat.isPresent()) {
+			themeStat.get().updateStat(
+				stats.difficultyAvg(),
+				stats.fearAvg(),
+				stats.activityAvg(),
+				stats.satisfactionAvg(),
+				stats.productionAvg(),
+				stats.storyAvg(),
+				stats.questionAvg(),
+				stats.interiorAvg(),
+				stats.deviceRatioAvg(),
+				stats.noHintEscapeRate(),
+				stats.escapedRate(),
+				stats.escapeTimeAvg(),
+				diaryStats.size());
+		} else {
+			themeStatRepository.save(ThemeStat.builder()
+				.theme(theme)
+				.difficulty(stats.difficultyAvg())
+				.fear(stats.fearAvg())
+				.activity(stats.activityAvg())
+				.satisfaction(stats.satisfactionAvg())
+				.production(stats.productionAvg())
+				.story(stats.storyAvg())
+				.question(stats.questionAvg())
+				.interior(stats.interiorAvg())
+				.deviceRatio(stats.deviceRatioAvg())
+				.noHintEscapeRate(stats.noHintEscapeRate())
+				.escapeResult(stats.escapedRate())
+				.escapeTimeAvg(stats.escapeTimeAvg())
+				.diaryCount(diaryStats.size())
+				.build());
+		}
 	}
 
 	// 테마 평가 및 통계 계산 메서드(힌트 갯수, 장치 비율 제외 0은 계산에서 제외합니다.)
-	private ThemeStatResult calculateThemeStat(Theme theme, List<DiaryStat> diaryStats) {
+	private ThemeStatResult calculateThemeStat(List<DiaryStat> diaryStats) {
 		long totalCount = diaryStats.size();
 
 		long totalDifficulty = 0;
