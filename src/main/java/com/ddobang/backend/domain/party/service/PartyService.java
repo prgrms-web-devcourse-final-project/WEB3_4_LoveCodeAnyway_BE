@@ -17,9 +17,14 @@ import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.service.ThemeService;
+import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.SliceDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -129,5 +134,11 @@ public class PartyService {
 		partyValidationService.validateExecutable(party, actor);
 
 		party.updateStatus(PartyStatus.CANCELLED);
+	}
+
+	public PageDto<PartySummaryResponse> getJoinedParties(Member member, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+		Page<PartySummaryResponse> joinedParties = partyRepository.findByMemberJoined(member, pageable);
+		return PageDto.of(joinedParties);
 	}
 }

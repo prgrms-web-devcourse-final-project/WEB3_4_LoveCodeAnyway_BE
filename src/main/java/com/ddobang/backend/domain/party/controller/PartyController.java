@@ -1,18 +1,8 @@
 package com.ddobang.backend.domain.party.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.ddobang.backend.domain.AuthHelper;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.domain.party.dto.PartyDto;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
@@ -20,6 +10,7 @@ import com.ddobang.backend.domain.party.dto.response.PartyDetailResponse;
 import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.service.PartyService;
+import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SliceDto;
 import com.ddobang.backend.global.response.SuccessResponse;
@@ -27,6 +18,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -36,6 +29,7 @@ import java.util.List;
 @Tag(name = "Party Controller")
 public class PartyController {
 	private final PartyService partyService;
+	private final MemberService memberService;
 	private final AuthHelper authHelper;
 
 	@GetMapping("/main")
@@ -113,5 +107,16 @@ public class PartyController {
 	public ResponseEntity<Void> unexecuteParty(@PathVariable Long id) {
 		partyService.unexecuteParty(id, authHelper.getCurrentMember());
 		return ResponseFactory.noContent();
+	}
+
+	@GetMapping("/joins")
+	@Operation(summary = "내가 참여한 모임 목록 또는 다른 사용자가 참여한 모임 목록 조회")
+	public ResponseEntity<SuccessResponse<PageDto<PartySummaryResponse>>> getJoinedParties(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(required = false) Long memberId
+	) {
+		Member member = (memberId != null) ? memberService.getMember(memberId) : authHelper.getCurrentMember();
+		return ResponseFactory.ok(partyService.getJoinedParties(member, page, size));
 	}
 }

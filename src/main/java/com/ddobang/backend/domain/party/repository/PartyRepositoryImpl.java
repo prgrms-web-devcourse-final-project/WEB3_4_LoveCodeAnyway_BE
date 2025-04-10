@@ -1,18 +1,25 @@
 package com.ddobang.backend.domain.party.repository;
 
+import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.entity.QMember;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.QParty;
 import com.ddobang.backend.domain.party.entity.QPartyMember;
+import com.ddobang.backend.domain.party.types.PartyMemberStatus;
+import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.store.entity.QStore;
 import com.ddobang.backend.domain.theme.entity.QTheme;
 import com.ddobang.backend.domain.theme.entity.QThemeTag;
 import com.ddobang.backend.domain.theme.entity.QThemeTagMapping;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -118,5 +125,59 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 
 	private BooleanExpression ltLastId(Long lastId, QParty party) {
 		return lastId != null ? party.id.lt(lastId) : null;
+	}
+
+	@Override
+	public Page<PartySummaryResponse> findByMemberJoined(Member member, Pageable pageable) {
+		QParty party = QParty.party;
+		QPartyMember pm = QPartyMember.partyMember;
+		QStore store = QStore.store;
+		QTheme theme = QTheme.theme;
+		QMember host = QMember.member;
+
+		BooleanBuilder builder = new BooleanBuilder();
+		builder.and(pm.status.eq(PartyMemberStatus.ACCEPTED));
+		builder.and(party.status.eq(PartyStatus.COMPLETED));
+		builder.and(pm.member.eq(member));
+
+		List<PartySummaryResponse> content = queryFactory
+				.select(Projections.constructor(PartySummaryResponse.class,
+						party.id,
+						party.title,
+						party.scheduledAt,
+
+						party.participantsNeeded.subtract(party.acceptedParticipantsCount),
+						party.totalParticipants,
+						party.rookieAvailable,
+
+						store.name,
+
+						theme.id,
+						theme.name,
+						theme.thumbnailUrl,
+
+						host.id,
+						host.nickname,
+						host.profilePictureUrl
+						))
+						.from(party)
+				.leftJoin(party.partyMembers, pm)
+				.join(party.theme, theme)
+				.join(theme.store, store)
+				.join(pm.member, host)
+				.where(builder)
+				.orderBy(party.createdAt.desc())
+				.offset(pageable.getOffset())
+				.limit(pageable.getPageSize())
+				.fetch();
+
+		Long count = queryFactory
+				.select(party.countDistinct())
+				.from(party)
+				.leftJoin(party.partyMembers, pm)
+				.where(builder)
+				.fetchOne();
+
+		return new PageImpl<>(content, pageable, count != null ? count : 0L);
 	}
 }

@@ -19,6 +19,7 @@ import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
 import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.service.ThemeService;
+import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.SliceDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -372,5 +374,28 @@ class PartyServiceTest {
 
         verify(partyRepository, times(1))
                 .findTop12ByStatusOrderByScheduledAtAsc(PartyStatus.RECRUITING);
+    }
+
+    @Test
+    @DisplayName("참여한 파티 목록 조회")
+    void getJoinedPartiesTest() {
+        // given
+        int page = 0;
+        int size = 1;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        PartySummaryResponse expectedResponse = PartySummaryResponse.from(party);
+        Page<PartySummaryResponse> expectedPage = new PageImpl<>(List.of(expectedResponse), pageable, 1);
+
+        when(partyRepository.findByMemberJoined(host, pageable)).thenReturn(expectedPage);
+
+        // when
+        PageDto<PartySummaryResponse> result = partyService.getJoinedParties(host, page, size);
+
+        // then
+        assertNotNull(result);
+        assertEquals(expectedPage.getContent().size(), result.items().size());
+        assertEquals(1, result.items().size());
+        assertEquals(expectedResponse, result.items().getFirst());
+        verify(partyRepository).findByMemberJoined(host, pageable);
     }
 }

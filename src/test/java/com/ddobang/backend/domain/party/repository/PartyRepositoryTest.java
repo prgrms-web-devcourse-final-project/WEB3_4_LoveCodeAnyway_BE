@@ -1,10 +1,11 @@
 package com.ddobang.backend.domain.party.repository;
 
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.party.testUtils.TestDataHelper;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.Party;
+import com.ddobang.backend.domain.party.testUtils.TestDataHelper;
+import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.region.entity.Region;
 import com.ddobang.backend.domain.store.entity.Store;
@@ -18,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -550,5 +553,54 @@ public class PartyRepositoryTest {
         // then
         assertThat(results).hasSize(1);
         assertThat(results.getFirst().title()).isEqualTo("미스터리 파티2");
+    }
+
+    @Test
+    @DisplayName("참여한 모임 조회")
+    void findByMemberJoinedTest() {
+        // given
+        Region region = TestDataHelper.createRegion(em, "서울", "강남");
+        Store store = TestDataHelper.createStore(em, region, "매장1");
+        Theme horrorTheme = TestDataHelper.createTheme(em, "미스터리 공포 테마", "무서운 경험", Theme.Status.OPENED, store, List.of());
+        Member host = TestDataHelper.createMember(em, "host-img.jpg", "호스트");
+        Member member = TestDataHelper.createMember(em, "member-img.jpg", "멤버");
+
+        LocalDateTime scheduledAt = LocalDateTime.now().plusDays(3);
+
+        // 파티 생성
+        Party party1 = TestDataHelper.createParty(em, partyReq("미스터리 공포 파티 1", horrorTheme.getId(), scheduledAt), horrorTheme, host);
+        Party party2 = TestDataHelper.createParty(em, partyReq("미스터리 공포 파티 2", horrorTheme.getId(), scheduledAt), horrorTheme, host);
+        Party party3 = TestDataHelper.createParty(em, partyReq("미스터리 공포 파티 3", horrorTheme.getId(), scheduledAt), horrorTheme, host);
+        Party party4 = TestDataHelper.createParty(em, partyReq("미스터리 공포 파티 4", horrorTheme.getId(), scheduledAt), horrorTheme, member);
+
+        // 파티에 참여자 추가
+        party1.addPartyMember(member);
+        party2.addPartyMember(member);
+        party3.addPartyMember(member);
+
+        party1.updatePartyMemberStatus(member, PartyMemberStatus.ACCEPTED);
+        party3.updatePartyMemberStatus(member, PartyMemberStatus.ACCEPTED);
+
+        party1.updateStatus(PartyStatus.COMPLETED);
+        party2.updateStatus(PartyStatus.COMPLETED);
+        party4.updateStatus(PartyStatus.COMPLETED);
+
+        em.flush();
+        em.clear();
+
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // when
+        Page<PartySummaryResponse> result = partyRepository.findByMemberJoined(member, pageable);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+
+        List<String> titles = result.getContent().stream()
+                .map(PartySummaryResponse::title)
+                .toList();
+
+        assertThat(titles).contains("미스터리 공포 파티 1", "미스터리 공포 파티 4");
     }
 }
