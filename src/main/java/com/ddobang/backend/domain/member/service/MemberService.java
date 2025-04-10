@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberService {
 	private final MemberRepository memberRepository;
+	private final MemberTagMappingRepository memberTagMappingRepository;
+	private final MemberTagService memberTagService;
 
 	// OAuth2User 정보로 회원 생성
 	public Member createMemberFromOAuth2(OAuth2User oAuth2User) {
@@ -97,4 +99,38 @@ public class MemberService {
 		return memberRepository.findById(memberId)
 			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 	}
+
+	// 회원가입시 회원 등록, 중복 검사 및 태그 매핑
+	@Transactional
+	public Member registerMember(String kakaoId, SignupRequest request) {
+		validateDuplicateKakaoId(kakaoId);
+		validateDuplicateNickname(request.nickname());
+
+		Member member = request.toEntity(kakaoId);
+		save(member);
+
+		assignTags(member, request.tags());
+		return member;
+	}
+
+	private void validateDuplicateKakaoId(String kakaoId) {
+		if (existsByKakaoId(kakaoId)) {
+			throw new AuthException(AuthErrorCode.ALREADY_REGISTERED);
+		}
+	}
+
+	private void validateDuplicateNickname(String nickname) {
+		if (existsByNickname(nickname)) {
+			throw new MemberException(MemberErrorCode.DUPLICATE_NICKNAME);
+		}
+	}
+
+	private void assignTags(Member member, List<Long> selectTagIds) {
+		List<MemberTag> tags = memberTagService.findAllByIds(selectTagIds);
+		for (MemberTag tag : tags) {
+			MemberTagMapping mapping = new MemberTagMapping(member, tag);
+			memberTagMappingRepository.save(mapping);
+		}
+	}
+
 }

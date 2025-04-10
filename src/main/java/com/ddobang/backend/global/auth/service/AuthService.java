@@ -1,20 +1,12 @@
 package com.ddobang.backend.global.auth.service;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.entity.MemberTag;
-import com.ddobang.backend.domain.member.entity.MemberTagMapping;
-import com.ddobang.backend.domain.member.exception.MemberErrorCode;
-import com.ddobang.backend.domain.member.exception.MemberException;
 import com.ddobang.backend.domain.member.repository.MemberTagMappingRepository;
 import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.domain.member.service.MemberTagService;
 import com.ddobang.backend.global.auth.dto.request.SignupRequest;
-import com.ddobang.backend.global.exception.auth.AuthErrorCode;
-import com.ddobang.backend.global.exception.auth.AuthException;
 import com.ddobang.backend.global.exception.oauth2.OAuth2ErrorCode;
 import com.ddobang.backend.global.exception.oauth2.OAuth2Exception;
 import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
@@ -70,26 +62,8 @@ public class AuthService {
 		// 카카오 ID 추출
 		String kakaoId = jwtTokenProvider.extractKakaoId(signupToken);
 
-		// 이미 가입된 회원인지 확인
-		if (memberService.existsByKakaoId(kakaoId)) {
-			throw new AuthException(AuthErrorCode.ALREADY_REGISTERED);
-		}
-
-		// 닉네임 중복 검사 (이중 체크)
-		if (memberService.existsByNickname(request.nickname())) {
-			throw new MemberException(MemberErrorCode.DUPLICATE_NICKNAME);
-		}
-
-		// 회원 엔티티 생성 및 등록
-		Member member = request.toEntity(kakaoId);
-		memberService.save(member);
-
-		// 태그 매핑 처리
-		List<MemberTag> tags = memberTagService.findAllByIds(request.tags());
-		for (MemberTag tag : tags) {
-			MemberTagMapping mapping = new MemberTagMapping(member, tag);
-			memberTagMappingRepository.save(mapping);
-		}
+		// 회원 등록 (중복검사 + 저장 + 태그 매핑)
+		Member member = memberService.registerMember(kakaoId, request);
 
 		// 엑세스 / 리프레시 토큰 발급
 		String accessToken = jwtTokenProvider.generateToken(member.getNickname(), JwtTokenType.ACCESS, false);
