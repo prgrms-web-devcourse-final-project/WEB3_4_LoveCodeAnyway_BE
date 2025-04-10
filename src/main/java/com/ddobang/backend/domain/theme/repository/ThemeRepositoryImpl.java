@@ -110,7 +110,6 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 					.desc()
 			)
 			.limit(10)
-			.distinct()
 			.fetch();
 
 		return themeStats.stream()
@@ -130,7 +129,6 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 			.where(condition)
 			.orderBy(theme.createdAt.desc())
 			.limit(10)
-			.distinct()
 			.fetch();
 	}
 
