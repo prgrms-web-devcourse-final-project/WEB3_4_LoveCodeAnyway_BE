@@ -1,8 +1,14 @@
-package com.ddobang.backend.global.event;
-
 // 메시지 생성 이벤트 클래스
-public class MessageCreatedEvent implements DomainEvent {
+package com.ddobang.backend.domain.message.event;
 
+import com.ddobang.backend.global.event.DomainEvent;
+
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
+public class MessageCreatedEvent implements DomainEvent {
 	private Long senderId;
 	private String senderNickname;
 	private Long receiverId;
@@ -14,5 +20,4 @@ public class MessageCreatedEvent implements DomainEvent {
 	public String getEventType() {
 		return "MESSAGE_CREATED_EVENT";
 	}
-
 }
