@@ -121,6 +121,7 @@ public class AlarmController {
 		return ResponseFactory.noContent();
 	}
 
+	// redirectUrl
 	@Operation(summary = "알림 클릭 처리", description = "알림을 클릭했을 때 관련 페이지로 리다이렉트합니다.")
 	@GetMapping("/{id}/redirect")
 	public ResponseEntity<SuccessResponse<String>> redirectAlarm(@PathVariable("id") Long alarmId) {
