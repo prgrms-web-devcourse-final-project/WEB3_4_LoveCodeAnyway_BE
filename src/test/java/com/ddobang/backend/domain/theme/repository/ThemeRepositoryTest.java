@@ -98,13 +98,9 @@ public class ThemeRepositoryTest {
 				.noHintEscapeRate(80)
 				.escapeResult(60)
 				.escapeTimeAvg(3600)
+				.diaryCount(5 / j)
 				.build()));
-			themeStats.get(j - 1)
-				.incrementDiaryCount();
 		}
-
-		themeStats.get(1).incrementDiaryCount();
-		//themeStatRepository.saveAll(themeStats);
 	}
 
 	@Test
@@ -333,9 +329,9 @@ public class ThemeRepositoryTest {
 
 		// then
 		assertThat(results).hasSize(5);
-		assertThat(results.get(0)).isEqualTo(testThemes.get(4));
-		assertThat(results.get(1)).isEqualTo(testThemes.get(1));
-		assertThat(results.get(2)).isEqualTo(testThemes.get(3));
+		assertThat(results.get(0)).isEqualTo(testThemes.get(0));
+		assertThat(results.get(1)).isEqualTo(testThemes.get(4));
+		assertThat(results.get(2)).isEqualTo(testThemes.get(1));
 	}
 
 	@Test
