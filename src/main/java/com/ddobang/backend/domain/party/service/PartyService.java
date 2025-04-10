@@ -1,16 +1,28 @@
 package com.ddobang.backend.domain.party.service;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.service.MemberReviewService;
 import com.ddobang.backend.domain.member.service.MemberService;
+import com.ddobang.backend.domain.member.types.MemberReviewKeyword;
 import com.ddobang.backend.domain.party.dto.PartyDto;
+import com.ddobang.backend.domain.party.dto.request.PartyMemberReviewRequest;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartyDetailResponse;
 import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.Party;
+import com.ddobang.backend.domain.party.entity.PartyMemberReview;
 import com.ddobang.backend.domain.party.exception.PartyErrorCode;
 import com.ddobang.backend.domain.party.exception.PartyException;
+import com.ddobang.backend.domain.party.repository.PartyMemberReviewRepository;
 import com.ddobang.backend.domain.party.repository.PartyRepository;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.party.types.PartyStatus;
@@ -18,12 +30,9 @@ import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 import com.ddobang.backend.global.response.SliceDto;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,12 +41,13 @@ public class PartyService {
 	private final ThemeService themeService;
 	private final MemberService memberService;
 	private final PartyValidationService partyValidationService;
+	private final PartyMemberReviewRepository reviewRepository;
+	private final MemberReviewService memberReviewService;
 
 	public List<PartyMainResponse> getUpcomingParties() {
 		List<Party> parties = partyRepository.findTop12ByStatusOrderByScheduledAtAsc(PartyStatus.RECRUITING);
 		return parties.stream().map(PartyMainResponse::from).collect(Collectors.toList());
 	}
-
 
 	public SliceDto<PartySummaryResponse> getParties(Long lastId, int size, PartySearchCondition partySearchCondition) {
 		List<PartySummaryResponse> parties = partyRepository.getParties(lastId, size + 1, partySearchCondition);
@@ -60,6 +70,7 @@ public class PartyService {
 	public PartyDto createParty(PartyRequest request, Member actor) {
 		Theme theme = themeService.getThemeById(request.themeId());
 		Party party = Party.of(request, theme, actor);
+
 		return PartyDto.from(partyRepository.save(party));
 	}
 
@@ -129,5 +140,33 @@ public class PartyService {
 		partyValidationService.validateExecutable(party, actor);
 
 		party.updateStatus(PartyStatus.CANCELLED);
+	}
+
+	@Transactional
+	public void reviewAll(Long id, List<PartyMemberReviewRequest> requests, Member actor) {
+		Party party = getPartyById(id);
+
+		Set<Long> reviewedMemberIds = new HashSet<>();
+
+		for (PartyMemberReviewRequest request : requests) {
+			Member receiver = memberService.getMember(request.targetId());
+
+			List<MemberReviewKeyword> keywords = request.reviewKeywords().stream()
+				.map(MemberReviewKeyword::valueOf)
+				.toList();
+
+			PartyMemberReview review = PartyMemberReview.of(party, actor, receiver);
+			for (MemberReviewKeyword keyword : keywords) {
+				review.addKeyword(keyword);
+			}
+
+			reviewRepository.save(review);
+
+			reviewedMemberIds.add(receiver.getId());
+		}
+
+		for (Long memberId : reviewedMemberIds) {
+			memberReviewService.updateMemberReview(memberId);
+		}
 	}
 }
