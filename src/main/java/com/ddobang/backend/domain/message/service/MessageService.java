@@ -1,8 +1,9 @@
 package com.ddobang.backend.domain.message.service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +13,7 @@ import com.ddobang.backend.domain.message.entity.Message;
 import com.ddobang.backend.domain.message.exception.MessageErrorCode;
 import com.ddobang.backend.domain.message.exception.MessageException;
 import com.ddobang.backend.domain.message.repository.MessageRepository;
+import com.ddobang.backend.global.response.SliceDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -54,22 +56,42 @@ public class MessageService {
 		return MessageDto.fromEntity(message);
 	}
 
-	// 페이징된 받은 메시지 목록 조회
+	// 커서 기반 무한 스크롤 - 받은 메시지 조회 - SliceDto 사용
 	@Transactional(readOnly = true)
-	public Page<MessageDto> getReceivedMessagesWithPaging(Member member, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
-		Page<Message> messages = messageRepository.findAllByReceiverIdOrderByCreatedAtDesc(
-			member.getId(), pageable);
-		return messages.map(MessageDto::fromEntity);
+	public SliceDto<MessageDto> getReceivedMessagesWithCursor(Member member, LocalDateTime cursor, int size) {
+		List<Message> messages;
+		if (cursor == null) {
+			// 첫 페이지 요청
+			messages = messageRepository.findFirstReceivedMessages(member.getId(), size + 1);
+		} else {
+			// 다음 페이지 요청
+			messages = messageRepository.findReceivedMessagesBeforeCursor(member.getId(), cursor, size + 1);
+		}
+
+		List<MessageDto> messageDtos = messages.stream()
+			.map(MessageDto::fromEntity)
+			.collect(Collectors.toList());
+
+		return SliceDto.of(messageDtos, size);
 	}
 
-	// 페이징된 보낸 메시지 목록 조회
+	// 커서 기반 무한 스크롤 - 보낸 메시지 조회 - SliceDto 사용
 	@Transactional(readOnly = true)
-	public Page<MessageDto> getSentMessagesWithPaging(Member member, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
-		Page<Message> messages = messageRepository.findAllBySenderIdOrderByCreatedAtDesc(
-			member.getId(), pageable);
-		return messages.map(MessageDto::fromEntity);
+	public SliceDto<MessageDto> getSentMessagesWithCursor(Member member, LocalDateTime cursor, int size) {
+		List<Message> messages;
+		if (cursor == null) {
+			// 첫 페이지 요청
+			messages = messageRepository.findFirstSentMessages(member.getId(), size + 1);
+		} else {
+			// 다음 페이지 요청
+			messages = messageRepository.findSentMessagesBeforeCursor(member.getId(), cursor, size + 1);
+		}
+
+		List<MessageDto> messageDtos = messages.stream()
+			.map(MessageDto::fromEntity)
+			.collect(Collectors.toList());
+
+		return SliceDto.of(messageDtos, size);
 	}
 
 	// 메시지 읽음 상태 변경
