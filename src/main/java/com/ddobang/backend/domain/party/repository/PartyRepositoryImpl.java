@@ -65,11 +65,12 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 				.leftJoin(mapping.themeTag, themeTag)
 				.where(
 						party.status.in(RECRUITING, FULL),
+						party.deleted.eq(false),
 						pm.role.eq(HOST),
 						keywordContains(condition.keyword(), party, theme, store, host),
 						regionIn(condition.regionIds(), store),
 						dateIn(condition.dates(), party),
-						tagIn(condition.tags(), themeTag),
+						tagIn(condition.tagsIds(), themeTag),
 						ltLastId(lastId, party)
 				)
 				.orderBy(party.id.desc())
@@ -108,11 +109,11 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 				.orElse(null);
 	}
 
-	private BooleanExpression tagIn(List<String> tags, QThemeTag themeTag) {
-		if (tags == null || tags.isEmpty()) {
+	private BooleanExpression tagIn(List<Long> tagIds, QThemeTag themeTag) {
+		if (tagIds == null || tagIds.isEmpty()) {
 			return null;
 		}
-		return themeTag.name.in(tags);
+		return themeTag.id.in(tagIds);
 	}
 
 	private BooleanExpression ltLastId(Long lastId, QParty party) {

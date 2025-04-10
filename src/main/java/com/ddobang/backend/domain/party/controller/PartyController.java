@@ -17,6 +17,7 @@ import com.ddobang.backend.domain.party.dto.PartyDto;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartyDetailResponse;
+import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.service.PartyService;
 import com.ddobang.backend.global.response.ResponseFactory;
@@ -27,6 +28,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/parties")
@@ -34,6 +37,12 @@ import lombok.RequiredArgsConstructor;
 public class PartyController {
 	private final PartyService partyService;
 	private final AuthHelper authHelper;
+
+	@GetMapping("/main")
+	@Operation(summary = "메인 페이지용 모집 중 모임 12개 조회")
+	public ResponseEntity<SuccessResponse<List<PartyMainResponse>>> getMainParties() {
+		return ResponseFactory.ok(partyService.getUpcomingParties());
+	}
 
 	@PostMapping("/search")
 	@Operation(summary = "모임 목록 조회 (무한 스크롤)")

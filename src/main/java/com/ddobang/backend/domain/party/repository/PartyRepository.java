@@ -1,9 +1,13 @@
 package com.ddobang.backend.domain.party.repository;
 
 import com.ddobang.backend.domain.party.entity.Party;
+import com.ddobang.backend.domain.party.types.PartyStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface PartyRepository extends JpaRepository<Party, Long>, PartyRepositoryCustom {
+    List<Party> findTop12ByStatusOrderByScheduledAtAsc(PartyStatus status);
 }
