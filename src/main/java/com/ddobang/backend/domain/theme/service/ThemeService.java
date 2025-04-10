@@ -168,6 +168,6 @@ public class ThemeService {
 	@Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
 	@CacheEvict(cacheNames = {"popularThemesByTag", "newestThemesByTag"}, allEntries = true)
 	public void clearThemeCachesDaily() {
-		log.warn("매일 자정 캐시 초기화: 인기 테마 / 최신 테마 캐시 삭제 완료");
+		log.info("매일 자정 캐시 초기화: 인기 테마 / 최신 테마 캐시 삭제 완료");
 	}
 }
