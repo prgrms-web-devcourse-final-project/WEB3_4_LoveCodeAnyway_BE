@@ -21,7 +21,7 @@ public class DiaryStat {
 	@Id
 	private Long id;
 
-	@OneToOne
+	@OneToOne(fetch = FetchType.LAZY)
 	@MapsId
 	private Diary diary;
 
