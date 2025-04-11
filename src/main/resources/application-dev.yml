@@ -14,9 +14,8 @@ spring:
       ddl-auto: update # 개발 환경에서는 update, 운영에서는 validate
 
 jwt:
-  signup-token-expiration: 600000      # 10분
-  access-token-expiration: 3600000     # 1시간
-  refresh-token-expiration: 604800000  # 7일
+  access-token-expiration: 3600000        # 1시간
+  refresh-token-expiration: 604800000     # 7일
 
 logging:
   level:

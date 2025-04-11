@@ -1,48 +1,122 @@
 package com.ddobang.backend.global.security.jwt;
 
+import java.security.Key;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import com.ddobang.backend.global.exception.JwtErrorCode;
+import com.ddobang.backend.global.exception.ServiceException;
+import com.ddobang.backend.global.util.CookieUtil;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class JwtTokenProvider {
+	@Value("${jwt.secret}")
+	private String secret;
+	@Value("${jwt.access-token-expiration}")
+	private Long accessTokenExpiration;
+	@Value("${jwt.refresh-token-expiration}")
+	private long refreshTokenExpiration;
 
-	private final JwtTokenFactory tokenFactory;
-	private final JwtTokenValidator tokenValidator;
-	private final JwtPayloadExtractor payloadExtractor;
-	private final JwtCookieResolver cookieResolver;
+	private Key key;
 
-	//>>> 유효성 검증 그룹
-	// JWT 토큰이 유효한지 검증
-	public boolean isValidToken(String token, JwtTokenType type) {
-		return tokenValidator.isValidToken(token, type);
+	// 애플리케이션 실행 시 초기화
+	@PostConstruct
+	public void init() {
+		key = Keys.hmacShaKeyFor(secret.getBytes());
 	}
 
-	//>>> 토큰 추출 그룹
-	// JWT 토큰에서 카카오ID 추출
-	public String extractKakaoId(String token) {
-		return payloadExtractor.extractKakaoId(token);
+	// 엑세스 토큰, 리프레시 토큰 생성
+	public String generateAccessToken(String subject, boolean isAdmin, String nickname) {
+		return buildToken(subject, accessTokenExpiration, isAdmin, nickname);
 	}
 
-	// JWT 토큰에서 닉네임 추출
-	public String extractNickname(String token) {
-		return payloadExtractor.extractNickname(token);
+	public String generateRefreshToken(String subject, boolean isAdmin, String nickname) {
+		return buildToken(subject, refreshTokenExpiration, isAdmin, nickname);
 	}
 
-	// JWT 토큰에서 권한 추출
-	public boolean extractIsAdmin(String token) {
-		return payloadExtractor.extractIsAdmin(token);
+	private String buildToken(String subject, long expirationMillis, boolean isAdmin, String nickname) {
+		Date now = new Date();
+		Date expiry = new Date(now.getTime() + expirationMillis);
+
+		return Jwts.builder()
+			.setSubject(subject) // 사용자 ID
+			.claim("isAdmin", isAdmin) // 관리자 여부
+			.claim("nickname", nickname) // 닉네임
+			.setIssuedAt(now) // 발급일
+			.setExpiration(expiry) // 만료일
+			.signWith(key, SignatureAlgorithm.HS256) // 알고리즘, 키 적용
+			.compact(); // 생성
 	}
 
-	// 쿠키에서 액세스 토큰 추출
+	// 닉네임 추출
+	public String getNickname(String token) {
+		return parseClaims(token).getBody().get("nickname", String.class);
+	}
+
+	public Claims getClaims(String token) {
+		return parseClaims(token).getBody();
+	}
+
+	private Jws<Claims> parseClaims(String token) {
+		return Jwts.parserBuilder()
+			.setSigningKey(key)
+			.build()
+			.parseClaimsJws(token);
+	}
+
+	// 토큰 유효성 검사
+	public boolean validateToken(String token) {
+		try {
+			parseClaims(token);
+			return true;
+		} catch (ExpiredJwtException e) {
+			throw new ServiceException(JwtErrorCode.TOKEN_EXPIRED); // 만료된 토큰
+		} catch (UnsupportedJwtException e) {
+			throw new ServiceException(JwtErrorCode.UNSUPPORTED_TOKEN); // 지원하지 않는 토큰
+		} catch (MalformedJwtException | SecurityException e) {
+			throw new ServiceException(JwtErrorCode.TOKEN_INVALID); // 잘못된 토큰
+		} catch (IllegalArgumentException e) {
+			throw new ServiceException(JwtErrorCode.TOKEN_MISSING); // 누락된 토큰
+		}
+	}
+
+	// 엑세스 토큰 추출
 	public String resolveAccessToken(HttpServletRequest request) {
-		return cookieResolver.resolveAccessToken(request);
+		return CookieUtil.getAccessToken(request);
 	}
 
-	//>>> 토큰 생성 그룹
-	public String generateToken(String subject, JwtTokenType type, boolean isAdmin) {
-		return tokenFactory.generateToken(subject, type, isAdmin);
+	// 관리자 여부 추출
+	public boolean getIsAdmin(String token) {
+		Claims claims = Jwts.parserBuilder()
+			.setSigningKey(key)
+			.build()
+			.parseClaimsJws(token)
+			.getBody();
+		return Boolean.TRUE.equals(claims.get("isAdmin", Boolean.class));
+	}
+
+	// 추출된 관리자 여부에 따라 권한 설정 주입
+	public List<GrantedAuthority> getAuthorities(boolean isAdmin) {
+		if (isAdmin) {
+			return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
+		} else {
+			return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+		}
 	}
 }

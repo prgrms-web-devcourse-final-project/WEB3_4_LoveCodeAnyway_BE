@@ -3,7 +3,6 @@ package com.ddobang.backend.global.security;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,13 +17,11 @@ public class TestSecurityConfig {
 	@Bean
 	public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
 		http
+			.csrf(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth
-				.anyRequest().permitAll()  // 모든 요청 허용
+				.anyRequest().permitAll() // 모든 요청 허용
 			)
-			.csrf(csrf -> csrf.disable())  // CSRF 비활성화
-			.formLogin(login -> login.disable())
-			.oauth2Login(Customizer.withDefaults())
-			.sessionManagement(AbstractHttpConfigurer::disable);
+			.sessionManagement(AbstractHttpConfigurer::disable); // 세션도 꺼도 됨 (JWT 안 쓸 거니까)
 
 		return http.build();
 	}

@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Lazy;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.service.DiaryService;
-import com.ddobang.backend.domain.member.entity.Gender;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.region.entity.Region;
@@ -83,7 +82,6 @@ public class BaseInitData {
 		// 테스트용 회원 생성
 		Member member = Member.builder()
 			.nickname("testUser1")
-			.gender(Gender.BLIND)
 			.build();
 
 		memberRepository.save(member);

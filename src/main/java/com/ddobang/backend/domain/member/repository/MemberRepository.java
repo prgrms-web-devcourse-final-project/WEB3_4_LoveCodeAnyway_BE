@@ -10,10 +10,4 @@ import com.ddobang.backend.domain.member.entity.Member;
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
 	Optional<Member> findByKakaoId(String kakaoId);
-
-	boolean existsByKakaoId(String kakaoId);
-
-	Optional<Member> findByNickname(String nickname);
-
-	boolean existsByNickname(String nickname);
 }
