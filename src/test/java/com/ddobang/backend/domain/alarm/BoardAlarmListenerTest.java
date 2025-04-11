@@ -76,7 +76,7 @@ public class BoardAlarmListenerTest {
 		assertThat(request.getReceiverId()).isEqualTo(50L);
 		assertThat(request.getTitle()).contains("답변이 등록");
 		assertThat(request.getContent()).contains("배송 관련 문의드립니다");
-		assertThat(request.getAlarmType()).isEqualTo(AlarmType.SYSTEM);
+		assertThat(request.getAlarmType()).isEqualTo(AlarmType.POST_REPLY);
 		assertThat(request.getRelId()).isEqualTo(100L);
 
 		verify(alarmEventService, times(1)).sendNotification(eq(50L), any());
