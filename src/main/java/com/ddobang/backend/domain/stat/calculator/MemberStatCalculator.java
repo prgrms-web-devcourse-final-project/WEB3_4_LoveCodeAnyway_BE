@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -174,7 +175,10 @@ public class MemberStatCalculator {
 		Map.Entry<YearMonth, Integer> mostActiveMonth =
 			monthCountMap.entrySet()
 				.stream()
-				.max(Map.Entry.comparingByValue())
+				.max(Comparator
+					.comparing(Map.Entry<YearMonth, Integer>::getValue) // value 기준 내림 차순
+					.thenComparing(Map.Entry::getKey) // 날짜 기준 최신순
+				)
 				.orElse(null);
 
 		return EscapeSummaryStatDto.builder()
@@ -459,6 +463,10 @@ public class MemberStatCalculator {
 	}
 
 	private double calculateAvgFromTuple(Map<Integer, Tuple> map, int level, int numeratorIdx, int denominatorIdx) {
+		if (map.get(level) == null) {
+			return 0;
+		}
+
 		return Ut.calculator.roundToFirstDecimalAsDouble(
 			Ut.calculator.calculateAverage(
 				map.get(level).get(numeratorIdx, Integer.class),
