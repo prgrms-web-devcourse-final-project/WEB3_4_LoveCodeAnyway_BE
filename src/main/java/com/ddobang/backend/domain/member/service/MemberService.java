@@ -8,6 +8,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ddobang.backend.domain.member.dto.response.OtherProfileResponse;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.entity.MemberTag;
 import com.ddobang.backend.domain.member.entity.MemberTagMapping;
@@ -57,6 +58,13 @@ public class MemberService {
 	public Member getMemberById(Long id) {
 		return memberRepository.findById(id)
 			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+	}
+
+	// 다른 회원의 프로필 조회
+	@Transactional(readOnly = true)
+	public OtherProfileResponse getOtherProfile(Long id) {
+		Member member = getMemberById(id);
+		return OtherProfileResponse.of(member);
 	}
 
 	public Optional<Member> findByKakaoId(String kakaoId) {
