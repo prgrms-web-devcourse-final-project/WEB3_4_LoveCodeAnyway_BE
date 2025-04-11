@@ -105,11 +105,19 @@ public class AlarmService {
 			return "/notifications"; // 기본 알림 페이지
 		}
 
-		return switch (alarmType) {
-			case MESSAGE -> "/messages/" + relId;
-			case SUBSCRIBE -> "/parties/" + relId;
-			case PARTY_APPLY, PARTY_STATUS -> "/parties/" + relId;
-			default -> "/notifications";
-		};
+		switch (alarmType) {
+			case MESSAGE:
+				return "/messages/" + relId;
+			case SUBSCRIBE:
+			case PARTY_APPLY:
+			case PARTY_STATUS:
+				return "/parties/" + relId;
+			case INQUIRY_REPLY: // 문의 답변 알림
+				return "/boards/" + relId;
+			case SYSTEM:
+			case OTHER:
+			default:
+				return "/alarms";
+		}
 	}
 }
