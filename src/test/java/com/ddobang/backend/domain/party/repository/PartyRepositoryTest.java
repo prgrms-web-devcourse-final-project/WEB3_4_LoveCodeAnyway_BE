@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @Import(QuerydslConfig.class)
+@ActiveProfiles("test")
 @Transactional
 public class PartyRepositoryTest {
 
