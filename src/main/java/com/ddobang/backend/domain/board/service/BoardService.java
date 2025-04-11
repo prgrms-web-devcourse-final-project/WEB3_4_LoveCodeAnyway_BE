@@ -1,5 +1,11 @@
 package com.ddobang.backend.domain.board.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
 import com.ddobang.backend.domain.board.dto.PostDto;
 import com.ddobang.backend.domain.board.dto.request.PostRequest;
 import com.ddobang.backend.domain.board.dto.response.PostDetailResponse;
@@ -11,13 +17,9 @@ import com.ddobang.backend.domain.board.repository.PostRepository;
 import com.ddobang.backend.domain.board.types.PostType;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.global.response.PageDto;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class BoardService {
 
 	public Post getPostById(Long id) {
 		return postRepository.findById(id)
-				.orElseThrow(() -> new BoardException(BoardErrorCode.POST_NOT_FOUND));
+			.orElseThrow(() -> new BoardException(BoardErrorCode.POST_NOT_FOUND));
 	}
 
 	public PostDetailResponse getPost(Long id, Member actor) {

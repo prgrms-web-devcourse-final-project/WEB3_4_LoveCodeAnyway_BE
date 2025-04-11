@@ -1,26 +1,26 @@
 package com.ddobang.backend.domain.party.dto.response;
 
+import java.time.LocalDateTime;
+
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.entity.Theme;
 
-import java.time.LocalDateTime;
-
 public record PartySummaryResponse(
-		Long partyId,
-		String title,
-		LocalDateTime scheduledAt,
-		int participantsLeft,
-		int totalParticipants,
-		boolean rookieAvailable,
-		String storeName,
-		Long themeId,
-		String themeName,
-		String themeThumbnailUrl,
-		Long hostId,
-		String hostNickname,
-		String hostProfilePictureUrl
+	Long partyId,
+	String title,
+	LocalDateTime scheduledAt,
+	int participantsLeft,
+	int totalParticipants,
+	boolean rookieAvailable,
+	String storeName,
+	Long themeId,
+	String themeName,
+	String themeThumbnailUrl,
+	Long hostId,
+	String hostNickname,
+	String hostProfilePictureUrl
 ) {
 	public static PartySummaryResponse from(Party party) {
 		Theme theme = party.getTheme();
@@ -28,19 +28,19 @@ public record PartySummaryResponse(
 		Store store = theme.getStore();
 
 		return new PartySummaryResponse(
-				party.getId(),
-				party.getTitle(),
-				party.getScheduledAt(),
-				party.getParticipantsNeeded() - party.getAcceptedParticipantsCount(),
-				party.getTotalParticipants(),
-				party.getRookieAvailable(),
-				store.getName(),
-				theme.getId(),
-				theme.getName(),
-				theme.getThumbnailUrl(),
-				host.getId(),
-				host.getNickname(),
-				host.getProfilePictureUrl()
+			party.getId(),
+			party.getTitle(),
+			party.getScheduledAt(),
+			party.getParticipantsNeeded() - party.getAcceptedParticipantsCount(),
+			party.getTotalParticipants(),
+			party.getRookieAvailable(),
+			store.getName(),
+			theme.getId(),
+			theme.getName(),
+			theme.getThumbnailUrl(),
+			host.getId(),
+			host.getNickname(),
+			host.getProfilePictureUrl()
 		);
 	}
 }

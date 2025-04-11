@@ -1,5 +1,16 @@
 package com.ddobang.backend.domain.party.repository;
 
+import static com.ddobang.backend.domain.party.types.PartyMemberRole.*;
+import static com.ddobang.backend.domain.party.types.PartyStatus.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.entity.QMember;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
@@ -16,18 +27,8 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static com.ddobang.backend.domain.party.types.PartyMemberRole.HOST;
-import static com.ddobang.backend.domain.party.types.PartyStatus.FULL;
-import static com.ddobang.backend.domain.party.types.PartyStatus.RECRUITING;
 
 @RequiredArgsConstructor
 public class PartyRepositoryImpl implements PartyRepositoryCustom {
@@ -45,46 +46,46 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 		QThemeTag themeTag = QThemeTag.themeTag;
 
 		return queryFactory
-				.select(Projections.constructor(PartySummaryResponse.class,
-						party.id,
-						party.title,
-						party.scheduledAt,
+			.select(Projections.constructor(PartySummaryResponse.class,
+				party.id,
+				party.title,
+				party.scheduledAt,
 
-						party.participantsNeeded.subtract(party.acceptedParticipantsCount),
-						party.totalParticipants,
-						party.rookieAvailable,
+				party.participantsNeeded.subtract(party.acceptedParticipantsCount),
+				party.totalParticipants,
+				party.rookieAvailable,
 
-						store.name,
+				store.name,
 
-						theme.id,
-						theme.name,
-						theme.thumbnailUrl,
+				theme.id,
+				theme.name,
+				theme.thumbnailUrl,
 
-						host.id,
-						host.nickname,
-						host.profilePictureUrl
-				))
-				.from(party)
-				.join(party.theme, theme)
-				.join(theme.store, store)
-				.join(party.partyMembers, pm)
-				.join(pm.member, host)
-				.leftJoin(theme.themeTagMappings, mapping)
-				.leftJoin(mapping.themeTag, themeTag)
-				.where(
-						party.status.in(RECRUITING, FULL),
-						party.deleted.eq(false),
-						pm.role.eq(HOST),
-						keywordContains(condition.keyword(), party, theme, store, host),
-						regionIn(condition.regionIds(), store),
-						dateIn(condition.dates(), party),
-						tagIn(condition.tagsIds(), themeTag),
-						ltLastId(lastId, party)
-				)
-				.orderBy(party.id.desc())
-				.limit(size)
-				.distinct()
-				.fetch();
+				host.id,
+				host.nickname,
+				host.profilePictureUrl
+			))
+			.from(party)
+			.join(party.theme, theme)
+			.join(theme.store, store)
+			.join(party.partyMembers, pm)
+			.join(pm.member, host)
+			.leftJoin(theme.themeTagMappings, mapping)
+			.leftJoin(mapping.themeTag, themeTag)
+			.where(
+				party.status.in(RECRUITING, FULL),
+				party.deleted.eq(false),
+				pm.role.eq(HOST),
+				keywordContains(condition.keyword(), party, theme, store, host),
+				regionIn(condition.regionIds(), store),
+				dateIn(condition.dates(), party),
+				tagIn(condition.tagsIds(), themeTag),
+				ltLastId(lastId, party)
+			)
+			.orderBy(party.id.desc())
+			.limit(size)
+			.distinct()
+			.fetch();
 	}
 
 	private BooleanExpression keywordContains(String keyword, QParty party, QTheme theme, QStore store, QMember host) {
@@ -93,9 +94,9 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 		}
 
 		return party.title.containsIgnoreCase(keyword)
-				.or(theme.name.containsIgnoreCase(keyword))
-				.or(store.name.containsIgnoreCase(keyword))
-				.or(host.nickname.containsIgnoreCase(keyword));
+			.or(theme.name.containsIgnoreCase(keyword))
+			.or(store.name.containsIgnoreCase(keyword))
+			.or(host.nickname.containsIgnoreCase(keyword));
 	}
 
 	private BooleanExpression regionIn(List<Long> regionIds, QStore store) {
@@ -111,10 +112,10 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 		}
 
 		return dates.stream()
-				.map(date -> party.scheduledAt.between(
-						date.atStartOfDay(), date.plusDays(1).atStartOfDay().minusNanos(1)))
-				.reduce(BooleanExpression::or)
-				.orElse(null);
+			.map(date -> party.scheduledAt.between(
+				date.atStartOfDay(), date.plusDays(1).atStartOfDay().minusNanos(1)))
+			.reduce(BooleanExpression::or)
+			.orElse(null);
 	}
 
 	private BooleanExpression tagIn(List<Long> tagIds, QThemeTag themeTag) {
@@ -139,67 +140,68 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 		BooleanBuilder builder = new BooleanBuilder();
 
 		builder.and(getCompletedAndAcceptedCondition(member, party, pm));
-		if(myList) {
+		if (myList) {
 			builder.or(getFullAndAcceptedCondition(member, party, pm));
 			builder.or(getRecruitingAndAcceptedOrApplicantCondition(member, party, pm));
 		}
 
 		List<PartySummaryResponse> content = queryFactory
-				.select(Projections.constructor(PartySummaryResponse.class,
-						party.id,
-						party.title,
-						party.scheduledAt,
-						party.participantsNeeded.subtract(party.acceptedParticipantsCount),
-						party.totalParticipants,
-						party.rookieAvailable,
-						store.name,
-						theme.id,
-						theme.name,
-						theme.thumbnailUrl,
-						host.id,
-						host.nickname,
-						host.profilePictureUrl
-				))
-				.from(party)
-				.leftJoin(party.partyMembers, pm)
-				.join(party.theme, theme)
-				.join(theme.store, store)
-				.join(pm.member, host)
-				.where(builder)
-				.orderBy(party.scheduledAt.desc())
-				.distinct()
-				.offset(pageable.getOffset())
-				.limit(pageable.getPageSize())
-				.fetch();
+			.select(Projections.constructor(PartySummaryResponse.class,
+				party.id,
+				party.title,
+				party.scheduledAt,
+				party.participantsNeeded.subtract(party.acceptedParticipantsCount),
+				party.totalParticipants,
+				party.rookieAvailable,
+				store.name,
+				theme.id,
+				theme.name,
+				theme.thumbnailUrl,
+				host.id,
+				host.nickname,
+				host.profilePictureUrl
+			))
+			.from(party)
+			.leftJoin(party.partyMembers, pm)
+			.join(party.theme, theme)
+			.join(theme.store, store)
+			.join(pm.member, host)
+			.where(builder)
+			.orderBy(party.scheduledAt.desc())
+			.distinct()
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.fetch();
 
 		Long count = queryFactory
-				.select(party.countDistinct())
-				.from(party)
-				.leftJoin(party.partyMembers, pm)
-				.where(builder)
-				.fetchOne();
+			.select(party.countDistinct())
+			.from(party)
+			.leftJoin(party.partyMembers, pm)
+			.where(builder)
+			.fetchOne();
 
 		return new PageImpl<>(content, pageable, count != null ? count : 0L);
 	}
 
 	private BooleanExpression getFullAndAcceptedCondition(Member member, QParty party, QPartyMember pm) {
 		return party.scheduledAt.after(LocalDateTime.now())
-				.and(party.status.eq(PartyStatus.FULL))
-				.and(pm.status.eq(PartyMemberStatus.ACCEPTED))
-				.and(pm.member.eq(member));
+			.and(party.status.eq(PartyStatus.FULL))
+			.and(pm.status.eq(PartyMemberStatus.ACCEPTED))
+			.and(pm.member.eq(member));
 	}
 
-	private BooleanExpression getRecruitingAndAcceptedOrApplicantCondition(Member member, QParty party, QPartyMember pm) {
+	private BooleanExpression getRecruitingAndAcceptedOrApplicantCondition(Member member, QParty party,
+		QPartyMember pm) {
 		return party.scheduledAt.after(LocalDateTime.now())
-				.and(party.status.eq(PartyStatus.RECRUITING))
-				.and(pm.status.in(PartyMemberStatus.ACCEPTED, PartyMemberStatus.APPLICANT))
-				.and(pm.member.eq(member));
+			.and(party.status.eq(PartyStatus.RECRUITING))
+			.and(pm.status.in(PartyMemberStatus.ACCEPTED, PartyMemberStatus.APPLICANT))
+			.and(pm.member.eq(member));
 	}
 
 	private BooleanExpression getCompletedAndAcceptedCondition(Member member, QParty party, QPartyMember pm) {
 		return party.scheduledAt.before(LocalDateTime.now())
-				.and(party.status.eq(PartyStatus.COMPLETED))
-				.and(pm.status.eq(PartyMemberStatus.ACCEPTED))
-				.and(pm.member.eq(member));
+			.and(party.status.eq(PartyStatus.COMPLETED))
+			.and(pm.status.eq(PartyMemberStatus.ACCEPTED))
+			.and(pm.member.eq(member));
 	}
 }

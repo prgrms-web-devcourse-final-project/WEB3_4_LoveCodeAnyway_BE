@@ -8,19 +8,27 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.service.MemberReviewService;
 import com.ddobang.backend.domain.member.service.MemberService;
+import com.ddobang.backend.domain.member.types.MemberReviewKeyword;
 import com.ddobang.backend.domain.party.dto.PartyDto;
+import com.ddobang.backend.domain.party.dto.request.PartyMemberReviewRequest;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartyDetailResponse;
 import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.Party;
+import com.ddobang.backend.domain.party.entity.PartyMemberReview;
 import com.ddobang.backend.domain.party.event.PartyApplyEvent;
 import com.ddobang.backend.domain.party.event.PartyMemberStatusUpdatedEvent;
 import com.ddobang.backend.domain.party.exception.PartyErrorCode;
 import com.ddobang.backend.domain.party.exception.PartyException;
+import com.ddobang.backend.domain.party.repository.PartyMemberReviewRepository;
 import com.ddobang.backend.domain.party.repository.PartyRepository;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.party.types.PartyStatus;
@@ -41,6 +49,9 @@ public class PartyService {
 	private final ThemeService themeService;
 	private final MemberService memberService;
 	private final PartyValidationService partyValidationService;
+	private final PartyMemberReviewRepository reviewRepository;
+	private final MemberReviewService memberReviewService;
+
 	//추가 이벤트 퍼블리셔
 	private final EventPublisher eventPublisher;
 
@@ -70,6 +81,7 @@ public class PartyService {
 	public PartyDto createParty(PartyRequest request, Member actor) {
 		Theme theme = themeService.getThemeById(request.themeId());
 		Party party = Party.of(request, theme, actor);
+
 		return PartyDto.from(partyRepository.save(party));
 	}
 
@@ -186,6 +198,34 @@ public class PartyService {
 		partyValidationService.validateExecutable(party, actor);
 
 		party.updateStatus(PartyStatus.CANCELLED);
+	}
+
+	@Transactional
+	public void reviewAll(Long id, List<PartyMemberReviewRequest> requests, Member actor) {
+		Party party = getPartyById(id);
+
+		Set<Long> reviewedMemberIds = new HashSet<>();
+
+		for (PartyMemberReviewRequest request : requests) {
+			Member receiver = memberService.getMember(request.targetId());
+
+			List<MemberReviewKeyword> keywords = request.reviewKeywords().stream()
+				.map(MemberReviewKeyword::valueOf)
+				.toList();
+
+			PartyMemberReview review = PartyMemberReview.of(party, actor, receiver);
+			for (MemberReviewKeyword keyword : keywords) {
+				review.addKeyword(keyword);
+			}
+
+			reviewRepository.save(review);
+
+			reviewedMemberIds.add(receiver.getId());
+		}
+
+		for (Long memberId : reviewedMemberIds) {
+			memberReviewService.updateMemberReview(memberId);
+		}
 	}
 
 	public PageDto<PartySummaryResponse> getOtherJoinedParties(Long memberId, int page, int size) {

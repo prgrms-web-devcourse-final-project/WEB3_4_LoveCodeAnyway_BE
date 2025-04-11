@@ -1,6 +1,9 @@
 package com.ddobang.backend.domain.party.controller;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,7 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ddobang.backend.domain.AuthHelper;
 import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.types.KeywordType;
+import com.ddobang.backend.domain.member.types.MemberReviewKeyword;
 import com.ddobang.backend.domain.party.dto.PartyDto;
+import com.ddobang.backend.domain.party.dto.request.PartyMemberReviewRequest;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartyDetailResponse;
@@ -32,8 +38,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -130,9 +134,9 @@ public class PartyController {
 	@GetMapping("/joins/{id}")
 	@Operation(summary = "참여한 모임 목록 조회")
 	public ResponseEntity<SuccessResponse<PageDto<PartySummaryResponse>>> getJoinedParties(
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size,
-			@PathVariable Long id
+		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "10") int size,
+		@PathVariable Long id
 	) {
 		Member actor = authHelper.getCurrentMember();
 
@@ -141,5 +145,27 @@ public class PartyController {
 		} else {
 			return ResponseFactory.ok(partyService.getOtherJoinedParties(id, page, size));
 		}
+	}
+
+	// 모임원 평가
+	@GetMapping("/review-keywords")
+	@Operation(summary = "평가 Enum 값 조회")
+	public ResponseEntity<Map<KeywordType, List<String>>> getReviewKeywords() {
+
+		Map<KeywordType, List<String>> keywords = Arrays.stream(MemberReviewKeyword.values())
+			.collect(Collectors.groupingBy(
+				MemberReviewKeyword::getType,
+				Collectors.mapping(Enum::name, Collectors.toList())
+			));
+
+		return ResponseEntity.ok(keywords);
+	}
+
+	@PostMapping("/{id}/reviews")
+	@Operation(summary = "모든 모임원 평가")
+	public ResponseEntity<Void> reviewPartyMembers(
+		@PathVariable Long id, @RequestBody List<PartyMemberReviewRequest> requests) {
+		partyService.reviewAll(id, requests, authHelper.getCurrentMember());
+		return ResponseFactory.noContent();
 	}
 }
