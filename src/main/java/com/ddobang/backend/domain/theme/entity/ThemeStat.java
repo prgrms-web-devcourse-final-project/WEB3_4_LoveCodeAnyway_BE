@@ -65,10 +65,12 @@ public class ThemeStat {
 	private int escapeResult;
 	private int escapeTimeAvg;
 
+	private int diaryCount;
+
 	@Builder
 	public ThemeStat(Theme theme, float difficulty, float fear, float activity, float satisfaction, float production,
 		float story, float question, float interior, float deviceRatio, int noHintEscapeRate, int escapeResult,
-		int escapeTimeAvg) {
+		int escapeTimeAvg, int diaryCount) {
 		this.theme = theme;
 		this.difficulty = difficulty;
 		this.fear = fear;
@@ -82,5 +84,25 @@ public class ThemeStat {
 		this.noHintEscapeRate = noHintEscapeRate;
 		this.escapeResult = escapeResult;
 		this.escapeTimeAvg = escapeTimeAvg;
+		this.diaryCount = diaryCount;
+	}
+
+	public void updateStat(float difficulty, float fear, float activity, float satisfaction, float production,
+		float story,
+		float question, float interior, float deviceRatio, int noHintEscapeRate, int escapeResult, int escapeTimeAvg,
+		int diaryCount) {
+		this.difficulty = difficulty;
+		this.fear = fear;
+		this.activity = activity;
+		this.satisfaction = satisfaction;
+		this.production = production;
+		this.story = story;
+		this.question = question;
+		this.interior = interior;
+		this.deviceRatio = deviceRatio;
+		this.noHintEscapeRate = noHintEscapeRate;
+		this.escapeResult = escapeResult;
+		this.escapeTimeAvg = escapeTimeAvg;
+		this.diaryCount = diaryCount;
 	}
 }

@@ -106,14 +106,19 @@ public class DiaryService {
 
 		DiaryConverter.modifyDiary(theme, diary, diaryRequestDto, elapsedTime);
 
+		diaryRepository.flush();
+		themeStatCalculator.updateThemeStat(theme);
+
 		return DiaryDto.of(diary);
 	}
 
 	@Transactional
 	public void delete(long id) {
 		Diary diary = findById(id);
+		Theme theme = diary.getTheme();
 
 		diaryRepository.delete(diary);
+		themeStatCalculator.updateThemeStat(theme);
 	}
 
 	@Transactional(readOnly = true)

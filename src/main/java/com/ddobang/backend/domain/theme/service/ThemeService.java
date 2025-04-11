@@ -3,6 +3,9 @@ package com.ddobang.backend.domain.theme.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +31,9 @@ import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.global.response.SliceDto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ThemeService {
@@ -139,7 +144,30 @@ public class ThemeService {
 		return themeTagService.getAllTags();
 	}
 
+	@Transactional(readOnly = true)
 	public ThemeStat getThemeStatById(Long id) {
 		return themeStatRepository.findById(id).orElse(null);
+	}
+
+	@Cacheable(cacheNames = "popularThemesByTag", key = "#tagName")
+	@Transactional(readOnly = true)
+	public List<ThemesResponse> getPopularThemesByTagName(String tagName) {
+		List<Theme> themes = themeRepository.findTop10PopularThemesByTagName(tagName);
+
+		return themes.stream().map(ThemesResponse::of).toList();
+	}
+
+	@Cacheable(cacheNames = "newestThemesByTag", key = "#tagName")
+	@Transactional(readOnly = true)
+	public List<ThemesResponse> getNewestThemesByTagName(String tagName) {
+		List<Theme> themes = themeRepository.findTop10NewestThemesByTagName(tagName);
+
+		return themes.stream().map(ThemesResponse::of).toList();
+	}
+
+	@Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
+	@CacheEvict(cacheNames = {"popularThemesByTag", "newestThemesByTag"}, allEntries = true)
+	public void clearThemeCachesDaily() {
+		log.info("매일 자정 캐시 초기화: 인기 테마 / 최신 테마 캐시 삭제 완료");
 	}
 }

@@ -46,7 +46,6 @@ public class ThemeControllerTest {
 
 	@Autowired
 	private BaseInitData initThemeMockData;
-	//private InitThemeMockData initThemeMockData;
 
 	@Autowired
 	private ThemeStatRepository themeStatRepository;
@@ -485,5 +484,87 @@ public class ThemeControllerTest {
 			.andExpect(jsonPath("$.data.length()").value(3))
 			.andExpect(jsonPath("$.data[0].name").value(tag1.getName()))
 			.andExpect(jsonPath("$.data[2].name").value(tag3.getName()));
+	}
+
+	@Test
+	@DisplayName("인기 테마 조회 테스트")
+	void getTop10PopularThemesByTagNameTest() throws Exception {
+		// given
+		String tagName = tag1.getName();
+
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/popular")
+			.param("tagName", tagName)
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(4))
+			.andExpect(jsonPath("$.data[0].name").value(themes.get(0).getName()))
+			.andExpect(jsonPath("$.data[0].tags[0]").value(tag1.getName()))
+			.andExpect(jsonPath("$.data[0].tags[1]").value(tag2.getName()))
+			.andExpect(jsonPath("$.data[1].name").value(themes.get(1).getName()))
+			.andExpect(jsonPath("$.data[1].recommendedParticipants").value("2~3인"))
+			.andExpect(jsonPath("$.data[2].name").value(themes.get(4).getName()));
+	}
+
+	@Test
+	@DisplayName("없는 태그로 인기 테마 조회 테스트")
+	void getTop10PopularThemesByInvalidTagNameTest() throws Exception {
+		// given
+		String tagName = "INVALID_TAG";
+
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/popular")
+			.param("tagName", tagName)
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(0));
+	}
+
+	@Test
+	@DisplayName("최신 테마 조회 테스트")
+	void getTop10NewestThemesByTagNameTest() throws Exception {
+		// given
+		String tagName = tag3.getName();
+
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/newest")
+			.param("tagName", tagName)
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(2))
+			.andExpect(jsonPath("$.data[0].name").value(themes.get(7).getName()))
+			.andExpect(jsonPath("$.data[0].tags[0]").value(tag3.getName()))
+			.andExpect(jsonPath("$.data[1].name").value(themes.get(3).getName()))
+			.andExpect(jsonPath("$.data[1].recommendedParticipants").value("2~3인"));
+	}
+
+	@Test
+	@DisplayName("없는 태그로 최신 테마 조회 테스트")
+	void getTop10NewestThemesByInvalidTagNameTest() throws Exception {
+		// given
+		String tagName = "INVALID_TAG";
+
+		// when
+		ResultActions result = mvc.perform(get("/api/v1/themes/newest")
+			.param("tagName", tagName)
+			.contentType(MediaType.APPLICATION_JSON)
+		);
+
+		// then
+		result
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.length()").value(0));
 	}
 }
