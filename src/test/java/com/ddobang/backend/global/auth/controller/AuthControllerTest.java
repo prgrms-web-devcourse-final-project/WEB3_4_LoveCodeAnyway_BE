@@ -5,20 +5,28 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.web.servlet.MockMvc;
 
-/**
- * 로그인 관련 API 테스트
- * @author Jay Lim
- */
+import com.ddobang.backend.global.auth.service.AuthService;
+
 @WebMvcTest(AuthController.class)
-@DisplayName("AuthController 테스트")
 class AuthControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
+
+	@TestConfiguration
+	static class TestConfig {
+		@Bean
+		public AuthService authService() {
+			return Mockito.mock(AuthService.class);
+		}
+	}
 
 	@Test
 	@DisplayName("t1 - 카카오 로그인 리다이렉트 확인")
@@ -28,3 +36,4 @@ class AuthControllerTest {
 			.andExpect(redirectedUrlPattern("**/oauth2/authorization/kakao"));
 	}
 }
+

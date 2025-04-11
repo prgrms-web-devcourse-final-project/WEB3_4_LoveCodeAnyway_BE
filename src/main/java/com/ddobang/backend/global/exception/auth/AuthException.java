@@ -1,9 +1,9 @@
-package com.ddobang.backend.domain.auth.exception;
+package com.ddobang.backend.global.exception.auth;
 
 import com.ddobang.backend.global.exception.ServiceException;
 
 public class AuthException extends ServiceException {
-	public AuthException(OAuth2ErrorCode errorCode) {
+	public AuthException(AuthErrorCode errorCode) {
 		super(errorCode);
 	}
 }
