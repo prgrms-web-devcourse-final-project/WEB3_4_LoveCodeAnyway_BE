@@ -50,7 +50,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			// 기존 회원
 			authService.handleLoginSuccess(response, kakaoId);
 			log.info("기존 회원 로그인 처리 완료");
-			response.sendRedirect("http://localhost:3000"); // 메인 페이지
+			response.sendRedirect("/"); // 메인 페이지
 		} else {
 			// 신규 회원
 			authService.handlePreSignup(response, kakaoId);
