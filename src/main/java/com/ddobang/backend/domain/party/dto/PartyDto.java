@@ -1,9 +1,9 @@
 package com.ddobang.backend.domain.party.dto;
 
+import java.time.LocalDateTime;
+
 import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.party.types.PartyStatus;
-
-import java.time.LocalDateTime;
 
 public record PartyDto(
 	Long id,

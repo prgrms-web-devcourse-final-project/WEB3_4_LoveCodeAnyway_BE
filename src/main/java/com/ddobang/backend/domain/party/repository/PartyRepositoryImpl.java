@@ -1,5 +1,11 @@
 package com.ddobang.backend.domain.party.repository;
 
+import static com.ddobang.backend.domain.party.types.PartyMemberRole.*;
+import static com.ddobang.backend.domain.party.types.PartyStatus.*;
+
+import java.time.LocalDate;
+import java.util.List;
+
 import com.ddobang.backend.domain.member.entity.QMember;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
@@ -12,14 +18,8 @@ import com.ddobang.backend.domain.theme.entity.QThemeTagMapping;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDate;
-import java.util.List;
-
-import static com.ddobang.backend.domain.party.types.PartyMemberRole.HOST;
-import static com.ddobang.backend.domain.party.types.PartyStatus.FULL;
-import static com.ddobang.backend.domain.party.types.PartyStatus.RECRUITING;
 
 @RequiredArgsConstructor
 public class PartyRepositoryImpl implements PartyRepositoryCustom {
@@ -37,46 +37,46 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 		QThemeTag themeTag = QThemeTag.themeTag;
 
 		return queryFactory
-				.select(Projections.constructor(PartySummaryResponse.class,
-						party.id,
-						party.title,
-						party.scheduledAt,
+			.select(Projections.constructor(PartySummaryResponse.class,
+				party.id,
+				party.title,
+				party.scheduledAt,
 
-						party.participantsNeeded.subtract(party.acceptedParticipantsCount),
-						party.totalParticipants,
-						party.rookieAvailable,
+				party.participantsNeeded.subtract(party.acceptedParticipantsCount),
+				party.totalParticipants,
+				party.rookieAvailable,
 
-						store.name,
+				store.name,
 
-						theme.id,
-						theme.name,
-						theme.thumbnailUrl,
+				theme.id,
+				theme.name,
+				theme.thumbnailUrl,
 
-						host.id,
-						host.nickname,
-						host.profilePictureUrl
-				))
-				.from(party)
-				.join(party.theme, theme)
-				.join(theme.store, store)
-				.join(party.partyMembers, pm)
-				.join(pm.member, host)
-				.leftJoin(theme.themeTagMappings, mapping)
-				.leftJoin(mapping.themeTag, themeTag)
-				.where(
-						party.status.in(RECRUITING, FULL),
-						party.deleted.eq(false),
-						pm.role.eq(HOST),
-						keywordContains(condition.keyword(), party, theme, store, host),
-						regionIn(condition.regionIds(), store),
-						dateIn(condition.dates(), party),
-						tagIn(condition.tagsIds(), themeTag),
-						ltLastId(lastId, party)
-				)
-				.orderBy(party.id.desc())
-				.limit(size)
-				.distinct()
-				.fetch();
+				host.id,
+				host.nickname,
+				host.profilePictureUrl
+			))
+			.from(party)
+			.join(party.theme, theme)
+			.join(theme.store, store)
+			.join(party.partyMembers, pm)
+			.join(pm.member, host)
+			.leftJoin(theme.themeTagMappings, mapping)
+			.leftJoin(mapping.themeTag, themeTag)
+			.where(
+				party.status.in(RECRUITING, FULL),
+				party.deleted.eq(false),
+				pm.role.eq(HOST),
+				keywordContains(condition.keyword(), party, theme, store, host),
+				regionIn(condition.regionIds(), store),
+				dateIn(condition.dates(), party),
+				tagIn(condition.tagsIds(), themeTag),
+				ltLastId(lastId, party)
+			)
+			.orderBy(party.id.desc())
+			.limit(size)
+			.distinct()
+			.fetch();
 	}
 
 	private BooleanExpression keywordContains(String keyword, QParty party, QTheme theme, QStore store, QMember host) {
@@ -85,9 +85,9 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 		}
 
 		return party.title.containsIgnoreCase(keyword)
-				.or(theme.name.containsIgnoreCase(keyword))
-				.or(store.name.containsIgnoreCase(keyword))
-				.or(host.nickname.containsIgnoreCase(keyword));
+			.or(theme.name.containsIgnoreCase(keyword))
+			.or(store.name.containsIgnoreCase(keyword))
+			.or(host.nickname.containsIgnoreCase(keyword));
 	}
 
 	private BooleanExpression regionIn(List<Long> regionIds, QStore store) {
@@ -103,10 +103,10 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 		}
 
 		return dates.stream()
-				.map(date -> party.scheduledAt.between(
-						date.atStartOfDay(), date.plusDays(1).atStartOfDay().minusNanos(1)))
-				.reduce(BooleanExpression::or)
-				.orElse(null);
+			.map(date -> party.scheduledAt.between(
+				date.atStartOfDay(), date.plusDays(1).atStartOfDay().minusNanos(1)))
+			.reduce(BooleanExpression::or)
+			.orElse(null);
 	}
 
 	private BooleanExpression tagIn(List<Long> tagIds, QThemeTag themeTag) {

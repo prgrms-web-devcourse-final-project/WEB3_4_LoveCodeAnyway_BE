@@ -94,7 +94,6 @@ public class MemberReviewService {
 		Member member = memberService.getMember(memberId);
 		//        entity 와 충돌 우려해서 수정 변경 하지 못했습니다.
 		//        member.updateMannerScore(review.getAverageScore());
-
 		return MemberReviewResponse.from(review, keywords);
 	}
 }
