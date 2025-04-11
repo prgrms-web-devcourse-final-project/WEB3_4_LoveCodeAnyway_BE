@@ -67,7 +67,7 @@ public class MemberService {
 		return OtherProfileResponse.of(member);
 	}
 
-	public Optional<Member> findByKakaoId(String kakaoId) {
+	public Optional<Member> getByKakaoId(String kakaoId) {
 		return memberRepository.findByKakaoId(kakaoId);
 	}
 
