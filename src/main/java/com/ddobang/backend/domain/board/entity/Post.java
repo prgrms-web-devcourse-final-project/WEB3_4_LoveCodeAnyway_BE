@@ -102,4 +102,9 @@ public class Post extends BaseTime {
 			this.answered = false;
 		}
 	}
+
+	public void addAttachment(Attachment attachment) {
+		this.attachments.add(attachment);
+		attachment.setPost(this);
+	}
 }
