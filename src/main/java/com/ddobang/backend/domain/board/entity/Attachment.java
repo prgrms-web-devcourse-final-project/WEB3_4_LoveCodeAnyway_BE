@@ -34,7 +34,7 @@ public class Attachment {
 	@JoinColumn(name = "post_id", nullable = false)
 	private Post post;
 
-	private Attachment(
+	public Attachment(
 		String url,
 		String fileName,
 		Post post
@@ -42,9 +42,5 @@ public class Attachment {
 		this.url = url;
 		this.fileName = fileName;
 		this.post = post;
-	}
-
-	public static Attachment of(String url, String fileName, Post post) {
-		return new Attachment(url, fileName, post);
 	}
 }
