@@ -11,7 +11,6 @@ public class DiaryConverter {
 		return Diary.builder()
 			.theme(theme)
 			.author(author)
-			.escapeDate(dto.escapeDate())
 			.participants(dto.participants())
 			.review(dto.review())
 			.build();
@@ -34,6 +33,7 @@ public class DiaryConverter {
 			.hintCount(dto.hintCount())
 			.escapeResult(dto.escapeResult())
 			.elapsedTime(elapsedTime)
+			.escapeDate(dto.escapeDate())
 			.build();
 	}
 

@@ -10,5 +10,5 @@ import com.ddobang.backend.domain.diary.entity.Diary;
 
 @Repository
 public interface DiaryRepository extends JpaRepository<Diary, Long>, DiaryRepositoryCustom {
-	List<Diary> findByEscapeDateBetween(LocalDate startDate, LocalDate endDate);
+	List<Diary> findByDiaryStat_EscapeDateBetween(LocalDate startDate, LocalDate endDate);
 }

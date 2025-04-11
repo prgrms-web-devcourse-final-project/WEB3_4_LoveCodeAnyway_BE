@@ -27,7 +27,7 @@ public class DiaryStatRepositoryImpl implements DiaryStatRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public List<Tuple> top5TagCountSuccessCountByMember(Long authorId) {
+	public List<Tuple> top5TagCountSuccessCountByMember(long authorId) {
 		NumberExpression<Long> playCount = diaryStat.id.countDistinct();
 		NumberExpression<Integer> successCount = Expressions.numberTemplate(
 			Integer.class,
@@ -55,19 +55,19 @@ public class DiaryStatRepositoryImpl implements DiaryStatRepositoryCustom {
 	}
 
 	@Override // 장르 기준 전체 테마의 수(한 테마의 장르가 여러개인 경우 중복 포함)
-	public Long countTotalGenreBaseByMember(Long authorId) {
+	public Long countTotalGenreBaseByMember(long authorId) {
 		return countGenreAppearancesByMember(authorId) + countNoGenreDiaryStatsByMember(authorId);
 	}
 
 	@Override // 난이도 레벨 기준 총 테마수, 힌트 갯수
-	public Map<Integer, Tuple> difficultyStatsWithHints(Long authorId) {
+	public Map<Integer, Tuple> difficultyStatsWithHints(long authorId) {
 		Map<Integer, Tuple> result = new LinkedHashMap<>();
 
 		for (int level = 1; level <= 5; level++) {
 			NumberExpression<Long> themeCount = diaryStat.id.countDistinct(); // 해당 되는 일지 수
 			// 해당 되는 총 힌트 갯수(null은 제외, 0은 포함)
 			NumberExpression<Integer> totalHints = Expressions.numberTemplate(
-				Integer.class, "sum(case when {0} is not null then {0} else 0 end)", diaryStat.hintCount
+				Integer.class, "coalesce(sum(case when {0} is not null then {0} else 0 end), 0)", diaryStat.hintCount
 			);
 
 			Tuple tuple = queryFactory
@@ -77,7 +77,7 @@ public class DiaryStatRepositoryImpl implements DiaryStatRepositoryCustom {
 				)
 				.from(diaryStat)
 				.join(diaryStat.theme, theme)
-				.leftJoin(theme, themeStat.theme)
+				.leftJoin(themeStat).on(themeStat.theme.eq(theme))
 				.where(
 					diaryStat.author.id.eq(authorId),
 					difficultyRange(level), // 난이도 레벨 범위 내
@@ -99,14 +99,14 @@ public class DiaryStatRepositoryImpl implements DiaryStatRepositoryCustom {
 	}
 
 	@Override // 난이도 레벨 기준 총 테마수, 총 만족도 점수
-	public Map<Integer, Tuple> difficultyStatsWithSatisfaction(Long authorId) {
+	public Map<Integer, Tuple> difficultyStatsWithSatisfaction(long authorId) {
 		Map<Integer, Tuple> result = new LinkedHashMap<>();
 
 		for (int level = 1; level <= 5; level++) {
 			NumberExpression<Long> themeCount = diaryStat.id.countDistinct(); // 해당 되는 일지 수
 			// 해당 되는 만족도의 합 (0 제외)
 			NumberExpression<Integer> totalSatisfaction = Expressions.numberTemplate(
-				Integer.class, "sum(case when {0} > 0 then {0} else 0 end)", diaryStat.satisfaction
+				Integer.class, "coalesce(sum(case when {0} > 0 then {0} else 0 end), 0)", diaryStat.satisfaction
 			);
 
 			Tuple tuple = queryFactory
@@ -116,7 +116,7 @@ public class DiaryStatRepositoryImpl implements DiaryStatRepositoryCustom {
 				)
 				.from(diaryStat)
 				.join(diaryStat.theme, theme)
-				.leftJoin(theme, themeStat.theme)
+				.leftJoin(themeStat).on(themeStat.theme.eq(theme))
 				.where(
 					diaryStat.author.id.eq(authorId),
 					difficultyRange(level), // 난이도 레벨 범위 내
@@ -138,7 +138,7 @@ public class DiaryStatRepositoryImpl implements DiaryStatRepositoryCustom {
 	}
 
 	// 탈출 일지 내 테마의 모든 장르들의 수
-	private Long countGenreAppearancesByMember(Long authorId) {
+	private Long countGenreAppearancesByMember(long authorId) {
 		return queryFactory
 			.select(
 				Expressions.numberTemplate(Long.class, "count(*)")
@@ -151,7 +151,7 @@ public class DiaryStatRepositoryImpl implements DiaryStatRepositoryCustom {
 	}
 
 	// 탈출 일지 내의 장르가 없는 일지들의 수
-	private Long countNoGenreDiaryStatsByMember(Long authorId) {
+	private Long countNoGenreDiaryStatsByMember(long authorId) {
 		return queryFactory
 			.select(diaryStat.count())
 			.from(diaryStat)

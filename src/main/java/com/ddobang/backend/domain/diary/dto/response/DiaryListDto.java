@@ -27,7 +27,7 @@ public record DiaryListDto(
 				.map(ttm -> ttm.getThemeTag().getName())
 				.toList(),
 			diary.getTheme().getStore().getName(),
-			diary.getEscapeDate(),
+			diary.getDiaryStat().getEscapeDate(),
 			diary.getDiaryStat().getElapsedTime(),
 			diary.getDiaryStat().getHintCount(),
 			diary.getDiaryStat().isEscapeResult()

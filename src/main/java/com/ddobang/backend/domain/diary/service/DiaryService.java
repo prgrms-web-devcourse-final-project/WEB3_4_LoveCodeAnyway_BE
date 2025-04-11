@@ -25,6 +25,7 @@ import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.domain.stat.calculator.MemberStatCalculator;
 import com.ddobang.backend.domain.stat.calculator.ThemeStatCalculator;
 import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
 import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
@@ -41,6 +42,7 @@ public class DiaryService {
 	private final MemberRepository memberRepository;
 	private final ThemeService themeService;
 	private final ThemeStatCalculator themeStatCalculator;
+	private final MemberStatCalculator memberStatCalculator;
 	private final String TIME_MINUTES_SECONDS_PATTERN = "^\\d{1,3}:\\d{1,2}$";
 	private final String TIME_TYPE_REMAINING = "REMAINING";
 	private final String TIME_TYPE_ELAPSED = "ELAPSED";
@@ -66,6 +68,7 @@ public class DiaryService {
 
 		diary.setDiaryStat(diaryStat);
 		themeStatCalculator.updateThemeStat(theme);
+		memberStatCalculator.updateMemberStat(actor);
 
 		return DiaryDto.of(diary);
 	}
@@ -97,6 +100,7 @@ public class DiaryService {
 	public DiaryDto modify(long id, DiaryRequestDto diaryRequestDto) {
 		Diary diary = findById(id);
 		Theme theme = themeService.getThemeById(diaryRequestDto.themeId());
+		Member actor = memberRepository.findById(1L).orElseThrow();
 
 		int elapsedTime = calculateElapsedTime(
 			diaryRequestDto.timeType(),
@@ -108,6 +112,7 @@ public class DiaryService {
 
 		diaryRepository.flush();
 		themeStatCalculator.updateThemeStat(theme);
+		memberStatCalculator.updateMemberStat(actor);
 
 		return DiaryDto.of(diary);
 	}
@@ -116,9 +121,11 @@ public class DiaryService {
 	public void delete(long id) {
 		Diary diary = findById(id);
 		Theme theme = diary.getTheme();
+		Member actor = memberRepository.findById(1L).orElseThrow();
 
 		diaryRepository.delete(diary);
 		themeStatCalculator.updateThemeStat(theme);
+		memberStatCalculator.updateMemberStat(actor);
 	}
 
 	@Transactional(readOnly = true)
@@ -151,7 +158,7 @@ public class DiaryService {
 		LocalDate startDate = LocalDate.of(year, month, 1);
 		LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
 
-		return diaryRepository.findByEscapeDateBetween(startDate, endDate)
+		return diaryRepository.findByDiaryStat_EscapeDateBetween(startDate, endDate)
 			.stream()
 			.map(DiaryListDto::of)
 			.toList();

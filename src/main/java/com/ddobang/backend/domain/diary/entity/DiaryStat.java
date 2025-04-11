@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.diary.entity;
 
+import java.time.LocalDate;
+
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.theme.entity.Theme;
@@ -49,6 +51,7 @@ public class DiaryStat {
 	private Integer hintCount;
 	private boolean escapeResult;
 	private int elapsedTime;
+	private LocalDate escapeDate;
 
 	@Builder
 	public DiaryStat(
@@ -66,7 +69,8 @@ public class DiaryStat {
 		Integer deviceRatio,
 		Integer hintCount,
 		boolean escapeResult,
-		int elapsedTime
+		int elapsedTime,
+		LocalDate escapeDate
 	) {
 		this.diary = diary;
 		this.theme = theme;
@@ -83,6 +87,7 @@ public class DiaryStat {
 		this.hintCount = hintCount;
 		this.escapeResult = escapeResult;
 		this.elapsedTime = elapsedTime;
+		this.escapeDate = escapeDate;
 	}
 
 	public void modify(
@@ -102,5 +107,6 @@ public class DiaryStat {
 		this.hintCount = diaryRequestDto.hintCount();
 		this.escapeResult = diaryRequestDto.escapeResult();
 		this.elapsedTime = elapsedTime;
+		this.escapeDate = diaryRequestDto.escapeDate();
 	}
 }

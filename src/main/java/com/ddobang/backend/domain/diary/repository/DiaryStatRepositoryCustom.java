@@ -6,11 +6,11 @@ import java.util.Map;
 import com.querydsl.core.Tuple;
 
 public interface DiaryStatRepositoryCustom {
-	List<Tuple> top5TagCountSuccessCountByMember(Long authorId);
+	List<Tuple> top5TagCountSuccessCountByMember(long authorId);
 
-	Long countTotalGenreBaseByMember(Long authorId);
+	Long countTotalGenreBaseByMember(long authorId);
 
-	Map<Integer, Tuple> difficultyStatsWithHints(Long authorId);
+	Map<Integer, Tuple> difficultyStatsWithHints(long authorId);
 
-	Map<Integer, Tuple> difficultyStatsWithSatisfaction(Long authorId);
+	Map<Integer, Tuple> difficultyStatsWithSatisfaction(long authorId);
 }

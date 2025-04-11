@@ -8,14 +8,22 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.diary.entity.DiaryStat;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.dto.stat.EscapeProfileStatDto;
 import com.ddobang.backend.domain.member.dto.stat.EscapeScheduleStatDto;
 import com.ddobang.backend.domain.member.dto.stat.EscapeSummaryStatDto;
+import com.ddobang.backend.domain.member.entity.EscapeProfileStat;
+import com.ddobang.backend.domain.member.entity.EscapeScheduleStat;
+import com.ddobang.backend.domain.member.entity.EscapeSummaryStat;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.entity.MemberStat;
+import com.ddobang.backend.domain.member.repository.MemberStatRepository;
 import com.ddobang.backend.global.util.Ut;
 import com.querydsl.core.Tuple;
 
@@ -25,10 +33,90 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberStatCalculator {
 	private final DiaryStatRepository diaryStatRepository;
+	private final MemberStatRepository memberStatRepository;
 	private static final DateTimeFormatter YM_FORMATTER = DateTimeFormatter.ofPattern("yyyy년 M월");
 
-	public void updateThemeStat() {
-		List<DiaryStat> diaryStats = diaryStatRepository.findByAuthorId(1L);
+	@Transactional
+	public void updateMemberStat(Member author) {
+		List<DiaryStat> diaryStats = diaryStatRepository.findByAuthorId(author.getId());
+		EscapeSummaryStatDto escapeSummaryStatDto = calculateEscapeSummaryStat(diaryStats);
+		EscapeProfileStatDto escapeProfileStatDto = calculateEscapeProfileStat(diaryStats, author.getId());
+		EscapeScheduleStatDto escapeScheduleStatDto = calculateEscapeScheduleStat(diaryStats);
+		Optional<MemberStat> memberStat = memberStatRepository.findById(author.getId());
+
+		// 해당 멤버에 대한 일지가 없을 경우 분석 데이터 삭제
+		if (diaryStats.isEmpty()) {
+			memberStat.ifPresent(memberStatRepository::delete);
+			return;
+		}
+
+		// 해당 테마에 대한 통계가 없을 경우 통계 생성
+		if (memberStat.isPresent()) {
+			memberStat.get().update(
+				escapeSummaryStatDto,
+				escapeProfileStatDto,
+				escapeScheduleStatDto
+			);
+		} else {
+			EscapeSummaryStat escapeSummaryStat = EscapeSummaryStat.builder()
+				.totalCount(escapeSummaryStatDto.totalCount())
+				.successRate(escapeSummaryStatDto.successRate())
+				.noHintSuccessCount(escapeSummaryStatDto.noHintSuccessCount())
+				.noHintSuccessRate(escapeSummaryStatDto.noHintSuccessRate())
+				.averageHintCount(escapeSummaryStatDto.averageHintCount())
+				.firstEscapeDate(escapeSummaryStatDto.firstEscapeDate())
+				.mostActiveMonth(escapeSummaryStatDto.mostActiveMonth())
+				.mostActiveMonthCount(escapeSummaryStatDto.mostActiveMonthCount())
+				.daysSinceFirstEscape(escapeSummaryStatDto.daysSinceFirstEscape())
+				.build();
+
+			EscapeProfileStat escapeProfileStat = EscapeProfileStat.builder()
+				.tendencyStimulating(escapeProfileStatDto.tendencyStimulating())
+				.tendencyLogical(escapeProfileStatDto.tendencyLogical())
+				.tendencyNarrative(escapeProfileStatDto.tendencyNarrative())
+				.tendencyActive(escapeProfileStatDto.tendencyActive())
+				.tendencySpatial(escapeProfileStatDto.tendencySpatial())
+				.genreCountMap(escapeProfileStatDto.genreCountMap())
+				.genreSuccessMap(escapeProfileStatDto.genreSuccessMap())
+				.difficultyHintAvg1(escapeProfileStatDto.difficultyHintAvg1())
+				.difficultyHintAvg2(escapeProfileStatDto.difficultyHintAvg2())
+				.difficultyHintAvg3(escapeProfileStatDto.difficultyHintAvg3())
+				.difficultyHintAvg4(escapeProfileStatDto.difficultyHintAvg4())
+				.difficultyHintAvg5(escapeProfileStatDto.difficultyHintAvg5())
+				.difficultySatisAvg1(escapeProfileStatDto.difficultySatisAvg1())
+				.difficultySatisAvg2(escapeProfileStatDto.difficultySatisAvg2())
+				.difficultySatisAvg3(escapeProfileStatDto.difficultySatisAvg3())
+				.difficultySatisAvg4(escapeProfileStatDto.difficultySatisAvg4())
+				.difficultySatisAvg5(escapeProfileStatDto.difficultySatisAvg5())
+				.build();
+
+			EscapeScheduleStat escapeScheduleStat = EscapeScheduleStat.builder()
+				.monthlyCountMap(escapeScheduleStatDto.monthlyCountMap())
+				.thisMonthCount(escapeScheduleStatDto.thisMonthCount())
+				.thisMonthAvgSatisfaction(escapeScheduleStatDto.thisMonthAvgSatisfaction())
+				.thisMonthAvgHintCount(escapeScheduleStatDto.thisMonthAvgHintCount())
+				.thisMonthSuccessRate(escapeScheduleStatDto.thisMonthSuccessRate())
+				.thisMonthAvgTime(escapeScheduleStatDto.thisMonthAvgTime())
+				.thisMonthTopTheme(escapeScheduleStatDto.thisMonthTopTheme())
+				.thisMonthTopSatisfaction(escapeScheduleStatDto.thisMonthTopSatisfaction())
+				.build();
+
+			memberStatRepository.save(MemberStat.builder()
+				.member(author)
+				.escapeSummaryStat(escapeSummaryStat)
+				.escapeProfileStat(escapeProfileStat)
+				.escapeScheduleStat(escapeScheduleStat)
+				.build());
+		}
+	}
+
+	// 매달 1일 스케쥴링용 메서드
+	@Transactional
+	public void upDateEscapeScheduleStat(MemberStat memberStat) {
+		List<DiaryStat> diaryStats = diaryStatRepository.findByAuthorId(memberStat.getId());
+
+		EscapeScheduleStatDto escapeScheduleStatDto = calculateEscapeScheduleStat(diaryStats);
+		memberStat.getEscapeScheduleStat().update(escapeScheduleStatDto);
 	}
 
 	// EscapeSummaryStat 계산 메서드
@@ -56,7 +144,7 @@ public class MemberStatCalculator {
 				totalHintCount += stat.getHintCount();
 			}
 
-			LocalDate date = stat.getDiary().getEscapeDate();
+			LocalDate date = stat.getEscapeDate();
 
 			if (date != null) {
 				if (earliestEscapeDate == null || date.isBefore(earliestEscapeDate)) {
@@ -220,7 +308,7 @@ public class MemberStatCalculator {
 		long thisMonthTotalSatis = 0;
 		long thisMonthTotalTime = 0;
 		int thisMonthTopSatisfaction = 0;
-		String thisMonthTopTheme = "";
+		long thisMonthTopSatisStatId = 0;
 		LocalDate thisMonthTopThemeDate = null;
 
 		int thisMonthCount = 0;
@@ -236,7 +324,7 @@ public class MemberStatCalculator {
 		}
 
 		for (DiaryStat stat : diaryStats) {
-			LocalDate escapeDate = stat.getDiary().getEscapeDate();
+			LocalDate escapeDate = stat.getEscapeDate();
 
 			if (escapeDate == null) {
 				continue;
@@ -267,14 +355,14 @@ public class MemberStatCalculator {
 
 					if (stat.getSatisfaction() > thisMonthTopSatisfaction) {
 						thisMonthTopSatisfaction = stat.getSatisfaction();
-						thisMonthTopTheme = stat.getTheme().getName();
-						thisMonthTopThemeDate = stat.getDiary().getEscapeDate();
+						thisMonthTopSatisStatId = stat.getId();
+						thisMonthTopThemeDate = stat.getEscapeDate();
 
 						// 이번달 최고 만족도 테마가 중복될 경우 더 최근에 했던 테마로 저장
 					} else if (stat.getSatisfaction() == thisMonthTopSatisfaction) {
-						if (stat.getDiary().getEscapeDate().isAfter(thisMonthTopThemeDate)) {
-							thisMonthTopTheme = stat.getTheme().getName();
-							thisMonthTopThemeDate = stat.getDiary().getEscapeDate();
+						if (stat.getEscapeDate().isAfter(thisMonthTopThemeDate)) {
+							thisMonthTopSatisStatId = stat.getId();
+							thisMonthTopThemeDate = stat.getEscapeDate();
 						}
 					}
 				}
@@ -301,6 +389,10 @@ public class MemberStatCalculator {
 		int thisMonthAvgTime = Ut.calculator.roundToInt(
 			Ut.calculator.calculateAverage(thisMonthTotalTime, thisMonthTimeCount)
 		);
+
+		String thisMonthTopTheme = thisMonthTopSatisStatId != 0
+			? diaryStatRepository.findById(thisMonthTopSatisStatId)
+			.orElseThrow().getTheme().getName() : null;
 
 		return EscapeScheduleStatDto.builder()
 			.monthlyCountMap(monthlyCountMap)
@@ -369,7 +461,7 @@ public class MemberStatCalculator {
 	private double calculateAvgFromTuple(Map<Integer, Tuple> map, int level, int numeratorIdx, int denominatorIdx) {
 		return Ut.calculator.roundToFirstDecimalAsDouble(
 			Ut.calculator.calculateAverage(
-				map.get(level).get(numeratorIdx, Long.class),
+				map.get(level).get(numeratorIdx, Integer.class),
 				map.get(level).get(denominatorIdx, Long.class)
 			)
 		);

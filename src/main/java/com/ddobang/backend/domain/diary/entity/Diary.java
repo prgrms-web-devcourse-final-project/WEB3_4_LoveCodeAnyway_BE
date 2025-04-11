@@ -1,7 +1,5 @@
 package com.ddobang.backend.domain.diary.entity;
 
-import java.time.LocalDate;
-
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.theme.entity.Theme;
@@ -40,7 +38,6 @@ public class Diary extends BaseTime {
 	@OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
 	private DiaryStat diaryStat;
 
-	private LocalDate escapeDate;
 	private String imageUrl;
 	private String participants;
 
@@ -51,14 +48,12 @@ public class Diary extends BaseTime {
 	public Diary(
 		Theme theme,
 		Member author,
-		LocalDate escapeDate,
 		String imageUrl,
 		String participants,
 		String review
 	) {
 		this.theme = theme;
 		this.author = author;
-		this.escapeDate = escapeDate;
 		this.imageUrl = imageUrl;
 		this.participants = participants;
 		this.review = review;
@@ -77,7 +72,6 @@ public class Diary extends BaseTime {
 		DiaryRequestDto diaryRequestDto
 	) {
 		this.theme = theme;
-		this.escapeDate = diaryRequestDto.escapeDate();
 		this.participants = diaryRequestDto.participants();
 		this.review = diaryRequestDto.review();
 	}

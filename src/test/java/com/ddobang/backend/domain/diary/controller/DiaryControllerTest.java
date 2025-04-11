@@ -46,6 +46,9 @@ public class DiaryControllerTest {
 	@Autowired
 	private ThemeRepository themeRepository;
 
+	@Autowired
+	private ThemeRepository themeRepository;
+
 	@Test
 	@DisplayName("탈출일지 등록")
 	@WithMockUser(roles = "USER")
@@ -272,7 +275,7 @@ public class DiaryControllerTest {
 			.andExpect(jsonPath("$.data.storeName").value(diary.getTheme().getStore().getName()))
 			.andExpect(jsonPath("$.data.thumbnailUrl").value(diary.getTheme().getThumbnailUrl()))
 			.andExpect(jsonPath("$.data.imageUrl").value(diary.getImageUrl()))
-			.andExpect(jsonPath("$.data.escapeDate").value(diary.getEscapeDate().toString()))
+			.andExpect(jsonPath("$.data.escapeDate").value(diary.getDiaryStat().getEscapeDate().toString()))
 			.andExpect(jsonPath("$.data.participants").value(diary.getParticipants()))
 			.andExpect(jsonPath("$.data.difficulty").value(diary.getDiaryStat().getDifficulty()))
 			.andExpect(jsonPath("$.data.fear").value(diary.getDiaryStat().getFear()))
