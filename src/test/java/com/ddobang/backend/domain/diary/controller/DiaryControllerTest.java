@@ -40,7 +40,8 @@ import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 public class DiaryControllerTest {
 	@Autowired
 	private MockMvc mvc;
-
+	@Autowired
+	private ThemeRepository themeRepository;
 	@Autowired
 	private DiaryService diaryService;
 	@Autowired
