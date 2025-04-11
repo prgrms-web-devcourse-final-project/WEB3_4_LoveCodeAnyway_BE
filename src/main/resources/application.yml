@@ -48,22 +48,6 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
-# JWT 설정
-jwt:
-  secret: # secret.yml
-  # access-token-expiration: 각 환경별 설정
-  # refresh-token-expiration: 각 환경별 설정
-
-# logging
-logging:
-  level:
-    org.springframework.security: DEBUG
-    com.ddobang.backend: DEBUG
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
-    org.hibernate.orm.jdbc.extract: TRACE
-
 # swagger
 springdoc:
   swagger-ui:
