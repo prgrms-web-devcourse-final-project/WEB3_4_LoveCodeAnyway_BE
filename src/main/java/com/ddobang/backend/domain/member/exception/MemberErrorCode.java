@@ -15,7 +15,10 @@ public enum MemberErrorCode implements ErrorCode {
 
 	// Member Review
 	MEMBER_REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REVIEW_001", "멤버 리뷰를 찾을 수 없습니다."),
-	MEMBER_REVIEW_DUPLICATED(HttpStatus.BAD_REQUEST, "REVIEW_002", "이미 멤버 리뷰를 작성하셨습니다.");
+	MEMBER_REVIEW_DUPLICATED(HttpStatus.BAD_REQUEST, "REVIEW_002", "이미 멤버 리뷰를 작성하셨습니다."),
+
+	// Member Stat
+	NOT_FOUND_STAT(HttpStatus.NOT_FOUND, "MEMBER_404", "해당 사용자의 통계 정보가 존재하지 않습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String errorCode;
