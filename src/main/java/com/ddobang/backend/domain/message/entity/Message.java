@@ -53,4 +53,18 @@ public class Message extends BaseTime {
 	public void changeToRead() {
 		this.isRead = true;
 	}
+
+	// Message.java에 아래 메서드들을 추가
+	public boolean canAccess(Member member) {
+		return this.sender.getId().equals(member.getId()) ||
+			this.receiver.getId().equals(member.getId());
+	}
+
+	public boolean canMarkAsRead(Member member) {
+		return this.receiver.getId().equals(member.getId());
+	}
+
+	public boolean canDelete(Member member) {
+		return this.receiver.getId().equals(member.getId());
+	}
 }
