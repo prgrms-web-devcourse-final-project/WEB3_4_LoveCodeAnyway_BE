@@ -31,15 +31,6 @@ public class CookieUtil {
 		return cookie;
 	}
 
-	// 회원가입용 토큰 쿠키 생성
-	public static Cookie createSignupTokenCookie(String token) {
-		Cookie cookie = new Cookie("signupToken", token);
-		cookie.setHttpOnly(true);
-		cookie.setPath("/");
-		cookie.setMaxAge(60 * 10); // 10분
-		return cookie;
-	}
-
 	// Access Token 쿠키 값 가져오기
 	public static String getAccessToken(HttpServletRequest request) {
 		if (request.getCookies() == null)

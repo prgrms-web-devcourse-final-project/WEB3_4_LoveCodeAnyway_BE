@@ -4,14 +4,14 @@ import java.io.IOException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.service.MemberService;
-import com.ddobang.backend.global.exception.jwt.JwtErrorCode;
-import com.ddobang.backend.global.exception.jwt.JwtException;
-import com.ddobang.backend.global.security.CustomUserDetails;
+import com.ddobang.backend.global.exception.GlobalErrorCode;
+import com.ddobang.backend.global.exception.ServiceException;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,47 +22,32 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
 	private final JwtTokenProvider jwtTokenProvider;
-	private final MemberService memberService;
 
-	// JWT 토큰을 사용하지 않는 API 목록
 	@Override
-	protected boolean shouldNotFilter(HttpServletRequest request) {
-		String path = request.getRequestURI();
-		return path.equals("/api/v1/auth/signup") ||
-			path.equals("/api/v1/members/check-nickname") ||
-			path.startsWith("/swagger") ||
-			path.startsWith("/v3/api-docs") ||
-			path.equals("/error");
-	}
-
-	// JWT 토큰을 검증하고 인증 정보를 SecurityContext에 저장
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-		throws ServletException, IOException {
+	protected void doFilterInternal(
+		HttpServletRequest request,
+		HttpServletResponse response,
+		FilterChain filterChain
+	) throws ServletException, IOException {
 		try {
 			String token = jwtTokenProvider.resolveAccessToken(request);
 
-			if (token != null && jwtTokenProvider.isValidToken(token, JwtTokenType.ACCESS)) {
-				String nickname = jwtTokenProvider.extractNickname(token);
-				Member member = memberService.getByNickname(nickname);
-
-				// 비밀번호가 null이 아니고 빈 문자열이 아닐 경우 관리자
-				boolean isAdmin = member.getPassword() != null && !member.getPassword().isBlank();
-
-				// SecurityContext에 인증 정보 저장
-				CustomUserDetails userDetails = new CustomUserDetails(
-					member.getId(), member.getNickname(), isAdmin);
+			if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+				String nickName = jwtTokenProvider.getNickname(token);
+				boolean isAdmin = jwtTokenProvider.getIsAdmin(token);
 
 				UsernamePasswordAuthenticationToken authentication =
-					new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+					new UsernamePasswordAuthenticationToken(nickName, null, jwtTokenProvider.getAuthorities(isAdmin));
 
+				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 				SecurityContextHolder.getContext().setAuthentication(authentication);
+				log.debug("인증 객체 등록 완료 - 닉네임: {}", nickName);
 			}
+
 		} catch (JwtException e) {
-			log.error("[JwtAuthenticationFilter] JWT 처리 에러", e);
-			throw new JwtException(JwtErrorCode.TOKEN_INVALID);
+			log.warn("JWT 처리 중 예외 발생: {}", e.getMessage());
+			throw new ServiceException(GlobalErrorCode.UNAUTHORIZED);
 		}
 
 		filterChain.doFilter(request, response);
