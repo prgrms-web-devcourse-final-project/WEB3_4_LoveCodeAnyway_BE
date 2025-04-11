@@ -18,6 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.ddobang.backend.domain.member.entity.Member;
@@ -40,6 +44,7 @@ import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
 import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 import com.ddobang.backend.global.event.EventPublisher;
+import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.SliceDto;
 
 @ActiveProfiles("test")
@@ -376,30 +381,30 @@ class PartyServiceTest {
 				.isAfterOrEqualTo(result.get(i - 1).scheduledAt());
 		}
 
-        verify(partyRepository, times(1))
-                .findTop12ByStatusOrderByScheduledAtAsc(PartyStatus.RECRUITING);
-    }
+		verify(partyRepository, times(1))
+			.findTop12ByStatusOrderByScheduledAtAsc(PartyStatus.RECRUITING);
+	}
 
-    @Test
-    @DisplayName("참여한 파티 목록 조회")
-    void getJoinedPartiesTest() {
-        // given
-        int page = 0;
-        int size = 1;
-        Pageable pageable = PageRequest.of(page, size);
-        PartySummaryResponse expectedResponse = PartySummaryResponse.from(party);
-        Page<PartySummaryResponse> expectedPage = new PageImpl<>(List.of(expectedResponse), pageable, 1);
+	@Test
+	@DisplayName("참여한 파티 목록 조회")
+	void getJoinedPartiesTest() {
+		// given
+		int page = 0;
+		int size = 1;
+		Pageable pageable = PageRequest.of(page, size);
+		PartySummaryResponse expectedResponse = PartySummaryResponse.from(party);
+		Page<PartySummaryResponse> expectedPage = new PageImpl<>(List.of(expectedResponse), pageable, 1);
 
-        when(partyRepository.findByMemberJoined(host, pageable, true)).thenReturn(expectedPage);
+		when(partyRepository.findByMemberJoined(host, pageable, true)).thenReturn(expectedPage);
 
-        // when
-        PageDto<PartySummaryResponse> result = partyService.getMyJoinedParties(host, page, size);
+		// when
+		PageDto<PartySummaryResponse> result = partyService.getMyJoinedParties(host, page, size);
 
-        // then
-        assertNotNull(result);
-        assertEquals(expectedPage.getContent().size(), result.items().size());
-        assertEquals(1, result.items().size());
-        assertEquals(expectedResponse, result.items().getFirst());
-        verify(partyRepository).findByMemberJoined(host, pageable, true);
-    }
+		// then
+		assertNotNull(result);
+		assertEquals(expectedPage.getContent().size(), result.items().size());
+		assertEquals(1, result.items().size());
+		assertEquals(expectedResponse, result.items().getFirst());
+		verify(partyRepository).findByMemberJoined(host, pageable, true);
+	}
 }
