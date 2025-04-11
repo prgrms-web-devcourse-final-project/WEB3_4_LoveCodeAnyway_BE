@@ -1,6 +1,8 @@
 package com.ddobang.backend.domain.message.controller;
 
-import org.springframework.data.domain.Page;
+import java.time.LocalDateTime;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +22,7 @@ import com.ddobang.backend.domain.message.dto.MessageDto;
 import com.ddobang.backend.domain.message.dto.MessageRequestDto;
 import com.ddobang.backend.domain.message.service.MessageService;
 import com.ddobang.backend.global.response.ResponseFactory;
+import com.ddobang.backend.global.response.SliceDto;
 import com.ddobang.backend.global.response.SuccessResponse;
 
 import jakarta.validation.Valid;
@@ -31,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class MessageController {
 	private final MessageService messageService;
 	private final MemberService memberService;
-	
+
 	// 쪽지 전송
 	@PostMapping
 	public ResponseEntity<SuccessResponse<MessageDto>> sendMessage(
@@ -50,28 +53,27 @@ public class MessageController {
 		return ResponseFactory.ok("쪽지 전송 성공", messageDto);
 	}
 
-	// 페이징 처리: 받은 쪽지 목록 조회
+	// MessageController.java에서 커서 기반 엔드포인트 수정
 	@GetMapping("/received")
-	public ResponseEntity<SuccessResponse<Page<MessageDto>>> getReceivedMessages(
-		@RequestParam(defaultValue = "0") int page,
+	public ResponseEntity<SuccessResponse<SliceDto<MessageDto>>> getReceivedMessages(
+		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
 		@RequestParam(defaultValue = "10") int size,
 		@AuthenticationPrincipal UserDetails userDetails) {
 
 		Member member = memberService.getMemberByUsername(userDetails.getUsername());
-		Page<MessageDto> messages = messageService.getReceivedMessagesWithPaging(member, page, size);
+		SliceDto<MessageDto> messages = messageService.getReceivedMessagesWithCursor(member, cursor, size);
 
 		return ResponseFactory.ok("받은 쪽지 목록 조회 성공", messages);
 	}
 
-	// 페이징 처리: 보낸 쪽지 목록 조회
 	@GetMapping("/sent")
-	public ResponseEntity<SuccessResponse<Page<MessageDto>>> getSentMessages(
-		@RequestParam(defaultValue = "0") int page,
+	public ResponseEntity<SuccessResponse<SliceDto<MessageDto>>> getSentMessages(
+		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
 		@RequestParam(defaultValue = "10") int size,
 		@AuthenticationPrincipal UserDetails userDetails) {
 
 		Member member = memberService.getMemberByUsername(userDetails.getUsername());
-		Page<MessageDto> messages = messageService.getSentMessagesWithPaging(member, page, size);
+		SliceDto<MessageDto> messages = messageService.getSentMessagesWithCursor(member, cursor, size);
 
 		return ResponseFactory.ok("보낸 쪽지 목록 조회 성공", messages);
 	}

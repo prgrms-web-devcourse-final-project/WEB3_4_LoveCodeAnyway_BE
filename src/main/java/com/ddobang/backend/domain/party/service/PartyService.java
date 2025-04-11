@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.ddobang.backend.domain.member.entity.Member;
@@ -29,6 +32,7 @@ import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.service.ThemeService;
+import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.SliceDto;
 
 import jakarta.transaction.Transactional;
@@ -168,5 +172,18 @@ public class PartyService {
 		for (Long memberId : reviewedMemberIds) {
 			memberReviewService.updateMemberReview(memberId);
 		}
+	}
+
+	public PageDto<PartySummaryResponse> getOtherJoinedParties(Long memberId, int page, int size) {
+		Member member = memberService.getMember(memberId);
+		Pageable pageable = PageRequest.of(page, size);
+		Page<PartySummaryResponse> joinedParties = partyRepository.findByMemberJoined(member, pageable, false);
+		return PageDto.of(joinedParties);
+	}
+
+	public PageDto<PartySummaryResponse> getMyJoinedParties(Member actor, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<PartySummaryResponse> joinedParties = partyRepository.findByMemberJoined(actor, pageable, true);
+		return PageDto.of(joinedParties);
 	}
 }
