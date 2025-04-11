@@ -5,6 +5,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import com.ddobang.backend.domain.diary.entity.DiaryStat;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.dto.stat.EscapeProfileStatDto;
+import com.ddobang.backend.domain.member.dto.stat.EscapeScheduleStatDto;
 import com.ddobang.backend.domain.member.dto.stat.EscapeSummaryStatDto;
 import com.ddobang.backend.global.util.Ut;
 import com.querydsl.core.Tuple;
@@ -23,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberStatCalculator {
 	private final DiaryStatRepository diaryStatRepository;
+	private static final DateTimeFormatter YM_FORMATTER = DateTimeFormatter.ofPattern("yyyy년 M월");
 
 	public void updateThemeStat() {
 		List<DiaryStat> diaryStats = diaryStatRepository.findByAuthorId(1L);
@@ -95,7 +98,7 @@ public class MemberStatCalculator {
 			.firstEscapeDate(earliestEscapeDate)
 			.mostActiveMonth(
 				mostActiveMonth != null
-					? mostActiveMonth.getKey().format(DateTimeFormatter.ofPattern("yyyy년 M월")) : null
+					? mostActiveMonth.getKey().format(YM_FORMATTER) : null
 			)
 			.mostActiveMonthCount(
 				mostActiveMonth != null
@@ -209,6 +212,108 @@ public class MemberStatCalculator {
 			.build();
 	}
 
+	// EscapeScheduleStat 계산 메서드
+	public EscapeScheduleStatDto calculateEscapeScheduleStat(List<DiaryStat> diaryStats) {
+		Map<String, Integer> monthlyCountMap = new LinkedHashMap<>();
+		YearMonth thisMonth = YearMonth.now();
+
+		long thisMonthTotalSatis = 0;
+		long thisMonthTotalTime = 0;
+		int thisMonthTopSatisfaction = 0;
+		String thisMonthTopTheme = "";
+		LocalDate thisMonthTopThemeDate = null;
+
+		int thisMonthCount = 0;
+		long thisMonthSatisCount = 0;
+		long thisMonthHintCount = 0;
+		long thisMonthTimeCount = 0;
+		long thisMonthTotalHintCount = 0;
+		long thisMonthSuccessCount = 0;
+
+		// 최근 6개월 초기화 (0으로)
+		for (int i = 5; i >= 0; i--) {
+			monthlyCountMap.put(thisMonth.minusMonths(i).format(YM_FORMATTER), 0);
+		}
+
+		for (DiaryStat stat : diaryStats) {
+			LocalDate escapeDate = stat.getDiary().getEscapeDate();
+
+			if (escapeDate == null) {
+				continue;
+			}
+
+			YearMonth escapeDateYM = YearMonth.from(escapeDate);
+			String escapeDateYMStr = escapeDateYM.format(YM_FORMATTER);
+
+			if (monthlyCountMap.containsKey(escapeDateYMStr)) {
+				monthlyCountMap.put(escapeDateYMStr, monthlyCountMap.get(escapeDateYMStr) + 1);
+			}
+
+			if (escapeDateYM.equals(thisMonth)) {
+				thisMonthCount++;
+
+				if (stat.isEscapeResult()) {
+					thisMonthSuccessCount++;
+				}
+
+				if (stat.getHintCount() != null) {
+					thisMonthHintCount++;
+					thisMonthTotalHintCount += stat.getHintCount();
+				}
+
+				if (stat.getSatisfaction() != 0) {
+					thisMonthSatisCount++;
+					thisMonthTotalSatis += stat.getSatisfaction();
+
+					if (stat.getSatisfaction() > thisMonthTopSatisfaction) {
+						thisMonthTopSatisfaction = stat.getSatisfaction();
+						thisMonthTopTheme = stat.getTheme().getName();
+						thisMonthTopThemeDate = stat.getDiary().getEscapeDate();
+
+						// 이번달 최고 만족도 테마가 중복될 경우 더 최근에 했던 테마로 저장
+					} else if (stat.getSatisfaction() == thisMonthTopSatisfaction) {
+						if (stat.getDiary().getEscapeDate().isAfter(thisMonthTopThemeDate)) {
+							thisMonthTopTheme = stat.getTheme().getName();
+							thisMonthTopThemeDate = stat.getDiary().getEscapeDate();
+						}
+					}
+				}
+
+				if (stat.getElapsedTime() != 0) {
+					thisMonthTimeCount++;
+					thisMonthTotalTime += stat.getElapsedTime();
+				}
+			}
+		}
+
+		double thisMonthAvgSatisfaction = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(thisMonthTotalSatis, thisMonthSatisCount)
+		);
+
+		double thisMonthAvgHintCount = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(thisMonthTotalHintCount, thisMonthHintCount)
+		);
+
+		double thisMonthSuccessRate = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateRate(thisMonthCount, thisMonthSuccessCount)
+		);
+
+		int thisMonthAvgTime = Ut.calculator.roundToInt(
+			Ut.calculator.calculateAverage(thisMonthTotalTime, thisMonthTimeCount)
+		);
+
+		return EscapeScheduleStatDto.builder()
+			.monthlyCountMap(monthlyCountMap)
+			.thisMonthCount(thisMonthCount)
+			.thisMonthAvgSatisfaction(thisMonthAvgSatisfaction)
+			.thisMonthAvgHintCount(thisMonthAvgHintCount)
+			.thisMonthSuccessRate(thisMonthSuccessRate)
+			.thisMonthAvgTime(thisMonthAvgTime)
+			.thisMonthTopTheme(thisMonthTopTheme)
+			.thisMonthTopSatisfaction(thisMonthTopSatisfaction)
+			.build();
+	}
+
 	// 성향 분석 계산 메서드
 	private double calculateTendencyScore(List<DiaryStat> diaryStats, Map<String, Double> weights) {
 		double weightedSum = 0; // 가중 평균 점수 * 만족도 점수
@@ -219,7 +324,7 @@ public class MemberStatCalculator {
 			double causeScoreSum = 0; // 기준 항목 점수 * 가중치의 합
 
 			for (Map.Entry<String, Double> entry : weights.entrySet()) {
-				double score = (double)getScoreByKey(stat, entry.getKey());
+				double score = getScoreByKey(stat, entry.getKey());
 
 				if (score <= 0) {
 					allScoresValid = false;
