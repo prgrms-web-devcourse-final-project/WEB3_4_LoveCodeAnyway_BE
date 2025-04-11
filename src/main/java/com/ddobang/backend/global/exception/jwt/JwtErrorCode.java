@@ -1,6 +1,8 @@
-package com.ddobang.backend.global.exception;
+package com.ddobang.backend.global.exception.jwt;
 
 import org.springframework.http.HttpStatus;
+
+import com.ddobang.backend.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 

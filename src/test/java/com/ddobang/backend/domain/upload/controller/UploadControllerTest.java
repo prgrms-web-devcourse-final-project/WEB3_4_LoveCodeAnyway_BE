@@ -1,17 +1,17 @@
 package com.ddobang.backend.domain.upload.controller;
 
-import com.ddobang.backend.domain.board.dto.request.PostRequest;
-import com.ddobang.backend.domain.board.entity.Attachment;
-import com.ddobang.backend.domain.board.entity.Post;
-import com.ddobang.backend.domain.board.repository.AttachmentRepository;
-import com.ddobang.backend.domain.board.repository.PostRepository;
-import com.ddobang.backend.domain.board.types.PostType;
-import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.repository.MemberRepository;
-import com.ddobang.backend.domain.upload.service.UploadService;
-import com.ddobang.backend.domain.upload.types.FileUploadTarget;
-import com.ddobang.backend.global.util.Ut;
-import jakarta.persistence.EntityManager;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,18 +27,19 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
+import com.ddobang.backend.domain.board.dto.request.PostRequest;
+import com.ddobang.backend.domain.board.entity.Attachment;
+import com.ddobang.backend.domain.board.entity.Post;
+import com.ddobang.backend.domain.board.repository.AttachmentRepository;
+import com.ddobang.backend.domain.board.repository.PostRepository;
+import com.ddobang.backend.domain.board.types.PostType;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.domain.upload.service.UploadService;
+import com.ddobang.backend.domain.upload.types.FileUploadTarget;
+import com.ddobang.backend.global.util.Ut;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import jakarta.persistence.EntityManager;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -384,7 +385,7 @@ public class UploadControllerTest {
 			.andExpect(handler().handlerType(UploadController.class))
 			.andExpect(handler().methodName("delete"))
 			.andExpect(status().isNotFound())
-			.andExpect(jsonPath("$.message").value("멤버를 찾을 수 없습니다."));
+			.andExpect(jsonPath("$.message").value("해당 사용자를 찾을 수 없습니다."));
 	}
 
 	@Test

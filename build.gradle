@@ -48,20 +48,23 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
+    testImplementation 'org.awaitility:awaitility:4.2.0' // 비동기 처리위한 라이브러리
     // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
     // OpenAPI (Swagger) 추가
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1")
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1"
 
     // querydsl
-    implementation("com.querydsl:querydsl-jpa:5.1.0:jakarta")
-    annotationProcessor("com.querydsl:querydsl-apt:5.1.0:jakarta")
-    annotationProcessor("jakarta.annotation:jakarta.annotation-api")
-    annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+    implementation "com.querydsl:querydsl-jpa:5.1.0:jakarta"
+    annotationProcessor "com.querydsl:querydsl-apt:5.1.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    // servlet-api
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 }
 
 def querydslDir = "build/generated/querydsl"

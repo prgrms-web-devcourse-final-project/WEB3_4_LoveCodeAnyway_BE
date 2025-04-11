@@ -20,6 +20,7 @@ import com.ddobang.backend.domain.store.repository.StoreRepository;
 import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
+import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.global.config.JpaAuditingConfig;
 import com.ddobang.backend.global.config.QuerydslConfig;
@@ -42,6 +43,8 @@ public class ThemeRepositoryTest {
 	@Autowired
 	private ThemeTagRepository themeTagRepository;
 	@Autowired
+	private ThemeStatRepository themeStatRepository;
+	@Autowired
 	private StoreRepository storeRepository;
 
 	@PersistenceContext
@@ -56,6 +59,7 @@ public class ThemeRepositoryTest {
 	private ThemeTag tag2 = new ThemeTag("태그2");
 
 	private List<Theme> testThemes = new ArrayList<>();
+	private List<ThemeStat> themeStats = new ArrayList<>();
 
 	@BeforeEach
 	void setUp() {
@@ -76,6 +80,25 @@ public class ThemeRepositoryTest {
 				.store(store)
 				.themeTags(List.of(tag1, tag2))
 				.thumbnailUrl("test.thumbnail")
+				.build()));
+		}
+
+		for (int j = 1; j <= 5; j++) {
+			themeStats.add(themeStatRepository.save(ThemeStat.builder()
+				.theme(testThemes.get(j - 1))
+				.difficulty(3)
+				.fear(2)
+				.activity(4)
+				.satisfaction(j)
+				.production(3)
+				.story(4)
+				.question(3)
+				.interior(4)
+				.deviceRatio(75)
+				.noHintEscapeRate(80)
+				.escapeResult(60)
+				.escapeTimeAvg(3600)
+				.diaryCount(5 / j)
 				.build()));
 		}
 	}
@@ -295,5 +318,60 @@ public class ThemeRepositoryTest {
 		assertThat(results).hasSize(0);
 	}
 
-	// TODO: Column 제약조건 별 저장 테스트 추가
+	@Test
+	@DisplayName("인기 테마 조회 테스트")
+	void findTop10PopularThemesByTagNameTest() {
+		// given
+		String tagName = tag1.getName();
+
+		// when
+		List<Theme> results = themeRepository.findTop10PopularThemesByTagName(tagName);
+
+		// then
+		assertThat(results).hasSize(5);
+		assertThat(results.get(0)).isEqualTo(testThemes.get(0));
+		assertThat(results.get(1)).isEqualTo(testThemes.get(4));
+		assertThat(results.get(2)).isEqualTo(testThemes.get(1));
+	}
+
+	@Test
+	@DisplayName("없는 태그로 인기 테마 조회 테스트")
+	void findTop10PopularThemesByInvalidTagNameTest() {
+		// given
+		String tagName = "INVALID_TAG";
+
+		// when
+		List<Theme> results = themeRepository.findTop10PopularThemesByTagName(tagName);
+
+		// then
+		assertThat(results.isEmpty()).isTrue();
+	}
+
+	@Test
+	@DisplayName("최신 테마 조회 테스트")
+	void findTop10NewestThemesByTagNameTest() {
+		// given
+		String tagName = tag1.getName();
+
+		// when
+		List<Theme> results = themeRepository.findTop10NewestThemesByTagName(tagName);
+
+		// then
+		assertThat(results).hasSize(5);
+		assertThat(results.get(0)).isIn(testThemes);
+		assertThat(results.get(2)).isIn(testThemes);
+	}
+
+	@Test
+	@DisplayName("없는 태그로 최신 테마 조회 테스트")
+	void findTop10NewestThemesByInvalidTagNameTest() {
+		// given
+		String tagName = "INVALID_TAG";
+
+		// when
+		List<Theme> results = themeRepository.findTop10NewestThemesByTagName(tagName);
+
+		// then
+		assertThat(results.isEmpty()).isTrue();
+	}
 }

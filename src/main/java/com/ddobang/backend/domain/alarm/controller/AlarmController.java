@@ -121,4 +121,13 @@ public class AlarmController {
 		return ResponseFactory.noContent();
 	}
 
+	// redirectUrl
+	@Operation(summary = "알림 클릭 처리", description = "알림을 클릭했을 때 관련 페이지로 리다이렉트합니다.")
+	@GetMapping("/{id}/redirect")
+	public ResponseEntity<SuccessResponse<String>> redirectAlarm(@PathVariable("id") Long alarmId) {
+		// TODO: 실제 구현 시 인증된 사용자 ID를 사용
+		Long userId = TEMP_USER_ID;
+		String redirectUrl = alarmService.getRedirectUrl(alarmId, userId);
+		return ResponseFactory.ok("알림 리다이렉트 URL 조회 성공", redirectUrl);
+	}
 }

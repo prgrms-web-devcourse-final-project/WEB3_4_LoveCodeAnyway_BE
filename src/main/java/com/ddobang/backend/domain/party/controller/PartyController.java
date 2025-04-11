@@ -110,6 +110,13 @@ public class PartyController {
 		return ResponseFactory.noContent();
 	}
 
+	@PostMapping("/{id}/reject/{memberId}")
+	@Operation(summary = "모임 신청 거절")
+	public ResponseEntity<Void> rejectPartyMember(@PathVariable Long id, @PathVariable Long memberId) {
+		partyService.rejectPartyMember(id, memberId, authHelper.getCurrentMember());
+		return ResponseFactory.noContent();
+	}
+
 	@PatchMapping("/{id}/executed")
 	@Operation(summary = "모임 실행 완료")
 	public ResponseEntity<Void> executeParty(@PathVariable Long id) {

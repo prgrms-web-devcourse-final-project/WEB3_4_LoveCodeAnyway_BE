@@ -10,9 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.message.dto.MessageDto;
 import com.ddobang.backend.domain.message.entity.Message;
+import com.ddobang.backend.domain.message.event.MessageCreatedEvent;
 import com.ddobang.backend.domain.message.exception.MessageErrorCode;
 import com.ddobang.backend.domain.message.exception.MessageException;
 import com.ddobang.backend.domain.message.repository.MessageRepository;
+import com.ddobang.backend.global.event.EventPublisher;
 import com.ddobang.backend.global.response.SliceDto;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MessageService {
 	private final MessageRepository messageRepository;
+	private final EventPublisher eventPublisher;
 
 	// 쪽지 보내기
 	public MessageDto sendMessage(Member sender, Member receiver, String content) {
@@ -34,6 +37,16 @@ public class MessageService {
 				.receiver(receiver)
 				.content(content)
 				.isRead(false)
+				.build());
+
+			//이벤트: 메시지 생성 이벤트 발행
+			eventPublisher.publish(MessageCreatedEvent.builder()
+				.senderId(sender.getId())
+				.senderNickname(sender.getNickname())
+				.receiverId(receiver.getId())
+				.receiverNickname(receiver.getNickname())
+				.content(content)
+				.messageId(message.getId())
 				.build());
 
 			return MessageDto.fromEntity(message);

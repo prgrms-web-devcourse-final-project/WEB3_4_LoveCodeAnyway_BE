@@ -9,6 +9,7 @@ import com.ddobang.backend.domain.alarm.dto.request.AlarmCreateRequest;
 import com.ddobang.backend.domain.alarm.dto.response.AlarmCountResponse;
 import com.ddobang.backend.domain.alarm.dto.response.AlarmResponse;
 import com.ddobang.backend.domain.alarm.entity.Alarm;
+import com.ddobang.backend.domain.alarm.entity.AlarmType;
 import com.ddobang.backend.domain.alarm.exception.AlarmErrorCode;
 import com.ddobang.backend.domain.alarm.exception.AlarmException;
 import com.ddobang.backend.domain.alarm.repository.AlarmRepository;
@@ -82,5 +83,41 @@ public class AlarmService {
 			.orElseThrow(() -> new AlarmException(AlarmErrorCode.ALARM_NOT_FOUND));
 
 		alarmRepository.delete(alarm);
+	}
+
+	// 알림 리다이렉트 URL 생성
+	@Transactional
+	public String getRedirectUrl(Long alarmId, Long userId) {
+		Alarm alarm = alarmRepository.findByIdAndReceiverId(alarmId, userId)
+			.orElseThrow(() -> new AlarmException(AlarmErrorCode.ALARM_NOT_FOUND));
+
+		// 읽음 처리
+		if (!alarm.getReadStatus()) {
+			alarm.markAsRead();
+		}
+
+		// 알람 타입과 관련 ID에 따라 리다이렉트 URL 생성
+		return generateRedirectUrl(alarm.getAlarmType(), alarm.getRelId());
+	}
+
+	private String generateRedirectUrl(AlarmType alarmType, Long relId) {
+		if (relId == null) {
+			return "/notifications"; // 기본 알림 페이지
+		}
+
+		switch (alarmType) {
+			case MESSAGE -> {
+				return "/messages/" + relId;
+			}
+			case SUBSCRIBE, PARTY_APPLY, PARTY_STATUS -> {
+				return "/parties/" + relId;
+			}
+			case POST_REPLY -> {
+				return "/boards/" + relId; // 문의 답변 알림
+			}
+			default -> {
+				return "/alarms";
+			}
+		}
 	}
 }

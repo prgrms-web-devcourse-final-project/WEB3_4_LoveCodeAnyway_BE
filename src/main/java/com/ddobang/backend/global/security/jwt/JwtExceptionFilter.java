@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ddobang.backend.global.exception.ErrorCode;
-import com.ddobang.backend.global.exception.ServiceException;
+import com.ddobang.backend.global.exception.jwt.JwtException;
 import com.ddobang.backend.global.response.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -27,7 +27,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
 		try {
 			filterChain.doFilter(request, response);
 
-		} catch (ServiceException e) {
+		} catch (JwtException e) {
 			log.warn("JWT 예외 발생: {}", e.getMessage());
 			sendErrorResponse(response, e.getErrorCode());
 		}
@@ -45,4 +45,3 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
 		response.getWriter().write(json);
 	}
 }
-

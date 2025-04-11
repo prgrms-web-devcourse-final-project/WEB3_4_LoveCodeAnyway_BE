@@ -9,9 +9,11 @@ import com.ddobang.backend.domain.store.entity.QStore;
 import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.QTheme;
+import com.ddobang.backend.domain.theme.entity.QThemeStat;
 import com.ddobang.backend.domain.theme.entity.QThemeTag;
 import com.ddobang.backend.domain.theme.entity.QThemeTagMapping;
 import com.ddobang.backend.domain.theme.entity.Theme;
+import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
@@ -35,6 +37,7 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 	private static final QRegion region = QRegion.region;
 	private static final QThemeTagMapping mapping = QThemeTagMapping.themeTagMapping;
 	private static final QThemeTag tag = QThemeTag.themeTag;
+	private static final QThemeStat themeStat = QThemeStat.themeStat;
 
 	@Override
 	public List<Theme> findThemesByFilter(ThemeFilterRequest request, int page, int size) {
@@ -86,6 +89,46 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 			.orderBy(theme.name.asc())
 			.offset((long)page * size)
 			.limit(size + 1) // size보다 1개 더 가져와서 hasNext 판단
+			.fetch();
+	}
+
+	@Override
+	public List<Theme> findTop10PopularThemesByTagName(String tagName) {
+		BooleanBuilder condition = buildForLandingConditions(tagName);
+
+		List<ThemeStat> themeStats = queryFactory
+			.select(themeStat)
+			.from(themeStat)
+			.join(themeStat.theme, theme).fetchJoin()
+			.leftJoin(theme.store, store).fetchJoin()
+			.leftJoin(theme.themeTagMappings, mapping).fetchJoin()
+			.leftJoin(mapping.themeTag, tag).fetchJoin()
+			.where(condition)
+			.orderBy(
+				themeStat.diaryCount.multiply(7)
+					.add(themeStat.satisfaction.multiply(3))
+					.desc()
+			)
+			.limit(10)
+			.fetch();
+
+		return themeStats.stream()
+			.map(ThemeStat::getTheme)
+			.toList();
+	}
+
+	@Override
+	public List<Theme> findTop10NewestThemesByTagName(String tagName) {
+		BooleanBuilder condition = buildForLandingConditions(tagName);
+
+		return queryFactory
+			.selectFrom(theme)
+			.join(theme.store, store).fetchJoin()
+			.leftJoin(theme.themeTagMappings, mapping).fetchJoin()
+			.leftJoin(mapping.themeTag, tag).fetchJoin()
+			.where(condition)
+			.orderBy(theme.createdAt.desc())
+			.limit(10)
 			.fetch();
 	}
 
@@ -144,7 +187,6 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 
 		if (keyword != null && !keyword.isBlank()) {
 			builder.and(
-
 				theme.name.containsIgnoreCase(keyword)
 					.or(store.name.containsIgnoreCase(keyword))        //알파벳 대소문자 구분x
 			);
@@ -152,4 +194,28 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 
 		return builder;
 	}
+
+	private BooleanBuilder buildForLandingConditions(String tagName) {
+		BooleanBuilder builder = new BooleanBuilder();
+		builder.and(theme.status.eq(Theme.Status.OPENED));
+
+		if (tagName != null && !tagName.isBlank()) {
+			QThemeTagMapping subMapping = new QThemeTagMapping("subMapping");
+			QThemeTag subTag = new QThemeTag("subTag");
+
+			builder.and(JPAExpressions
+				.selectOne()    // 존재 여부만 판단
+				.from(subMapping)
+				.join(subMapping.themeTag, subTag)    // 테마 태그에 조인
+				.where(
+					subMapping.theme.eq(theme),    // 지금 조회 중인 테마와 매핑된 태그인지 확인
+					subTag.name.eq(tagName)    // 사용자가 요청한 필터에 포함되는 태그인지 확인
+				)
+				.exists()    // where 조건 만족 시 true
+			);
+		}
+
+		return builder;
+	}
+
 }
