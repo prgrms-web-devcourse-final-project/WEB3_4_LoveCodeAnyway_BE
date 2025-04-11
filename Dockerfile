@@ -1,39 +1,30 @@
-FROM eclipse-temurin:21-jdk AS builder
+# 첫 번째 스테이지: 빌드 스테이지
+FROM gradle:jdk-21-and-23-graal-jammy AS builder
 
+# 작업 디렉토리 설정
 WORKDIR /app
 
-# 그래들 파일 복사
-COPY gradlew .
-COPY gradle gradle
+# 소스 코드와 Gradle 래퍼 복사
 COPY build.gradle .
 COPY settings.gradle .
 
-# 권한 설정
-RUN chmod +x ./gradlew
+# 종속성 설치
+RUN gradle dependencies --no-daemon
 
-# 의존성만 먼저 다운로드 (캐싱 효과)
-RUN ./gradlew dependencies
-
-# 나머지 소스 복사
+# 소스 코드 복사
 COPY src src
 
 # 애플리케이션 빌드
-RUN ./gradlew clean bootJar
+RUN gradle build --no-daemon
 
-# 런타임 이미지
-FROM eclipse-temurin:21-jre
+# 두 번째 스테이지: 실행 스테이지
+FROM container-registry.oracle.com/graalvm/jdk:23
 
+# 작업 디렉토리 설정
 WORKDIR /app
 
-# 빌더 스테이지에서 생성된 JAR 파일 복사
+# 첫 번째 스테이지에서 빌드된 JAR 파일 복사
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# 애플리케이션 실행을 위한 환경 변수 설정
-ENV SPRING_PROFILES_ACTIVE=dev
-ENV TZ=Asia/Seoul
-
-# 포트 노출
-EXPOSE 8080
-
-# 애플리케이션 실행
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# 실행할 JAR 파일 지정
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "app.jar"]
