@@ -37,7 +37,7 @@ public class BoardAlarmListener {
 			.receiverId(event.getPostOwnerId())
 			.title("문의하신 글에 답변이 등록되었습니다")
 			.content("'" + event.getPostTitle() + "' 문의에 답변이 등록되었습니다: " + previewContent)
-			.alarmType(AlarmType.SYSTEM)  // 적절한 알람 타입 사용 (또는 새로운 타입 정의)
+			.alarmType(AlarmType.POST_REPLY)  // 문의 답변에 대한 알람 타입
 			.relId(event.getPostId())
 			.build();
 
