@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class CorsConfigIntegrationTest {
 
 	@Autowired
@@ -27,10 +29,10 @@ class CorsConfigIntegrationTest {
 	@DisplayName("CORS - 프론트엔드에서 보내는 OPTIONS 요청에 대해 허용 헤더가 포함되어 응답된다")
 	void CORS01() throws Exception {
 		// given
-		String frontendOrigin = "https://web-1-2-pitching-mate-fe.vercel.app";
+		String frontendOrigin = "https://www.ddobang.site/";
 
 		// when & then
-		mockMvc.perform(options("/api/v1/regions")
+		mockMvc.perform(options("/api/v1/regions") // CORS 요청을 보내는 URL(예: /api/v1/regions)
 				.header(HttpHeaders.ORIGIN, frontendOrigin)
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET"))
 			.andExpect(status().isOk())
@@ -38,4 +40,5 @@ class CorsConfigIntegrationTest {
 			.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,POST,PUT,DELETE,PATCH,OPTIONS"))
 			.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true"));
 	}
+
 }
