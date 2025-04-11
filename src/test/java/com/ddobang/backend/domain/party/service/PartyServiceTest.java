@@ -5,29 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -72,7 +49,6 @@ import com.ddobang.backend.domain.theme.service.ThemeService;
 import com.ddobang.backend.global.event.EventPublisher;
 import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.SliceDto;
-
 
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
