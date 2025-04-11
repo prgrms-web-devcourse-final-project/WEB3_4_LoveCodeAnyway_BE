@@ -154,7 +154,7 @@ public class MemberStatCalculator {
 				)
 			);
 
-			genreCountMap.put(
+			genreSuccessMap.put(
 				tuple.get(0, String.class),
 				Ut.calculator.roundToInt(
 					Ut.calculator.calculateRate(tuple.get(1, Long.class), tuple.get(2, Integer.class))
@@ -166,75 +166,27 @@ public class MemberStatCalculator {
 		Map<Integer, Tuple> difficultyWithSatis =
 			diaryStatRepository.difficultyStatsWithSatisfaction(authorId);
 
-		double difficultyHintAvg1 = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(
-				difficultyWithHints.get(1).get(1, Long.class), // 총 힌트 갯수
-				difficultyWithHints.get(1).get(0, Long.class)  // 총 테마 수
-			)
-		);
+		double difficultyHintAvg1 =
+			calculateAvgFromTuple(difficultyWithHints, 1, 1, 0);
+		double difficultyHintAvg2 =
+			calculateAvgFromTuple(difficultyWithHints, 2, 1, 0);
+		double difficultyHintAvg3 =
+			calculateAvgFromTuple(difficultyWithHints, 3, 1, 0);
+		double difficultyHintAvg4 =
+			calculateAvgFromTuple(difficultyWithHints, 4, 1, 0);
+		double difficultyHintAvg5 =
+			calculateAvgFromTuple(difficultyWithHints, 5, 1, 0);
 
-		double difficultyHintAvg2 = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(
-				difficultyWithHints.get(2).get(1, Long.class),
-				difficultyWithHints.get(2).get(0, Long.class)
-			)
-		);
-
-		double difficultyHintAvg3 = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(
-				difficultyWithHints.get(3).get(1, Long.class),
-				difficultyWithHints.get(3).get(0, Long.class)
-			)
-		);
-
-		double difficultyHintAvg4 = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(
-				difficultyWithHints.get(4).get(1, Long.class),
-				difficultyWithHints.get(4).get(0, Long.class)
-			)
-		);
-
-		double difficultyHintAvg5 = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(
-				difficultyWithHints.get(5).get(1, Long.class),
-				difficultyWithHints.get(5).get(0, Long.class)
-			)
-		);
-
-		double difficultySatisAvg1 = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(
-				difficultyWithSatis.get(1).get(1, Long.class), // 만족도 점수 총 합
-				difficultyWithSatis.get(1).get(0, Long.class) // 총 테마 수
-			)
-		);
-
-		double difficultySatisAvg2 = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(
-				difficultyWithSatis.get(2).get(1, Long.class),
-				difficultyWithSatis.get(2).get(0, Long.class)
-			)
-		);
-
-		double difficultySatisAvg3 = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(
-				difficultyWithSatis.get(3).get(1, Long.class),
-				difficultyWithSatis.get(3).get(0, Long.class)
-			)
-		);
-
-		double difficultySatisAvg4 = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(
-				difficultyWithSatis.get(4).get(1, Long.class),
-				difficultyWithSatis.get(5).get(0, Long.class)
-			)
-		);
-
-		double difficultySatisAvg5 = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(
-				difficultyWithSatis.get(5).get(1, Long.class),
-				difficultyWithSatis.get(5).get(0, Long.class)
-			)
-		);
+		double difficultySatisAvg1 =
+			calculateAvgFromTuple(difficultyWithSatis, 1, 1, 0);
+		double difficultySatisAvg2 =
+			calculateAvgFromTuple(difficultyWithSatis, 2, 1, 0);
+		double difficultySatisAvg3 =
+			calculateAvgFromTuple(difficultyWithSatis, 3, 1, 0);
+		double difficultySatisAvg4 =
+			calculateAvgFromTuple(difficultyWithSatis, 4, 1, 0);
+		double difficultySatisAvg5 =
+			calculateAvgFromTuple(difficultyWithSatis, 5, 1, 0);
 
 		return EscapeProfileStatDto.builder()
 			.tendencyStimulating(tendencyStimulating)
@@ -296,7 +248,7 @@ public class MemberStatCalculator {
 			: Ut.calculator.roundToFirstDecimalAsDouble(weightedSum / weightSum);
 	}
 
-	private Integer getScoreByKey(DiaryStat stat, String key) {
+	private double getScoreByKey(DiaryStat stat, String key) {
 		return switch (key) {
 			case "fear" -> stat.getFear();
 			case "production" -> stat.getProduction();
@@ -305,7 +257,16 @@ public class MemberStatCalculator {
 			case "story" -> stat.getStory();
 			case "interior" -> stat.getInterior();
 			case "question" -> stat.getQuestion();
-			default -> null;
+			default -> 0;
 		};
+	}
+
+	private double calculateAvgFromTuple(Map<Integer, Tuple> map, int level, int numeratorIdx, int denominatorIdx) {
+		return Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(
+				map.get(level).get(numeratorIdx, Long.class),
+				map.get(level).get(denominatorIdx, Long.class)
+			)
+		);
 	}
 }
