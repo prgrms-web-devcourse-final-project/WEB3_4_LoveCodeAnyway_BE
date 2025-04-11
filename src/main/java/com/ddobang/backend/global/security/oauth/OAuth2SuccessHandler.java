@@ -34,10 +34,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 		// 인증된 사용자 정보 가져오기
 		OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
-		String kakaoId = (String)oAuth2User.getAttribute("id");
-		if (kakaoId == null) {
+		Object kakaoIdObj = oAuth2User.getAttribute("id");
+
+		if (kakaoIdObj == null) {
 			throw new OAuth2Exception(OAuth2ErrorCode.OAUTH2_MISSING_ID);
 		}
+
+		String kakaoId = kakaoIdObj.toString();
 
 		// 로그에 카카오 ID와 닉네임 출력
 		log.info("OAuth2 로그인 성공 - kakaoId: {}", kakaoId);
