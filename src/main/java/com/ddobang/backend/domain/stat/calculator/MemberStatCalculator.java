@@ -15,6 +15,7 @@ import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.dto.stat.EscapeProfileStatDto;
 import com.ddobang.backend.domain.member.dto.stat.EscapeSummaryStatDto;
 import com.ddobang.backend.global.util.Ut;
+import com.querydsl.core.Tuple;
 
 import lombok.RequiredArgsConstructor;
 
@@ -105,7 +106,7 @@ public class MemberStatCalculator {
 	}
 
 	// EscapeProfileStat 계산 메서드
-	private EscapeProfileStatDto calculateEscapeProfileStat(List<DiaryStat> diaryStats) {
+	private EscapeProfileStatDto calculateEscapeProfileStat(List<DiaryStat> diaryStats, long authorId) {
 		// 자극형 - 공포도, 연출 각각의 가중치
 		double tendencyStimulating = calculateTendencyScore(diaryStats, Map.of(
 			"fear", 0.6,
@@ -136,14 +137,39 @@ public class MemberStatCalculator {
 			"story", 0.2
 		));
 
+		Map<String, Integer> genreCountMap = new HashMap<>();
+		Map<String, Integer> genreSuccessMap = new HashMap<>();
+		// 장르명, 해당 장르 플레이 갯수, 해당 장르 성공 플레이 갯수
+		List<Tuple> top5TagInfo =
+			diaryStatRepository.top5TagCountSuccessCountByMember(authorId);
+		// 플레이한 테마들의 모든 장르 수 (중복 포함) + 장르가 입력되지 않은 테마의 수
+		long totalTagCount =
+			diaryStatRepository.countTotalGenreBaseByMember(authorId);
+
+		for (Tuple tuple : top5TagInfo) {
+			genreCountMap.put(
+				tuple.get(0, String.class),
+				Ut.calculator.roundToInt(
+					Ut.calculator.calculateRate(totalTagCount, tuple.get(1, Long.class))
+				)
+			);
+
+			genreCountMap.put(
+				tuple.get(0, String.class),
+				Ut.calculator.roundToInt(
+					Ut.calculator.calculateRate(tuple.get(1, Long.class), tuple.get(2, Integer.class))
+				)
+			);
+		}
+
 		return EscapeProfileStatDto.builder()
 			.tendencyStimulating(tendencyStimulating)
 			.tendencyLogical(tendencyLogical)
 			.tendencyNarrative(tendencyNarrative)
 			.tendencyActive(tendencyActive)
 			.tendencySpatial(tendencySpatial)
-			// .genreCountMap(genreCountMap)
-			// .genreSuccessMap(genreSuccessMap)
+			.genreCountMap(genreCountMap)
+			.genreSuccessMap(genreSuccessMap)
 			// .difficultyHintAvg1(difficultyHintAvg1)
 			// .difficultyHintAvg2(difficultyHintAvg2)
 			// .difficultyHintAvg3(difficultyHintAvg3)
@@ -185,7 +211,7 @@ public class MemberStatCalculator {
 					 * 기준 항목들의 가중 평균 점수"가 높았을 때, 그 테마에 대한 만족도가 얼마나 높았는가? 에 대한 계산
 					 * 가중 평균 점수(원인 - 기준 항목들이 얼마나 부합했는지의 수치화) * 만족도(결과 - 그로 인해 얼마나 만족했는지) = 해당 기록의 성향 기여도
 					 * 만족도 점수의 합 = 기준값
-					 * */
+					 */
 					weightedSum += causeScoreSum * satisfaction;
 					weightSum += satisfaction;
 				}
