@@ -112,7 +112,7 @@ public class AlarmService {
 			case SUBSCRIBE, PARTY_APPLY, PARTY_STATUS -> {
 				return "/parties/" + relId;
 			}
-			case INQUIRY_REPLY -> {
+			case POST_REPLY -> {
 				return "/boards/" + relId; // 문의 답변 알림
 			}
 			default -> {
