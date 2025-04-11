@@ -162,6 +162,80 @@ public class MemberStatCalculator {
 			);
 		}
 
+		Map<Integer, Tuple> difficultyWithHints = diaryStatRepository.difficultyStatsWithHints(authorId);
+		Map<Integer, Tuple> difficultyWithSatis =
+			diaryStatRepository.difficultyStatsWithSatisfaction(authorId);
+
+		double difficultyHintAvg1 = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(
+				difficultyWithHints.get(1).get(1, Long.class), // 총 힌트 갯수
+				difficultyWithHints.get(1).get(0, Long.class)  // 총 테마 수
+			)
+		);
+
+		double difficultyHintAvg2 = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(
+				difficultyWithHints.get(2).get(1, Long.class),
+				difficultyWithHints.get(2).get(0, Long.class)
+			)
+		);
+
+		double difficultyHintAvg3 = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(
+				difficultyWithHints.get(3).get(1, Long.class),
+				difficultyWithHints.get(3).get(0, Long.class)
+			)
+		);
+
+		double difficultyHintAvg4 = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(
+				difficultyWithHints.get(4).get(1, Long.class),
+				difficultyWithHints.get(4).get(0, Long.class)
+			)
+		);
+
+		double difficultyHintAvg5 = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(
+				difficultyWithHints.get(5).get(1, Long.class),
+				difficultyWithHints.get(5).get(0, Long.class)
+			)
+		);
+
+		double difficultySatisAvg1 = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(
+				difficultyWithSatis.get(1).get(1, Long.class), // 만족도 점수 총 합
+				difficultyWithSatis.get(1).get(0, Long.class) // 총 테마 수
+			)
+		);
+
+		double difficultySatisAvg2 = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(
+				difficultyWithSatis.get(2).get(1, Long.class),
+				difficultyWithSatis.get(2).get(0, Long.class)
+			)
+		);
+
+		double difficultySatisAvg3 = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(
+				difficultyWithSatis.get(3).get(1, Long.class),
+				difficultyWithSatis.get(3).get(0, Long.class)
+			)
+		);
+
+		double difficultySatisAvg4 = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(
+				difficultyWithSatis.get(4).get(1, Long.class),
+				difficultyWithSatis.get(5).get(0, Long.class)
+			)
+		);
+
+		double difficultySatisAvg5 = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(
+				difficultyWithSatis.get(5).get(1, Long.class),
+				difficultyWithSatis.get(5).get(0, Long.class)
+			)
+		);
+
 		return EscapeProfileStatDto.builder()
 			.tendencyStimulating(tendencyStimulating)
 			.tendencyLogical(tendencyLogical)
@@ -170,16 +244,16 @@ public class MemberStatCalculator {
 			.tendencySpatial(tendencySpatial)
 			.genreCountMap(genreCountMap)
 			.genreSuccessMap(genreSuccessMap)
-			// .difficultyHintAvg1(difficultyHintAvg1)
-			// .difficultyHintAvg2(difficultyHintAvg2)
-			// .difficultyHintAvg3(difficultyHintAvg3)
-			// .difficultyHintAvg4(difficultyHintAvg4)
-			// .difficultyHintAvg5(difficultyHintAvg5)
-			// .difficultySatisAvg1(difficultySatisAvg1)
-			// .difficultySatisAvg2(difficultySatisAvg2)
-			// .difficultySatisAvg3(difficultySatisAvg3)
-			// .difficultySatisAvg4(difficultySatisAvg4)
-			// .difficultySatisAvg5(difficultySatisAvg5)
+			.difficultyHintAvg1(difficultyHintAvg1)
+			.difficultyHintAvg2(difficultyHintAvg2)
+			.difficultyHintAvg3(difficultyHintAvg3)
+			.difficultyHintAvg4(difficultyHintAvg4)
+			.difficultyHintAvg5(difficultyHintAvg5)
+			.difficultySatisAvg1(difficultySatisAvg1)
+			.difficultySatisAvg2(difficultySatisAvg2)
+			.difficultySatisAvg3(difficultySatisAvg3)
+			.difficultySatisAvg4(difficultySatisAvg4)
+			.difficultySatisAvg5(difficultySatisAvg5)
 			.build();
 	}
 
