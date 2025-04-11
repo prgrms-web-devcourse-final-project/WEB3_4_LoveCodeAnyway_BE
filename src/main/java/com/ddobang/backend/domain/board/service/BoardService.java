@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.board.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -71,5 +73,10 @@ public class BoardService {
 	public void clearAttachmentsByPostId(Long postId) {
 		Post post = getPostById(postId);
 		post.getAttachments().clear();
+	}
+
+	@Transactional
+	public List<String> getAttachmentUrlsByPostId(Long postId) {
+		return attachmentRepository.findUrlsByPostId(postId);
 	}
 }
