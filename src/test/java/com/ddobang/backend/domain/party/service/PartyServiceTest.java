@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.service.MemberService;
@@ -38,8 +39,10 @@ import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
 import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.service.ThemeService;
+import com.ddobang.backend.global.event.EventPublisher;
 import com.ddobang.backend.global.response.SliceDto;
 
+@ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 class PartyServiceTest {
 
@@ -57,6 +60,9 @@ class PartyServiceTest {
 
 	@Mock
 	private PartyValidationService partyValidationService;
+
+	@Mock
+	private EventPublisher eventPublisher; // 이벤트 퍼블리셔 추가
 
 	private Theme theme;
 	private Member host;

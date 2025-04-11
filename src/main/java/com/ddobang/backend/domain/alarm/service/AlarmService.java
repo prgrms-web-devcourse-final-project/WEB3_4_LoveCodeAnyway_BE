@@ -106,18 +106,18 @@ public class AlarmService {
 		}
 
 		switch (alarmType) {
-			case MESSAGE:
+			case MESSAGE -> {
 				return "/messages/" + relId;
-			case SUBSCRIBE:
-			case PARTY_APPLY:
-			case PARTY_STATUS:
+			}
+			case SUBSCRIBE, PARTY_APPLY, PARTY_STATUS -> {
 				return "/parties/" + relId;
-			case INQUIRY_REPLY: // 문의 답변 알림
-				return "/boards/" + relId;
-			case SYSTEM:
-			case OTHER:
-			default:
+			}
+			case INQUIRY_REPLY -> {
+				return "/boards/" + relId; // 문의 답변 알림
+			}
+			default -> {
 				return "/alarms";
+			}
 		}
 	}
 }
