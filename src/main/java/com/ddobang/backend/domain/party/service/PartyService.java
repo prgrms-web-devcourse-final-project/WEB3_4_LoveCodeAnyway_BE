@@ -3,6 +3,9 @@ package com.ddobang.backend.domain.party.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.ddobang.backend.domain.member.entity.Member;
@@ -24,16 +27,12 @@ import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.service.ThemeService;
-import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.event.EventPublisher;
+import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.SliceDto;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 
 @Service
 @RequiredArgsConstructor
