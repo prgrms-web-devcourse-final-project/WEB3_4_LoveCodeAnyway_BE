@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +33,8 @@ import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.Party;
+import com.ddobang.backend.domain.party.event.PartyApplyEvent;
+import com.ddobang.backend.domain.party.event.PartyMemberStatusUpdatedEvent;
 import com.ddobang.backend.domain.party.exception.PartyException;
 import com.ddobang.backend.domain.party.repository.PartyRepository;
 import com.ddobang.backend.domain.party.testUtils.TestDataHelper;
@@ -234,10 +237,22 @@ class PartyServiceTest {
 
 	@Test
 	@DisplayName("모임 참가")
-	void applyPartyTest1() {
+	void applyPartyTest1() throws Exception {
 		// given
 		Long partyId = 1L;
+		Long hostId = 100L; // 모임장 ID 설정
+		Long actorId = 200L; // 신청자 ID 설정
+
+		// 리플렉션을 사용하여 host의 id 설정
+		Field idField = host.getClass().getDeclaredField("id");
+		idField.setAccessible(true);
+		idField.set(host, hostId);
+
 		Member actor = TestDataHelper.createMember("imgUrl", "신청자");
+		// 리플렉션을 사용하여 actor의 id 설정
+		idField.setAccessible(true);
+		idField.set(actor, actorId);
+
 		when(partyRepository.findById(partyId)).thenReturn(Optional.of(party));
 
 		// when
@@ -248,16 +263,31 @@ class PartyServiceTest {
 		assertEquals(PartyMemberStatus.APPLICANT, party.getPartyMemberStatus(actor));
 
 		verify(partyRepository).findById(partyId);
+		verify(partyValidationService).validateApply(party, actor);
+
+		// 이벤트 발행 검증 추가
+		verify(eventPublisher).publish(any(PartyApplyEvent.class));
 	}
 
 	@Test
 	@DisplayName("모임 참가")
-	void applyPartyTest2() {
+	void applyPartyTest2() throws Exception {
 		// given
 		Long partyId = 1L;
+		Long hostId = 100L; // 모임장 ID 설정
+		Long actorId = 200L; // 신청자 ID 설정
+
+		// 리플렉션을 사용하여 host의 id 설정
+		Field idField = host.getClass().getDeclaredField("id");
+		idField.setAccessible(true);
+		idField.set(host, hostId);
+
 		when(partyRepository.findById(partyId)).thenReturn(Optional.of(party));
 
 		Member actor = TestDataHelper.createMember("imgUrl", "신청자");
+		// 리플렉션을 사용하여 actor의 id 설정
+		idField.set(actor, actorId);
+
 		party.addPartyMember(actor);
 		party.updatePartyMemberStatus(actor, PartyMemberStatus.CANCELLED);
 
@@ -269,6 +299,8 @@ class PartyServiceTest {
 		assertEquals(PartyMemberStatus.APPLICANT, party.getPartyMemberStatus(actor));
 
 		verify(partyRepository).findById(partyId);
+		// 이벤트 발행 검증 추가
+		verify(eventPublisher).publish(any(PartyApplyEvent.class));
 	}
 
 	@Test
@@ -293,11 +325,21 @@ class PartyServiceTest {
 
 	@Test
 	@DisplayName("파티 멤버 수락")
-	void acceptPartyMemberTest() {
+	void acceptPartyMemberTest() throws Exception {
 		// given
 		Long partyId = 1L;
-		Long memberId = 2L;
+		Long hostId = 100L;
+		Long memberId = 200L;
+
+		// 리플렉션을 사용하여 host의 id 설정
+		Field idField = host.getClass().getDeclaredField("id");
+		idField.setAccessible(true);
+		idField.set(host, hostId);
+
 		Member applicant = TestDataHelper.createMember("imgUrl", "신청자");
+		// 리플렉션을 사용하여 applicant의 id 설정
+		idField.set(applicant, memberId);
+
 		party.addPartyMember(applicant);
 		when(partyRepository.findById(partyId)).thenReturn(Optional.of(party));
 		when(memberService.getMember(memberId)).thenReturn(applicant);
@@ -311,6 +353,9 @@ class PartyServiceTest {
 
 		verify(partyRepository).findById(partyId);
 		verify(memberService).getMember(memberId);
+		verify(partyValidationService).validateAccept(party, applicant, host);
+		// 이벤트 발행 검증 추가
+		verify(eventPublisher).publish(any(PartyMemberStatusUpdatedEvent.class));
 	}
 
 	@Test
