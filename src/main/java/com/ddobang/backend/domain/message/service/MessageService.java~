@@ -39,7 +39,7 @@ public class MessageService {
 				.isRead(false)
 				.build());
 
-			//이벤트: 메시지 생성 이벤트 발행
+			// 메시지 생성 이벤트 발행
 			eventPublisher.publish(MessageCreatedEvent.builder()
 				.senderId(sender.getId())
 				.senderNickname(sender.getNickname())
