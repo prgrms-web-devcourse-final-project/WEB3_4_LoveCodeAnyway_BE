@@ -14,6 +14,12 @@ import com.ddobang.backend.domain.party.types.PartyStatus;
 
 @Service
 public class PartyValidationService {
+	public void checkPartyMember(Party party, Member member) {
+		if (!party.isPartyMember(member)) {
+			throw new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_FOUND);
+		}
+	}
+
 	public void checkHost(Party party, Member member) {
 		if (!party.getPartyMemberRole(member).equals(PartyMemberRole.HOST)) {
 			throw new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_HOST);
@@ -32,19 +38,26 @@ public class PartyValidationService {
 		if (!party.isPartyMember(member)) {
 			return;
 		}
-		if (party.getPartyMemberRole(member) == PartyMemberRole.HOST
-			|| party.getPartyMemberStatus(member) == PartyMemberStatus.ACCEPTED) {
-			throw new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_APPLICANT);
+
+		PartyMemberRole role = party.getPartyMemberRole(member);
+		PartyMemberStatus status = party.getPartyMemberStatus(member);
+
+		if (role == PartyMemberRole.HOST || status == PartyMemberStatus.ACCEPTED) {
+			throw new PartyException(PartyErrorCode.PARTY_MEMBER_ALREADY_ACCEPTED);
 		}
 	}
 
 	public void validateCancel(Party party, Member member) {
 		checkRecruiting(party);
+		checkPartyMember(party, member);
 
-		if (!party.isPartyMember(member) || party.getPartyMemberStatus(member) == PartyMemberStatus.CANCELLED) {
+		PartyMemberRole role = party.getPartyMemberRole(member);
+		PartyMemberStatus status = party.getPartyMemberStatus(member);
+
+		if (status == PartyMemberStatus.CANCELLED) {
 			throw new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_FOUND);
 		}
-		if (party.getPartyMemberRole(member) == PartyMemberRole.HOST) {
+		if (role == PartyMemberRole.HOST) {
 			throw new PartyException(PartyErrorCode.PARTY_MEMBER_CANNOT_CANCEL_HOST);
 		}
 	}
@@ -52,12 +65,37 @@ public class PartyValidationService {
 	public void validateAccept(Party party, Member member, Member actor) {
 		checkRecruiting(party);
 		checkHost(party, actor);
+		checkPartyMember(party, member);
 
-		if (!party.isPartyMember(member) || party.getPartyMemberStatus(member) == PartyMemberStatus.CANCELLED) {
+		PartyMemberRole role = party.getPartyMemberRole(member);
+		PartyMemberStatus status = party.getPartyMemberStatus(member);
+
+		if (status == PartyMemberStatus.CANCELLED) {
 			throw new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_FOUND);
 		}
-		if (party.getPartyMemberRole(member) == PartyMemberRole.HOST
-			|| party.getPartyMemberStatus(member) == PartyMemberStatus.ACCEPTED) {
+		if (role == PartyMemberRole.HOST
+			|| status == PartyMemberStatus.ACCEPTED) {
+			throw new PartyException(PartyErrorCode.PARTY_MEMBER_ALREADY_ACCEPTED);
+		}
+	}
+
+	public void validateReject(Party party, Member member, Member actor) {
+		checkRecruiting(party);
+		checkHost(party, actor);
+		checkPartyMember(party, member);
+
+		PartyMemberRole role = party.getPartyMemberRole(member);
+		PartyMemberStatus status = party.getPartyMemberStatus(member);
+
+		if (status == PartyMemberStatus.CANCELLED) {
+			throw new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_FOUND);
+		}
+
+		if (role == PartyMemberRole.HOST) {
+			throw new PartyException(PartyErrorCode.PARTY_MEMBER_CANNOT_CANCEL_HOST);
+		}
+
+		if (status != PartyMemberStatus.APPLICANT) {
 			throw new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_APPLICANT);
 		}
 	}
