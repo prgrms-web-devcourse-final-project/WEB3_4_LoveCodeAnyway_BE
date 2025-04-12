@@ -50,9 +50,6 @@ public class DiaryControllerTest {
 	@Autowired
 	private ThemeRepository themeRepository;
 
-	@Autowired
-	private ThemeRepository themeRepository;
-
 	@BeforeEach
 	void setup() {
 		CustomUserDetails userDetails = new CustomUserDetails(1L, "testUser1", false);
