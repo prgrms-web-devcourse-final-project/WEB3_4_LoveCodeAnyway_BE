@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ddobang.backend.domain.AuthHelper;
 import com.ddobang.backend.domain.board.dto.PostDto;
 import com.ddobang.backend.domain.board.dto.request.PostRequest;
 import com.ddobang.backend.domain.board.dto.response.PostDetailResponse;
@@ -21,6 +20,7 @@ import com.ddobang.backend.domain.board.types.PostType;
 import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SuccessResponse;
+import com.ddobang.backend.global.security.LoginMemberProvider;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/boards")
 public class BoardController {
 	private final BoardService boardService;
-	private final AuthHelper authHelper;
+	private final LoginMemberProvider loginMemberProvider;
 
 	@GetMapping
 	@Operation(summary = "나의 문의 보기")
@@ -42,32 +42,32 @@ public class BoardController {
 		@RequestParam(defaultValue = "10") int size
 	) {
 		return ResponseFactory.ok(
-			boardService.getMyPosts(type, keyword, page, size, authHelper.getCurrentMember().getId()));
+			boardService.getMyPosts(type, keyword, page, size, loginMemberProvider.getCurrentMember().getId()));
 	}
 
 	@GetMapping("/{id}")
 	@Operation(summary = "문의 상세 조회")
 	public ResponseEntity<SuccessResponse<PostDetailResponse>> getPost(@PathVariable Long id) {
-		return ResponseFactory.ok(boardService.getPost(id, authHelper.getCurrentMember()));
+		return ResponseFactory.ok(boardService.getPost(id, loginMemberProvider.getCurrentMember()));
 	}
 
 	@PostMapping
 	@Operation(summary = "문의 등록")
 	public ResponseEntity<SuccessResponse<PostDto>> createPost(@RequestBody @Valid PostRequest request) {
-		return ResponseFactory.created(boardService.createPost(request, authHelper.getCurrentMember()));
+		return ResponseFactory.created(boardService.createPost(request, loginMemberProvider.getCurrentMember()));
 	}
 
 	@PutMapping("/{id}")
 	@Operation(summary = "문의 수정")
 	public ResponseEntity<SuccessResponse<PostDto>> modifyPost(@PathVariable Long id,
 		@RequestBody @Valid PostRequest request) {
-		return ResponseFactory.ok(boardService.modifyPost(id, request, authHelper.getCurrentMember()));
+		return ResponseFactory.ok(boardService.modifyPost(id, request, loginMemberProvider.getCurrentMember()));
 	}
 
 	@DeleteMapping("/{id}")
 	@Operation(summary = "문의 삭제")
 	public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-		boardService.softDeletePost(id, authHelper.getCurrentMember());
+		boardService.softDeletePost(id, loginMemberProvider.getCurrentMember());
 		return ResponseFactory.noContent();
 	}
 }

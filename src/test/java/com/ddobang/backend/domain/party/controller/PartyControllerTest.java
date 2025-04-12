@@ -1,6 +1,6 @@
 package com.ddobang.backend.domain.party.controller;
 
-import static org.mockito.Mockito.*;
+import static com.ddobang.backend.domain.party.testUtils.TestDataHelper.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -8,26 +8,26 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.AuthHelper;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.entity.Party;
+import com.ddobang.backend.domain.party.entity.PartyMember;
 import com.ddobang.backend.domain.party.repository.PartyRepository;
-import com.ddobang.backend.domain.party.testUtils.MockConfig;
 import com.ddobang.backend.domain.party.testUtils.TestDataHelper;
 import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.region.entity.Region;
@@ -36,11 +36,11 @@ import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.repository.StoreRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
+import com.ddobang.backend.global.security.CustomUserDetails;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@Import(MockConfig.class)
 @Transactional
 public class PartyControllerTest {
 
@@ -62,22 +62,48 @@ public class PartyControllerTest {
 	@Autowired
 	private MemberRepository memberRepository;
 
-	@Autowired
-	private AuthHelper authHelper;
-
 	private Theme theme;
 	private Member host;
 	private Party party;
 
 	@BeforeEach
 	void setUp() {
-		Region region = regionRepository.save(TestDataHelper.createRegion("서울", "강남"));
-		Store store = storeRepository.save(TestDataHelper.createStore(region, "테스트매장"));
-		theme = themeRepository.save(TestDataHelper.createTheme("공포", "무서운 테마", Theme.Status.OPENED, store, List.of()));
-		host = memberRepository.save(TestDataHelper.createMember("host.jpg", "호스트"));
+		Region region = regionRepository.save(createRegion("서울", "강남"));
+		Store store = storeRepository.save(createStore(region, "테스트매장"));
+		theme = themeRepository.save(createTheme("공포", "무서운 테마", Theme.Status.OPENED, store, List.of()));
+		host = memberRepository.save(createMember("host.jpg", "호스트"));
 
-		PartyRequest request = TestDataHelper.partyReq("테스트모임", theme.getId());
-		party = partyRepository.save(Party.of(request, theme, host));
+		PartyRequest request = partyReq("테스트모임", theme.getId());
+		party = Party.of(request, theme);
+
+		PartyMember partyHost = PartyMember.createHost(party, host);
+		party.addPartyMember(partyHost);
+		partyRepository.save(party);
+
+		CustomUserDetails userDetails = new CustomUserDetails(
+			host.getId(), host.getNickname(), false
+		);
+
+		UsernamePasswordAuthenticationToken authentication =
+			new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+	}
+
+	@AfterEach
+	void clearContext() {
+		SecurityContextHolder.clearContext();
+	}
+
+	void loginAs(Member member) {
+		CustomUserDetails userDetails = new CustomUserDetails(
+			member.getId(), member.getNickname(), false
+		);
+
+		UsernamePasswordAuthenticationToken authentication =
+			new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+		SecurityContextHolder.getContext().setAuthentication(authentication);
 	}
 
 	@Test
@@ -94,10 +120,7 @@ public class PartyControllerTest {
 
 	@Test
 	@DisplayName("모임 상세 조회")
-	@WithMockUser(roles = "USER")
 	void getPartyTest() throws Exception {
-
-		when(authHelper.getCurrentMember()).thenReturn(host);
 
 		mockMvc.perform(get("/api/v1/parties/{id}", party.getId()))
 			.andExpect(handler().handlerType(PartyController.class))
@@ -108,8 +131,6 @@ public class PartyControllerTest {
 	@Test
 	@DisplayName("모임 등록")
 	void createPartyTest() throws Exception {
-
-		when(authHelper.getCurrentMember()).thenReturn(host);
 
 		String content = String.format("""
 			{
@@ -135,7 +156,6 @@ public class PartyControllerTest {
 	@Test
 	@DisplayName("모임 수정")
 	void modifyPartyTest() throws Exception {
-		when(authHelper.getCurrentMember()).thenReturn(host);
 		String content = String.format("""
 			{
 			    "themeId": %s,
@@ -159,7 +179,6 @@ public class PartyControllerTest {
 	@Test
 	@DisplayName("모임 삭제")
 	void softDeletePartyTest() throws Exception {
-		when(authHelper.getCurrentMember()).thenReturn(host);
 
 		mockMvc.perform(delete("/api/v1/parties/{id}", party.getId()))
 			.andExpect(handler().handlerType(PartyController.class))
@@ -169,12 +188,11 @@ public class PartyControllerTest {
 
 	@Test
 	@DisplayName("모임 참가 신청")
-	@WithMockUser(roles = "USER")
 	void applyPartyTest() throws Exception {
 		Member applicant = memberRepository.save(TestDataHelper.createMember("imgUrl", "신청자"));
 		memberRepository.flush();
 
-		when(authHelper.getCurrentMember()).thenReturn(applicant);
+		loginAs(applicant);
 
 		mockMvc.perform(post("/api/v1/parties/{id}/apply", party.getId()))
 			.andExpect(handler().handlerType(PartyController.class))
@@ -184,11 +202,10 @@ public class PartyControllerTest {
 
 	@Test
 	@DisplayName("모임 참가 신청 취소")
-	@WithMockUser(roles = "USER")
 	void cancelAppliedPartyTest() throws Exception {
 		Member applicant = memberRepository.save(TestDataHelper.createMember("imgUrl", "신청자"));
 
-		when(authHelper.getCurrentMember()).thenReturn(applicant);
+		loginAs(applicant);
 
 		mockMvc.perform(post("/api/v1/parties/{id}/apply", party.getId()))
 			.andExpect(status().isNoContent());
@@ -201,16 +218,11 @@ public class PartyControllerTest {
 
 	@Test
 	@DisplayName("모임 신청 승인")
-	@WithMockUser(roles = "USER")
 	void acceptPartyMemberTest() throws Exception {
 		Member member = memberRepository.save(TestDataHelper.createMember("imgUrl", "모임원"));
+		party.addPartyMember(createPartyMember(party, member));
 
-		when(authHelper.getCurrentMember()).thenReturn(member);
-
-		mockMvc.perform(post("/api/v1/parties/{id}/apply", party.getId()))
-			.andExpect(status().isNoContent());
-
-		when(authHelper.getCurrentMember()).thenReturn(host);
+		loginAs(host);
 
 		mockMvc.perform(post("/api/v1/parties/{id}/accept/{memberId}", party.getId(), member.getId()))
 			.andExpect(handler().handlerType(PartyController.class))
@@ -220,9 +232,7 @@ public class PartyControllerTest {
 
 	@Test
 	@DisplayName("모임 실행 완료")
-	@WithMockUser(roles = "USER")
 	void executePartyTest() throws Exception {
-		when(authHelper.getCurrentMember()).thenReturn(host);
 
 		party.updateStatus(PartyStatus.PENDING);
 		partyRepository.save(party);
@@ -235,9 +245,7 @@ public class PartyControllerTest {
 
 	@Test
 	@DisplayName("모임 미실행 완료")
-	@WithMockUser(roles = "USER")
 	void unexecutePartyTest() throws Exception {
-		when(authHelper.getCurrentMember()).thenReturn(host);
 
 		party.updateStatus(PartyStatus.PENDING);
 		partyRepository.save(party);
@@ -261,9 +269,7 @@ public class PartyControllerTest {
 
 	@Test
 	@DisplayName("참여한 모임 목록 조회")
-	@WithMockUser(roles = "USER")
 	void getJoinedPartiesTest() throws Exception {
-		when(authHelper.getCurrentMember()).thenReturn(host);
 
 		mockMvc.perform(get("/api/v1/parties/joins/{id}", host.getId()))
 			.andExpect(handler().handlerType(PartyController.class))
