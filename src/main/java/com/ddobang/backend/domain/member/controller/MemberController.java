@@ -67,7 +67,15 @@ public class MemberController {
 		Member currentMember = loginMemberProvider.getCurrentMember();
 		MemberStatResponse memberStatResponse = memberService.getMemberStat(currentMember);
 
+		if (memberStatResponse == null) {
+			return ResponseFactory.ok(
+				"데이터가 없습니다. 탈출일지를 작성해주세요.",
+				null
+			);
+		}
+
 		return ResponseFactory.ok(
+			"사용자 분석 데이터 조회 성공",
 			memberStatResponse
 		);
 	}

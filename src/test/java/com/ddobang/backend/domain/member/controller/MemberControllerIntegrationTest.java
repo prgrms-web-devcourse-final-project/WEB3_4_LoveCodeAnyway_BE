@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.member.dto.response.MemberStatResponse;
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.member.service.MemberService;
 
 @ActiveProfiles("test")
@@ -30,8 +29,6 @@ class MemberControllerIntegrationTest {
 	@Autowired
 	private MockMvc mvc;
 	@Autowired
-	private MemberRepository memberRepository;
-	@Autowired
 	private MemberService memberService;
 
 	@Test
@@ -42,13 +39,14 @@ class MemberControllerIntegrationTest {
 			.perform(get("/api/v1/members/stat"))
 			.andDo(print());
 
-		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Member member = memberService.getByNickname("testUser1");
 		MemberStatResponse memberStatResponse = memberService.getMemberStat(member);
 
 		resultActions
 			.andExpect(handler().handlerType(MemberController.class))
 			.andExpect(handler().methodName("getMemberStat"))
 			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("사용자 분석 데이터 조회 성공"))
 			.andExpect(jsonPath("$.data.totalCount").value(memberStatResponse.totalCount()))
 			.andExpect(jsonPath("$.data.successRate").value(memberStatResponse.successRate()))
 			.andExpect(jsonPath("$.data.noHintSuccessCount").value(memberStatResponse.noHintSuccessCount()))
@@ -105,5 +103,24 @@ class MemberControllerIntegrationTest {
 				.value(memberStatResponse.difficultySatisAvgMap().get(4)))
 			.andExpect(jsonPath("$.data.difficultySatisAvgMap.5")
 				.value(memberStatResponse.difficultySatisAvgMap().get(5)));
+	}
+
+	@Test
+	@DisplayName("사용자 분석 페이지 조회, with 탈출일지가 없는 유저")
+	@WithUserDetails(value = "testUser2")
+	void t1_1() throws Exception {
+		ResultActions resultActions = mvc
+			.perform(get("/api/v1/members/stat"))
+			.andDo(print());
+
+		Member member = memberService.getByNickname("testUser2");
+		MemberStatResponse memberStatResponse = memberService.getMemberStat(member);
+
+		resultActions
+			.andExpect(handler().handlerType(MemberController.class))
+			.andExpect(handler().methodName("getMemberStat"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("데이터가 없습니다. 탈출일지를 작성해주세요."))
+			.andExpect(jsonPath("$.data").isEmpty());
 	}
 }

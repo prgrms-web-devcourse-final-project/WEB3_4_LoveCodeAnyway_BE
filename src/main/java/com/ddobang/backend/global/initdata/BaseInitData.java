@@ -91,11 +91,16 @@ public class BaseInitData {
 		}
 
 		// 테스트용 회원 생성
-		Member member = Member.builder()
+		Member member1 = Member.builder()
 			.nickname("testUser1")
 			.build();
 
-		memberRepository.save(member);
+		Member member2 = Member.builder()
+			.nickname("testUser2")
+			.build();
+
+		memberRepository.save(member1);
+		memberRepository.save(member2);
 	}
 
 	// Theme init data
