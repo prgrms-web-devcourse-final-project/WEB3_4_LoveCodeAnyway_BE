@@ -110,13 +110,14 @@ public class PartyService {
 		Party party = getPartyById(id);
 
 		partyValidationService.validateApply(party, actor);
-		boolean isNewApplication = !party.isPartyMember(actor); // 추가: 신청자 여부 확인
+
+		// boolean isNewApplication = !party.isPartyMember(actor); // 추가: 신청자 여부 확인
 
 		if (party.isPartyMember(actor)) {
 			party.updatePartyMemberStatus(actor, PartyMemberStatus.APPLICANT);
 		} else {
 			PartyMember applicant = PartyMember.of(party, actor);
-			party.addPartyMember(applicant); // 양방향 설정
+			party.addPartyMember(applicant);
 			partyMemberRepository.save(applicant);
 		}
 
@@ -171,10 +172,10 @@ public class PartyService {
 		Party party = getPartyById(id);
 		Member member = memberService.getMember(memberId);
 
-		partyValidationService.validateAccept(party, member, actor);
+		partyValidationService.validateReject(party, member, actor);
 
-		// 거절 처리 (취소 상태로 변경)
-		party.updatePartyMemberStatus(member, PartyMemberStatus.CANCELLED);
+		// 거절 상태로 변경
+		party.updatePartyMemberStatus(member, PartyMemberStatus.REJECTED);
 		party.updatePartyStatus();
 
 		// 상태 변경 이벤트 발행
@@ -184,7 +185,7 @@ public class PartyService {
 			.memberId(member.getId())  // 알림 수신자 (신청자)
 			.hostId(actor.getId())
 			.hostNickname(actor.getNickname())
-			.newStatus(PartyMemberStatus.CANCELLED)
+			.newStatus(PartyMemberStatus.REJECTED)
 			.build());
 	}
 
@@ -223,7 +224,6 @@ public class PartyService {
 			for (MemberReviewKeyword keyword : keywords) {
 				review.addKeyword(keyword);
 			}
-
 			reviewRepository.save(review);
 
 			reviewedMemberIds.add(receiver.getId());

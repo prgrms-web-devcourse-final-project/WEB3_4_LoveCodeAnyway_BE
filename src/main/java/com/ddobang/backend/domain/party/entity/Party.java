@@ -136,11 +136,6 @@ public class Party extends BaseTime {
 			return;
 		}
 
-		if (LocalDateTime.now().isAfter(scheduledAt)) {
-			updateStatus(PartyStatus.PENDING);
-			return;
-		}
-
 		if (this.acceptedParticipantsCount >= participantsNeeded) {
 			updateStatus(PartyStatus.FULL);
 		} else {

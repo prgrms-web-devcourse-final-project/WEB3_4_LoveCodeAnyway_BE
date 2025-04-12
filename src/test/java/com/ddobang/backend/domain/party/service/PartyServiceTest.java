@@ -38,6 +38,7 @@ import com.ddobang.backend.domain.party.entity.PartyMember;
 import com.ddobang.backend.domain.party.event.PartyApplyEvent;
 import com.ddobang.backend.domain.party.event.PartyMemberStatusUpdatedEvent;
 import com.ddobang.backend.domain.party.exception.PartyException;
+import com.ddobang.backend.domain.party.repository.PartyMemberRepository;
 import com.ddobang.backend.domain.party.repository.PartyRepository;
 import com.ddobang.backend.domain.party.testUtils.TestDataHelper;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
@@ -70,6 +71,9 @@ class PartyServiceTest {
 
 	@Mock
 	private PartyValidationService partyValidationService;
+
+	@Mock
+	private PartyMemberRepository memberRepository;
 
 	@Mock
 	private EventPublisher eventPublisher; // 이벤트 퍼블리셔 추가
