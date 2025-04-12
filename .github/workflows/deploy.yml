@@ -1,6 +1,6 @@
 name: deploy
 on:
-  merge_group:
+  push:
     paths:
       - ".github/workflows/**"
       - "src/**"
@@ -8,7 +8,7 @@ on:
       - "settings.gradle"
       - "Dockerfile"
     branches:
-      - dev
+      - feature/*
 jobs:
   makeTagAndRelease:
     runs-on: ubuntu-latest
@@ -121,6 +121,10 @@ jobs:
               NEXT_PORT=8080
             fi
 
+            # 현재 컨테이너 상태 확인
+            echo "Current containers before deployment:"
+            docker ps -a
+
             # 다음 컨테이너 실행
             echo "Starting new container: $NEXT on port $NEXT_PORT..."
             docker pull "$IMAGE"
@@ -155,12 +159,24 @@ jobs:
               sleep 5
             done
 
-            sleep 10 # ha proxy 가 사용하는 dns 캐시 때문에 서비스가 띄워지고도 10초 후에 발견될 수 도 있다. 그래서 기존 서버를 바로 내리지 않는다.
+            # HA Proxy DNS 캐시가 만료될 때까지 대기
+            echo "Waiting for HA Proxy DNS cache to expire..."
+            sleep 15
 
             # 기존 컨테이너 중지 및 제거
             echo "Stopping old container: $CURRENT"
-            docker stop "$CURRENT" 2>/dev/null
-            docker rm "$CURRENT" 2>/dev/null
+            docker stop -t 5 "$CURRENT" 2>/dev/null
+            docker rm -f "$CURRENT" 2>/dev/null
+
+            # 컨테이너 제거 확인
+            if docker ps -a | grep -q "$CURRENT"; then
+              echo "Warning: Container $CURRENT still exists, trying force removal"
+              docker rm -f "$CURRENT" 2>/dev/null
+            fi
+
+            # 컨테이너 상태 확인
+            echo "Containers after removal:"
+            docker ps -a
 
             # dangling image 제거
             docker rmi $(docker images -f "dangling=true" -q) 2>/dev/null

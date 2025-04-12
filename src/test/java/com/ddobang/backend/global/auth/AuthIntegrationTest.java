@@ -31,7 +31,6 @@ import jakarta.servlet.http.Cookie;
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
 class AuthIntegrationTest {
 
 	@Autowired

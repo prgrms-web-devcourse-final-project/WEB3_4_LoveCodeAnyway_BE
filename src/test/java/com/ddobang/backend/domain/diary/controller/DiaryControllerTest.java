@@ -44,8 +44,6 @@ public class DiaryControllerTest {
 	private ThemeRepository themeRepository;
 	@Autowired
 	private DiaryService diaryService;
-	@Autowired
-	private ThemeRepository themeRepository;
 
 	@Test
 	@DisplayName("탈출일지 등록")
