@@ -11,7 +11,6 @@ import com.ddobang.backend.domain.board.service.BoardService;
 import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.service.DiaryService;
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.upload.event.DiaryImageChangedEvent;
 import com.ddobang.backend.domain.upload.event.PostAttachmentsUpdatedEvent;
 import com.ddobang.backend.domain.upload.event.ProfileImageChangedEvent;
@@ -34,17 +33,12 @@ public class UploadHandler {
 	private final DiaryService diaryService;
 	private final BoardService boardService;
 
-	// TODO: 삭제 예정
-	private final MemberRepository memberRepository;
-
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public void applyImage(FileUploadTarget target, Long id, String imageUrl) {
+	public void applyImage(FileUploadTarget target, Member member, Long diaryId, String imageUrl) {
 		switch (target) {
 			case PROFILE -> {
-				// TODO: 현재 로그인된 사용자의 엔티티를 가져오는 방법 반영 필요
-				Member member = memberRepository.findById(1L).get();
 				String oldImageUrl = member.getProfilePictureUrl();
 
 				member.setProfilePictureUrl(imageUrl);
@@ -54,7 +48,7 @@ public class UploadHandler {
 			}
 
 			case DIARY -> {
-				Diary diary = diaryService.findById(id);
+				Diary diary = diaryService.findById(diaryId);
 				String oldImageUrl = diary.getImageUrl();
 
 				diary.setImageUrl(imageUrl);

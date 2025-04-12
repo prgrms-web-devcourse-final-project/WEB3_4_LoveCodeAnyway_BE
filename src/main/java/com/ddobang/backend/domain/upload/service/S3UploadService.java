@@ -14,10 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ddobang.backend.domain.board.entity.Attachment;
 import com.ddobang.backend.domain.board.entity.Post;
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.upload.exception.UploadErrorCode;
 import com.ddobang.backend.domain.upload.exception.UploadException;
 import com.ddobang.backend.domain.upload.types.FileUploadTarget;
+import com.ddobang.backend.global.security.LoginMemberProvider;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +39,7 @@ public class S3UploadService {
 	private final S3Client s3Client;
 
 	private final UploadHandler uploadHandler;
-	// TODO: 삭제 예정
-	private final MemberRepository memberRepository;
+	private final LoginMemberProvider loginMemberProvider;
 
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
@@ -52,19 +51,21 @@ public class S3UploadService {
 		if (target == FileUploadTarget.NONE) {
 			throw new UploadException(UploadErrorCode.UPLOAD_FILE_INVALID_TARGET);
 		}
+
+		Member member = loginMemberProvider.getCurrentMember();
+		System.out.println("member.getProfilePictureUrl() = " + member.getProfilePictureUrl());
+
 		if (file == null || file.isEmpty()) {
-			uploadHandler.applyImage(target, diaryId, null);
+			uploadHandler.applyImage(target, member, diaryId, null);
 			return;
 		}
-		// TODO: 현재 로그인된 사용자의 엔티티를 가져오는 방법 반영 필요
-		Member member = memberRepository.findById(1L).get();
 		Long memberId = member.getId();
 
 		String fileName = validAndGenFileName(memberId, target, file);
 		putS3Object(fileName, file);
 
 		String publicUrl = getPublicUrl(fileName);
-		uploadHandler.applyImage(target, diaryId, publicUrl);
+		uploadHandler.applyImage(target, member, diaryId, publicUrl);
 	}
 
 	public void uploadAttachment(long postId, MultipartFile[] files) throws IOException {
@@ -75,8 +76,7 @@ public class S3UploadService {
 			return;
 		}
 
-		// TODO: 현재 로그인된 사용자의 엔티티를 가져오는 방법 반영 필요
-		Member member = memberRepository.findById(1L).get();
+		Member member = loginMemberProvider.getCurrentMember();
 		Long memberId = member.getId();
 		Post post = uploadHandler.getPostById(postId);
 
