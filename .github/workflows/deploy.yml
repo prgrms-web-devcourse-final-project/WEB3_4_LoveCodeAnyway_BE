@@ -68,6 +68,7 @@ jobs:
           push: true
           cache-from: type=registry,ref=ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:cache
           cache-to: type=registry,ref=ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:cache,mode=max
+          no-cache: true
           tags: |
             ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.makeTagAndRelease.outputs.tag_name }},
             ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
@@ -102,7 +103,7 @@ jobs:
           comment: Deploy
           command: |
             # 공통 변수
-            IMAGE="ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
+            IMAGE="ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.makeTagAndRelease.outputs.tag_name }}"
             VOLUME="/gen:/gen"
             NETWORK="common"
             HEALTH_ENDPOINT="/actuator/health"
