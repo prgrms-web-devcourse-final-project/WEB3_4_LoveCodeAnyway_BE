@@ -47,19 +47,23 @@ public class PartyRepositoryTest {
 	@DisplayName("전체 조회 - 필터 조건 없는 경우")
 	void findAllPartiesTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "강남");
-		Store store = TestDataHelper.createStore(em, region, "매장1");
-		Theme theme = TestDataHelper.createTheme(em, "테마1", "설명", Theme.Status.OPENED, store, List.of());
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
-		Member member = TestDataHelper.createMember(em, "img.jpg", "멤버");
+		Region region = createRegion(em, "서울", "강남");
+		Store store = createStore(em, region, "매장1");
+		Theme theme = createTheme(em, "테마1", "설명", Theme.Status.OPENED, store, List.of());
+		Member host = createMember(em, "img.jpg", "호스트");
+		Member member = createMember(em, "img.jpg", "멤버");
 
-		Party party1 = TestDataHelper.createParty(em, partyReq("테스트_모임1", theme.getId()), theme, host);
-		Party party2 = TestDataHelper.createParty(em, partyReq("테스트_모임2", theme.getId()), theme, host);
-		Party party3 = TestDataHelper.createParty(em, partyReq("테스트_모임3", theme.getId()), theme, host);
+		Party party1 = createParty(em, partyReq("테스트_모임1", theme.getId()), theme);
+		Party party2 = createParty(em, partyReq("테스트_모임2", theme.getId()), theme);
+		Party party3 = createParty(em, partyReq("테스트_모임3", theme.getId()), theme);
 
-		TestDataHelper.createPartyMember(em, party1, member);
-		TestDataHelper.createPartyMember(em, party2, member);
-		TestDataHelper.createPartyMember(em, party3, member);
+		party1.addPartyMember(createHost(em, party1, host));
+		party2.addPartyMember(createHost(em, party2, host));
+		party3.addPartyMember(createHost(em, party3, host));
+
+		party1.addPartyMember(createPartyMember(em, party1, member));
+		party2.addPartyMember(createPartyMember(em, party2, member));
+		party3.addPartyMember(createPartyMember(em, party3, member));
 
 		em.flush();
 		em.clear();
@@ -82,16 +86,22 @@ public class PartyRepositoryTest {
 	@DisplayName("전체 조회 - 필터 조건 없는 경우 - RECRUITING/FULL 상태인 모임만")
 	void findAllRecruitingAndFullPartiesTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "강남");
-		Store store = TestDataHelper.createStore(em, region, "매장1");
-		Theme theme = TestDataHelper.createTheme(em, "테마1", "설명", Theme.Status.OPENED, store, List.of());
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Region region = createRegion(em, "서울", "강남");
+		Store store = createStore(em, region, "매장1");
+		Theme theme = createTheme(em, "테마1", "설명", Theme.Status.OPENED, store, List.of());
+		Member host = createMember(em, "img.jpg", "호스트");
 
-		Party recruitingParty = TestDataHelper.createParty(em, partyReq("RECRUITING 파티", theme.getId()), theme, host);
-		Party fullParty = TestDataHelper.createParty(em, partyReq("FULL 파티", theme.getId()), theme, host);
-		Party pendingParty = TestDataHelper.createParty(em, partyReq("PENDING 파티", theme.getId()), theme, host);
-		Party completedParty = TestDataHelper.createParty(em, partyReq("COMPLETED 파티", theme.getId()), theme, host);
-		Party cancelledParty = TestDataHelper.createParty(em, partyReq("CANCELLED 파티", theme.getId()), theme, host);
+		Party recruitingParty = createParty(em, partyReq("RECRUITING 파티", theme.getId()), theme);
+		Party fullParty = createParty(em, partyReq("FULL 파티", theme.getId()), theme);
+		Party pendingParty = createParty(em, partyReq("PENDING 파티", theme.getId()), theme);
+		Party completedParty = createParty(em, partyReq("COMPLETED 파티", theme.getId()), theme);
+		Party cancelledParty = createParty(em, partyReq("CANCELLED 파티", theme.getId()), theme);
+
+		recruitingParty.addPartyMember(createHost(em, recruitingParty, host));
+		fullParty.addPartyMember(createHost(em, fullParty, host));
+		pendingParty.addPartyMember(createHost(em, pendingParty, host));
+		completedParty.addPartyMember(createHost(em, completedParty, host));
+		cancelledParty.addPartyMember(createHost(em, cancelledParty, host));
 
 		recruitingParty.updateStatus(PartyStatus.RECRUITING);
 		fullParty.updateStatus(PartyStatus.FULL);
@@ -119,17 +129,20 @@ public class PartyRepositoryTest {
 	@DisplayName("키워드 조회 - 테마 제목에 검색어가 있는 경우")
 	void searchByThemeNameTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "강남");
-		Store store = TestDataHelper.createStore(em, region, "미스터리존");
-		Theme theme1 = TestDataHelper.createTheme(em, "공포의 방", "무서운 설명", Theme.Status.OPENED, store, List.of());
-		Theme theme2 = TestDataHelper.createTheme(em, "기쁨의 방", "밝은 설명", Theme.Status.OPENED, store, List.of());
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Region region = createRegion(em, "서울", "강남");
+		Store store = createStore(em, region, "미스터리존");
+		Theme theme1 = createTheme(em, "공포의 방", "무서운 설명", Theme.Status.OPENED, store, List.of());
+		Theme theme2 = createTheme(em, "기쁨의 방", "밝은 설명", Theme.Status.OPENED, store, List.of());
+		Member host = createMember(em, "img.jpg", "호스트");
 
-		Party matchParty = TestDataHelper.createParty(em, partyReq("공포 테마 함께 해요", theme1.getId()), theme1, host);
-		Party noMatchParty = TestDataHelper.createParty(em, partyReq("기쁨 테마", theme2.getId()), theme2, host);
+		Party matchParty = createParty(em, partyReq("공포 테마 함께 해요", theme1.getId()), theme1);
+		Party noMatchParty = createParty(em, partyReq("기쁨 테마", theme2.getId()), theme2);
 
-		TestDataHelper.createPartyMember(em, matchParty, host);
-		TestDataHelper.createPartyMember(em, noMatchParty, host);
+		matchParty.addPartyMember(createHost(em, matchParty, host));
+		noMatchParty.addPartyMember(createHost(em, noMatchParty, host));
+
+		matchParty.addPartyMember(createPartyMember(em, matchParty, host));
+		noMatchParty.addPartyMember(createPartyMember(em, noMatchParty, host));
 
 		em.flush();
 		em.clear();
@@ -147,17 +160,20 @@ public class PartyRepositoryTest {
 	@DisplayName("키워드 조회 - 모임 제목에 검색어가 있는 경우")
 	void searchByPartyNameTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "강남");
-		Store store = TestDataHelper.createStore(em, region, "미스터리존");
-		Theme theme1 = TestDataHelper.createTheme(em, "공포의 방", "무서운 설명", Theme.Status.OPENED, store, List.of());
-		Theme theme2 = TestDataHelper.createTheme(em, "기쁨의 방", "밝은 설명", Theme.Status.OPENED, store, List.of());
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Region region = createRegion(em, "서울", "강남");
+		Store store = createStore(em, region, "미스터리존");
+		Theme theme1 = createTheme(em, "공포의 방", "무서운 설명", Theme.Status.OPENED, store, List.of());
+		Theme theme2 = createTheme(em, "기쁨의 방", "밝은 설명", Theme.Status.OPENED, store, List.of());
+		Member host = createMember(em, "img.jpg", "호스트");
 
-		Party matchParty = TestDataHelper.createParty(em, partyReq("공포 테마 함께 해요", theme1.getId()), theme1, host);
-		Party noMatchParty = TestDataHelper.createParty(em, partyReq("기쁨 테마 같이~", theme2.getId()), theme2, host);
+		Party matchParty = createParty(em, partyReq("공포 테마 함께 해요", theme1.getId()), theme1);
+		Party noMatchParty = createParty(em, partyReq("기쁨 테마 같이~", theme2.getId()), theme2);
 
-		TestDataHelper.createPartyMember(em, matchParty, host);
-		TestDataHelper.createPartyMember(em, noMatchParty, host);
+		matchParty.addPartyMember(createHost(em, matchParty, host));
+		noMatchParty.addPartyMember(createHost(em, noMatchParty, host));
+
+		matchParty.addPartyMember(createPartyMember(em, matchParty, host));
+		noMatchParty.addPartyMember(createPartyMember(em, noMatchParty, host));
 
 		em.flush();
 		em.clear();
@@ -175,17 +191,20 @@ public class PartyRepositoryTest {
 	@DisplayName("키워드 조회 - 매장 이름에 검색어가 있는 경우")
 	void searchByStoreNameTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "강남");
-		Store store = TestDataHelper.createStore(em, region, "미스터리존");
-		Theme theme1 = TestDataHelper.createTheme(em, "공포의 방", "무서운 설명", Theme.Status.OPENED, store, List.of());
-		Theme theme2 = TestDataHelper.createTheme(em, "기쁨의 방", "밝은 설명", Theme.Status.OPENED, store, List.of());
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Region region = createRegion(em, "서울", "강남");
+		Store store = createStore(em, region, "미스터리존");
+		Theme theme1 = createTheme(em, "공포의 방", "무서운 설명", Theme.Status.OPENED, store, List.of());
+		Theme theme2 = createTheme(em, "기쁨의 방", "밝은 설명", Theme.Status.OPENED, store, List.of());
+		Member host = createMember(em, "img.jpg", "호스트");
 
-		Party matchParty = TestDataHelper.createParty(em, partyReq("공포 테마 함께 해요", theme1.getId()), theme1, host);
-		Party noMatchParty = TestDataHelper.createParty(em, partyReq("기쁨 테마 같이~", theme2.getId()), theme2, host);
+		Party matchParty = createParty(em, partyReq("공포 테마 함께 해요", theme1.getId()), theme1);
+		Party noMatchParty = createParty(em, partyReq("기쁨 테마 같이~", theme2.getId()), theme2);
 
-		TestDataHelper.createPartyMember(em, matchParty, host);
-		TestDataHelper.createPartyMember(em, noMatchParty, host);
+		matchParty.addPartyMember(createHost(em, matchParty, host));
+		noMatchParty.addPartyMember(createHost(em, noMatchParty, host));
+
+		createPartyMember(em, matchParty, host);
+		createPartyMember(em, noMatchParty, host);
 
 		em.flush();
 		em.clear();
@@ -201,12 +220,14 @@ public class PartyRepositoryTest {
 	@Test
 	@DisplayName("키워드 조회 - 호스트 닉네임에 키워드가 있는 경우")
 	void searchByHostNameTest() {
-		Region region = TestDataHelper.createRegion(em, "서울", "상수");
-		Store store = TestDataHelper.createStore(em, region, "상수 매장");
-		Theme theme = TestDataHelper.createTheme(em, "방탈출", "설명", Theme.Status.OPENED, store, List.of());
+		Region region = createRegion(em, "서울", "상수");
+		Store store = createStore(em, region, "상수 매장");
+		Theme theme = createTheme(em, "방탈출", "설명", Theme.Status.OPENED, store, List.of());
 
-		Member host = TestDataHelper.createMember(em, "img.jpg", "공포의 호스트");
-		TestDataHelper.createParty(em, TestDataHelper.partyReq("테스트 파티", theme.getId()), theme, host);
+		Member host = createMember(em, "img.jpg", "공포의 호스트");
+		Party party = createParty(em, partyReq("테스트 파티", theme.getId()), theme);
+
+		createHost(em, party, host);
 
 		em.flush();
 		em.clear();
@@ -222,18 +243,21 @@ public class PartyRepositoryTest {
 	@DisplayName("키워드 조회 - 매장 이름, 테마 이름에 중복 검색어가 있는 경우")
 	void findPartiesDuplicatedKeywordTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "강남");
-		Store store1 = TestDataHelper.createStore(em, region, "미스터리존");
-		Store store2 = TestDataHelper.createStore(em, region, "공포존");
-		Theme theme1 = TestDataHelper.createTheme(em, "공포의 방", "무서운 설명", Theme.Status.OPENED, store1, List.of());
-		Theme theme2 = TestDataHelper.createTheme(em, "기쁨의 방", "밝은 설명", Theme.Status.OPENED, store2, List.of());
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Region region = createRegion(em, "서울", "강남");
+		Store store1 = createStore(em, region, "미스터리존");
+		Store store2 = createStore(em, region, "공포존");
+		Theme theme1 = createTheme(em, "공포의 방", "무서운 설명", Theme.Status.OPENED, store1, List.of());
+		Theme theme2 = createTheme(em, "기쁨의 방", "밝은 설명", Theme.Status.OPENED, store2, List.of());
+		Member host = createMember(em, "img.jpg", "호스트");
 
-		Party matchParty = TestDataHelper.createParty(em, partyReq("공포 테마 함께 해요", theme1.getId()), theme1, host);
-		Party noMatchParty = TestDataHelper.createParty(em, partyReq("기쁨 테마 같이~", theme2.getId()), theme2, host);
+		Party matchParty = createParty(em, partyReq("공포 테마 함께 해요", theme1.getId()), theme1);
+		Party noMatchParty = createParty(em, partyReq("기쁨 테마 같이~", theme2.getId()), theme2);
 
-		TestDataHelper.createPartyMember(em, matchParty, host);
-		TestDataHelper.createPartyMember(em, noMatchParty, host);
+		matchParty.addPartyMember(createHost(em, matchParty, host));
+		noMatchParty.addPartyMember(createHost(em, noMatchParty, host));
+
+		matchParty.addPartyMember(createPartyMember(em, matchParty, host));
+		noMatchParty.addPartyMember(createPartyMember(em, noMatchParty, host));
 
 		em.flush();
 		em.clear();
@@ -249,19 +273,22 @@ public class PartyRepositoryTest {
 	@Test
 	@DisplayName("지역 필터 - 특정 지역 테마 조회")
 	void regionFilterTest() {
-		Region region1 = TestDataHelper.createRegion(em, "서울", "강남");
-		Region region2 = TestDataHelper.createRegion(em, "서울", "홍대");
+		Region region1 = createRegion(em, "서울", "강남");
+		Region region2 = createRegion(em, "서울", "홍대");
 
-		Store store1 = TestDataHelper.createStore(em, region1, "강남매장");
-		Store store2 = TestDataHelper.createStore(em, region2, "홍대매장");
+		Store store1 = createStore(em, region1, "강남매장");
+		Store store2 = createStore(em, region2, "홍대매장");
 
-		Theme theme1 = TestDataHelper.createTheme(em, "테마1", "설명", Theme.Status.OPENED, store1, List.of());
-		Theme theme2 = TestDataHelper.createTheme(em, "테마2", "설명", Theme.Status.OPENED, store2, List.of());
+		Theme theme1 = createTheme(em, "테마1", "설명", Theme.Status.OPENED, store1, List.of());
+		Theme theme2 = createTheme(em, "테마2", "설명", Theme.Status.OPENED, store2, List.of());
 
 		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
 
-		TestDataHelper.createParty(em, TestDataHelper.partyReq("강남파티", theme1.getId()), theme1, host);
-		TestDataHelper.createParty(em, TestDataHelper.partyReq("홍대파티", theme2.getId()), theme2, host);
+		Party party1 = createParty(em, partyReq("강남파티", theme1.getId()), theme1);
+		Party party2 = createParty(em, partyReq("홍대파티", theme2.getId()), theme2);
+
+		party1.addPartyMember(createHost(em, party1, host));
+		party2.addPartyMember(createHost(em, party2, host));
 
 		em.flush();
 		em.clear();
@@ -277,15 +304,17 @@ public class PartyRepositoryTest {
 	@DisplayName("날짜 필터 - 특정 날짜의 모임 조회")
 	void dateFilterTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "잠실");
-		Store store = TestDataHelper.createStore(em, region, "잠실 매장");
-		Theme theme = TestDataHelper.createTheme(em, "잠실 테마", "설명", Theme.Status.OPENED, store, List.of());
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Region region = createRegion(em, "서울", "잠실");
+		Store store = createStore(em, region, "잠실 매장");
+		Theme theme = createTheme(em, "잠실 테마", "설명", Theme.Status.OPENED, store, List.of());
+		Member host = createMember(em, "img.jpg", "호스트");
 
 		LocalDate targetDate = LocalDate.now().plusDays(3);
 		LocalDateTime scheduledAt = targetDate.atTime(17, 0);
 
-		TestDataHelper.createParty(em, TestDataHelper.partyReq("3일 뒤 파티", theme.getId(), scheduledAt), theme, host);
+		Party party = createParty(em, partyReq("3일 뒤 파티", theme.getId(), scheduledAt), theme);
+
+		party.addPartyMember(createHost(em, party, host));
 
 		em.flush();
 		em.clear();
@@ -303,18 +332,19 @@ public class PartyRepositoryTest {
 	@DisplayName("날짜 필터 - 시간이 상관 없이 날짜로 조회")
 	void dateFilterCoversFullDayTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "강동");
-		Store store = TestDataHelper.createStore(em, region, "매장");
-		Theme theme = TestDataHelper.createTheme(em, "테마", "설명", Theme.Status.OPENED, store, List.of());
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Region region = createRegion(em, "서울", "강동");
+		Store store = createStore(em, region, "매장");
+		Theme theme = createTheme(em, "테마", "설명", Theme.Status.OPENED, store, List.of());
+		Member host = createMember(em, "img.jpg", "호스트");
 
 		// 같은 날짜, 다른 시간
 		LocalDate targetDate = LocalDate.now().plusDays(3);
 
-		TestDataHelper.createParty(em, TestDataHelper.partyReq("오전 파티", theme.getId(), targetDate.atTime(9, 0)), theme,
-			host);
-		TestDataHelper.createParty(em, TestDataHelper.partyReq("오후 파티", theme.getId(), targetDate.atTime(20, 0)), theme,
-			host);
+		Party party1 = createParty(em, partyReq("오전 파티", theme.getId(), targetDate.atTime(9, 0)), theme);
+		Party party2 = createParty(em, partyReq("오후 파티", theme.getId(), targetDate.atTime(20, 0)), theme);
+
+		party1.addPartyMember(createHost(em, party1, host));
+		party2.addPartyMember(createHost(em, party2, host));
 
 		em.flush();
 		em.clear();
@@ -332,14 +362,16 @@ public class PartyRepositoryTest {
 	@Test
 	@DisplayName("태그 필터 - 특정 테마 태그가 포함된 경우만 조회")
 	void tagFilterTest() {
-		Region region = TestDataHelper.createRegion(em, "서울", "이태원");
-		Store store = TestDataHelper.createStore(em, region, "매장");
-		ThemeTag horror = TestDataHelper.createThemeTag(em, "공포");
-		Theme theme = TestDataHelper.createTheme(em, "귀신 테마", "설명", Theme.Status.OPENED, store, List.of(horror));
+		Region region = createRegion(em, "서울", "이태원");
+		Store store = createStore(em, region, "매장");
+		ThemeTag horror = createThemeTag(em, "공포");
+		Theme theme = createTheme(em, "귀신 테마", "설명", Theme.Status.OPENED, store, List.of(horror));
 
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Member host = createMember(em, "img.jpg", "호스트");
 
-		TestDataHelper.createParty(em, TestDataHelper.partyReq("좀비 파티", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("좀비 파티", theme.getId()), theme);
+
+		party.addPartyMember(createHost(em, party, host));
 
 		em.flush();
 		em.clear();
@@ -355,20 +387,21 @@ public class PartyRepositoryTest {
 	@DisplayName("태그 필터 - 여러 태그 중 하나만 일치해도 조회")
 	void tagFilterWithMultipleTagsTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "이태원");
-		Store store = TestDataHelper.createStore(em, region, "이태원 매장");
+		Region region = createRegion(em, "서울", "이태원");
+		Store store = createStore(em, region, "이태원 매장");
 
-		ThemeTag horror = TestDataHelper.createThemeTag(em, "공포");
-		ThemeTag thriller = TestDataHelper.createThemeTag(em, "스릴러");
-		ThemeTag mystery = TestDataHelper.createThemeTag(em, "미스터리");
+		ThemeTag horror = createThemeTag(em, "공포");
+		ThemeTag thriller = createThemeTag(em, "스릴러");
+		ThemeTag mystery = createThemeTag(em, "미스터리");
 
 		// 테마에 태그 여러 개 등록
-		Theme theme = TestDataHelper.createTheme(em, "복합 테마", "설명", Theme.Status.OPENED, store,
+		Theme theme = createTheme(em, "복합 테마", "설명", Theme.Status.OPENED, store,
 			List.of(horror, thriller, mystery));
 
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Member host = createMember(em, "img.jpg", "호스트");
 
-		TestDataHelper.createParty(em, TestDataHelper.partyReq("복합 태그 파티", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("복합 태그 파티", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
 
 		em.flush();
 		em.clear();
@@ -386,32 +419,37 @@ public class PartyRepositoryTest {
 	@DisplayName("복합 필터 - 지역 + 태그 + 날짜를 모두 만족하는 파티만 조회")
 	void regionTagDateCombinedFilterTest() {
 		// given
-		Region regionA = TestDataHelper.createRegion(em, "서울", "강남");
-		Region regionB = TestDataHelper.createRegion(em, "서울", "홍대");
+		Region regionA = createRegion(em, "서울", "강남");
+		Region regionB = createRegion(em, "서울", "홍대");
 
-		Store storeA = TestDataHelper.createStore(em, regionA, "공포 매장");
-		Store storeB = TestDataHelper.createStore(em, regionB, "로맨스 매장");
+		Store storeA = createStore(em, regionA, "공포 매장");
+		Store storeB = createStore(em, regionB, "로맨스 매장");
 
-		ThemeTag horror = TestDataHelper.createThemeTag(em, "공포");
-		ThemeTag romance = TestDataHelper.createThemeTag(em, "로맨스");
+		ThemeTag horror = createThemeTag(em, "공포");
+		ThemeTag romance = createThemeTag(em, "로맨스");
 
-		Theme horrorTheme = TestDataHelper.createTheme(em, "공포 테마", "무서운 테마", Theme.Status.OPENED, storeA,
+		Theme horrorTheme = createTheme(em, "공포 테마", "무서운 테마", Theme.Status.OPENED, storeA,
 			List.of(horror));
-		Theme romanceTheme = TestDataHelper.createTheme(em, "로맨스 테마", "달달한 테마", Theme.Status.OPENED, storeB,
+		Theme romanceTheme = createTheme(em, "로맨스 테마", "달달한 테마", Theme.Status.OPENED, storeB,
 			List.of(romance));
 
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Member host = createMember(em, "img.jpg", "호스트");
 
 		LocalDate targetDate = LocalDate.now().plusDays(3);
 
-		TestDataHelper.createParty(em, partyReq("조건 만족 파티", horrorTheme.getId(), targetDate.atTime(18, 0)), horrorTheme,
-			host);
-		TestDataHelper.createParty(em, partyReq("지역 다른 파티", romanceTheme.getId(), targetDate.atTime(18, 0)),
-			romanceTheme, host);
-		TestDataHelper.createParty(em, partyReq("태그 다른 파티", romanceTheme.getId(), targetDate.atTime(18, 0)),
-			romanceTheme, host);
-		TestDataHelper.createParty(em, partyReq("날짜 다른 파티", horrorTheme.getId(), targetDate.minusDays(1).atTime(18, 0)),
-			horrorTheme, host);
+		Party party1 = createParty(em, partyReq("조건 만족 파티", horrorTheme.getId(), targetDate.atTime(18, 0)),
+			horrorTheme);
+		Party party2 = createParty(em, partyReq("지역 다른 파티", romanceTheme.getId(), targetDate.atTime(18, 0)),
+			romanceTheme);
+		Party party3 = createParty(em, partyReq("태그 다른 파티", romanceTheme.getId(), targetDate.atTime(18, 0)),
+			romanceTheme);
+		Party party4 = createParty(em, partyReq("날짜 다른 파티", horrorTheme.getId(), targetDate.minusDays(1).atTime(18, 0)),
+			horrorTheme);
+
+		party1.addPartyMember(createHost(em, party1, host));
+		party2.addPartyMember(createHost(em, party2, host));
+		party3.addPartyMember(createHost(em, party3, host));
+		party4.addPartyMember(createHost(em, party4, host));
 
 		em.flush();
 		em.clear();
@@ -435,28 +473,32 @@ public class PartyRepositoryTest {
 	@DisplayName("복합 필터 - 검색어 + 지역 + 태그 + 날짜를 모두 만족하는 파티만 조회")
 	void keywordRegionTagDateCombinedFilterTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "강남");
-		Store store = TestDataHelper.createStore(em, region, "공포존");
+		Region region = createRegion(em, "서울", "강남");
+		Store store = createStore(em, region, "공포존");
 
-		ThemeTag horror = TestDataHelper.createThemeTag(em, "공포");
-		ThemeTag romance = TestDataHelper.createThemeTag(em, "로맨스");
+		ThemeTag horror = createThemeTag(em, "공포");
+		ThemeTag romance = createThemeTag(em, "로맨스");
 
-		Theme horrorTheme = TestDataHelper.createTheme(em, "공포의 방", "무서운 설명", Theme.Status.OPENED, store,
+		Theme horrorTheme = createTheme(em, "공포의 방", "무서운 설명", Theme.Status.OPENED, store,
 			List.of(horror));
-		Theme romanceTheme = TestDataHelper.createTheme(em, "사랑의 방", "설렘 설명", Theme.Status.OPENED, store,
+		Theme romanceTheme = createTheme(em, "사랑의 방", "설렘 설명", Theme.Status.OPENED, store,
 			List.of(romance));
 
-		Member host = TestDataHelper.createMember(em, "img.jpg", "공포호스트");
+		Member host = createMember(em, "img.jpg", "공포호스트");
 
 		LocalDate targetDate = LocalDate.now().plusDays(3);
 		LocalDateTime scheduledAt = targetDate.atTime(19, 0);
 
-		TestDataHelper.createParty(em, partyReq("미스터리 공포 파티", horrorTheme.getId(), scheduledAt), horrorTheme, host);
+		Party party1 = createParty(em, partyReq("미스터리 공포 파티", horrorTheme.getId(), scheduledAt), horrorTheme);
+		Party party2 = createParty(em, partyReq("일반 공포 파티", horrorTheme.getId(), scheduledAt), horrorTheme);
+		Party party3 = createParty(em, partyReq("미스터리 로맨스 파티", romanceTheme.getId(), scheduledAt), romanceTheme);
+		Party party4 = createParty(em,
+			partyReq("미스터리 공포 파티 - 전날", horrorTheme.getId(), targetDate.minusDays(1).atTime(18, 0)), horrorTheme);
 
-		TestDataHelper.createParty(em, partyReq("일반 공포 파티", horrorTheme.getId(), scheduledAt), horrorTheme, host);
-		TestDataHelper.createParty(em, partyReq("미스터리 로맨스 파티", romanceTheme.getId(), scheduledAt), romanceTheme, host);
-		TestDataHelper.createParty(em,
-			partyReq("미스터리 공포 파티 - 전날", horrorTheme.getId(), targetDate.minusDays(1).atTime(18, 0)), horrorTheme, host);
+		party1.addPartyMember(createHost(em, party1, host));
+		party2.addPartyMember(createHost(em, party2, host));
+		party3.addPartyMember(createHost(em, party3, host));
+		party4.addPartyMember(createHost(em, party4, host));
 
 		em.flush();
 		em.clear();
@@ -480,14 +522,16 @@ public class PartyRepositoryTest {
 	@DisplayName("페이징 - lastId와 size 조건에 따라 조회")
 	void pagingTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "합정");
-		Store store = TestDataHelper.createStore(em, region, "합정 매장");
-		Theme theme = TestDataHelper.createTheme(em, "합정 테마", "설명", Theme.Status.OPENED, store, List.of());
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Region region = createRegion(em, "서울", "합정");
+		Store store = createStore(em, region, "합정 매장");
+		Theme theme = createTheme(em, "합정 테마", "설명", Theme.Status.OPENED, store, List.of());
+		Member host = createMember(em, "img.jpg", "호스트");
 
 		List<Party> parties = new ArrayList<>();
 		for (int i = 1; i <= 5; i++) {
-			parties.add(TestDataHelper.createParty(em, partyReq("파티" + i, theme.getId()), theme, host));
+			Party party = createParty(em, partyReq("파티" + i, theme.getId()), theme);
+			party.addPartyMember(createHost(em, party, host));
+			parties.add(party);
 		}
 
 		em.flush();
@@ -509,20 +553,22 @@ public class PartyRepositoryTest {
 	@DisplayName("페이징 + 필터 - 필터를 만족하는 파티 중 lastId 이전 최신 파티만 1개 조회")
 	void pagingWithFiltersTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "강남");
-		Store store = TestDataHelper.createStore(em, region, "강남 매장");
+		Region region = createRegion(em, "서울", "강남");
+		Store store = createStore(em, region, "강남 매장");
 
-		ThemeTag horror = TestDataHelper.createThemeTag(em, "공포");
-		Theme theme = TestDataHelper.createTheme(em, "공포 테마", "설명", Theme.Status.OPENED, store, List.of(horror));
+		ThemeTag horror = createThemeTag(em, "공포");
+		Theme theme = createTheme(em, "공포 테마", "설명", Theme.Status.OPENED, store, List.of(horror));
 
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Member host = createMember(em, "img.jpg", "호스트");
 
-		LocalDate targetDate = LocalDate.now().plusDays(3);
+		LocalDate targetDate = LocalDate.now().plusDays(1);
 
 		List<Party> parties = new ArrayList<>();
 		for (int i = 1; i <= 3; i++) {
-			parties.add(TestDataHelper.createParty(em,
-				partyReq("파티" + i, theme.getId(), targetDate.atTime(18 + i, 0)), theme, host));
+			Party party = createParty(em, partyReq("파티" + i, theme.getId()), theme);
+			party.addPartyMember(createHost(em, party, host));
+			parties.add(party);
+			em.persist(party);
 		}
 
 		em.flush();
@@ -548,14 +594,17 @@ public class PartyRepositoryTest {
 	@DisplayName("검색어 + 페이징 - 키워드에 맞는 파티 중에서 lastId 이전 최신 1개 조회")
 	void keywordPagingTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "서초");
-		Store store = TestDataHelper.createStore(em, region, "미스터리존");
-		Theme theme = TestDataHelper.createTheme(em, "미스터리룸", "설명", Theme.Status.OPENED, store, List.of());
-		Member host = TestDataHelper.createMember(em, "img.jpg", "호스트");
+		Region region = createRegion(em, "서울", "서초");
+		Store store = createStore(em, region, "미스터리존");
+		Theme theme = createTheme(em, "미스터리룸", "설명", Theme.Status.OPENED, store, List.of());
+		Member host = createMember(em, "img.jpg", "호스트");
 
 		List<Party> parties = new ArrayList<>();
 		for (int i = 1; i <= 3; i++) {
-			parties.add(TestDataHelper.createParty(em, partyReq("미스터리 파티" + i, theme.getId()), theme, host));
+			Party party = createParty(em, partyReq("파티" + i, theme.getId()), theme);
+			party.addPartyMember(createHost(em, party, host));
+			parties.add(party);
+			em.persist(party);
 		}
 
 		em.flush();
@@ -569,35 +618,40 @@ public class PartyRepositoryTest {
 
 		// then
 		assertThat(results).hasSize(1);
-		assertThat(results.getFirst().title()).isEqualTo("미스터리 파티2");
+		assertThat(results.getFirst().title()).isEqualTo("파티2");
 	}
 
 	@Test
 	@DisplayName("참여한 모임 조회")
 	void findByMemberJoinedTest() {
 		// given
-		Region region = TestDataHelper.createRegion(em, "서울", "강남");
-		Store store = TestDataHelper.createStore(em, region, "매장1");
-		Theme horrorTheme = TestDataHelper.createTheme(em, "미스터리 공포 테마", "무서운 경험", Theme.Status.OPENED, store,
+		Region region = createRegion(em, "서울", "강남");
+		Store store = createStore(em, region, "매장1");
+		Theme horrorTheme = createTheme(em, "미스터리 공포 테마", "무서운 경험", Theme.Status.OPENED, store,
 			List.of());
-		Member host = TestDataHelper.createMember(em, "host-img.jpg", "호스트");
-		Member member = TestDataHelper.createMember(em, "member-img.jpg", "멤버");
+		Member host = createMember(em, "host-img.jpg", "호스트");
+		Member member = createMember(em, "member-img.jpg", "멤버");
 
 		LocalDateTime scheduledAt = LocalDateTime.now().plusDays(3);
 
 		// 파티 생성
-		Party party1 = TestDataHelper.createParty(em, partyReq("미스터리 공포 파티 1", horrorTheme.getId(), scheduledAt),
-			horrorTheme, member);
-		Party party2 = TestDataHelper.createParty(em, partyReq("미스터리 공포 파티 2", horrorTheme.getId(), scheduledAt),
-			horrorTheme, host);
-		Party party3 = TestDataHelper.createParty(em, partyReq("미스터리 공포 파티 3", horrorTheme.getId(), scheduledAt),
-			horrorTheme, host);
-		Party party4 = TestDataHelper.createParty(em, partyReq("미스터리 공포 파티 4", horrorTheme.getId(), scheduledAt),
-			horrorTheme, member);
+		Party party1 = createParty(em, partyReq("미스터리 공포 파티 1", horrorTheme.getId(), scheduledAt),
+			horrorTheme);
+		Party party2 = createParty(em, partyReq("미스터리 공포 파티 2", horrorTheme.getId(), scheduledAt),
+			horrorTheme);
+		Party party3 = createParty(em, partyReq("미스터리 공포 파티 3", horrorTheme.getId(), scheduledAt),
+			horrorTheme);
+		Party party4 = createParty(em, partyReq("미스터리 공포 파티 4", horrorTheme.getId(), scheduledAt),
+			horrorTheme);
+
+		party1.addPartyMember(createHost(em, party1, member));
+		party2.addPartyMember(createHost(em, party2, host));
+		party3.addPartyMember(createHost(em, party3, host));
+		party4.addPartyMember(createHost(em, party4, member));
 
 		// 파티에 참여자 추가
-		party2.addPartyMember(member);
-		party3.addPartyMember(member);
+		party2.addPartyMember(createPartyMember(em, party2, member));
+		party3.addPartyMember(createPartyMember(em, party3, member));
 
 		party2.updatePartyMemberStatus(member, PartyMemberStatus.CANCELLED);
 		party3.updatePartyMemberStatus(member, PartyMemberStatus.ACCEPTED);

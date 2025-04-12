@@ -52,7 +52,10 @@ public class PartyValidationServiceTest {
 	@Test
 	void checkHostTest1() {
 		// given
-		Party party = Party.of(partyReq("파티", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("파티", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
+
+		em.persist(party);
 
 		// when & then
 		assertDoesNotThrow(() -> partyValidationService.checkHost(party, host));
@@ -62,11 +65,12 @@ public class PartyValidationServiceTest {
 	@DisplayName("예외 - HOST가 아닌 경우")
 	void checkHostTest2() {
 		// given
-		Party party = Party.of(partyReq("파티", theme.getId()), theme, host);
-
+		Party party = createParty(em, partyReq("파티", theme.getId()), theme);
+		party.addPartyMember(createHost(party, host));
 		Member guest = createMember(em, "img.jpg", "게스트");
+		party.addPartyMember(createPartyMember(em, party, guest));
 
-		party.addPartyMember(guest);
+		em.persist(party);
 
 		// when & then
 		assertThrows(PartyException.class, () -> partyValidationService.checkHost(party, guest));
@@ -75,7 +79,8 @@ public class PartyValidationServiceTest {
 	@Test
 	@DisplayName("모집 중인 경우")
 	void checkRecruitingTest1() {
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
 		party.updateStatus(PartyStatus.RECRUITING);
 
 		em.persist(party);
@@ -86,7 +91,8 @@ public class PartyValidationServiceTest {
 	@Test
 	@DisplayName("예외 - 모집 중이 아닌 경우")
 	void checkRecruitingTest2() {
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(party, host));
 		party.updateStatus(PartyStatus.PENDING);
 
 		em.persist(party);
@@ -98,7 +104,9 @@ public class PartyValidationServiceTest {
 	@Test
 	@DisplayName("에외 - 모임장이 신청한 경우")
 	void validateApplyTest1() {
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
+
 		em.persist(party);
 
 		assertThatThrownBy(() -> partyValidationService.validateApply(party, host))
@@ -108,9 +116,12 @@ public class PartyValidationServiceTest {
 	@Test
 	@DisplayName("예외 - 이미 승인된 모임원이 신청한 경우")
 	void validateApplyTest2() {
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
+
 		Member guest = createMember(em, "img.jpg", "게스트");
-		party.addPartyMember(guest);
+		party.addPartyMember(createPartyMember(em, party, guest));
+
 		party.updatePartyMemberStatus(guest, PartyMemberStatus.ACCEPTED);
 
 		em.persist(party);
@@ -123,7 +134,9 @@ public class PartyValidationServiceTest {
 	@DisplayName("조건에 맞는 멤버가 신청한 경우")
 	void validateApplyTest3() {
 		Member member = createMember(em, "img.jpg", "멤버");
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
+
 		em.persist(party);
 
 		assertDoesNotThrow(() -> partyValidationService.validateApply(party, member));
@@ -132,7 +145,9 @@ public class PartyValidationServiceTest {
 	@Test
 	@DisplayName("예외 - 모임장이 취소한 경우")
 	void validateCancelTest1() {
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
+
 		em.persist(party);
 
 		assertThatThrownBy(() -> partyValidationService.validateCancel(party, host))
@@ -142,7 +157,9 @@ public class PartyValidationServiceTest {
 	@Test
 	@DisplayName("에외 - 모임원이 아닌데 취소한 경우")
 	void validateCancelTest2() {
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
+
 		em.persist(party);
 
 		Member guest = createMember(em, "img.jpg", "게스트");
@@ -155,9 +172,10 @@ public class PartyValidationServiceTest {
 	@DisplayName("신청한 모임원이 취소한 경우")
 	void validateCancelTest3() {
 		Member member = createMember(em, "img.jpg", "멤버");
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
 
-		party.addPartyMember(member);
+		party.addPartyMember(createPartyMember(em, party, member));
 
 		em.persist(party);
 
@@ -168,9 +186,9 @@ public class PartyValidationServiceTest {
 	@DisplayName("승인된 모임원이 취소한 경우")
 	void validateCancelTest4() {
 		Member member = createMember(em, "img.jpg", "멤버");
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
-
-		party.addPartyMember(member);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
+		party.addPartyMember(createPartyMember(em, party, member));
 		party.updatePartyMemberStatus(member, PartyMemberStatus.ACCEPTED);
 
 		em.persist(party);
@@ -182,7 +200,8 @@ public class PartyValidationServiceTest {
 	@DisplayName("예외 - 모임원을 승인하는 경우")
 	void validateAcceptTest1() {
 		Member guest = createMember(em, "img.jpg", "게스트");
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
 
 		em.persist(party);
 
@@ -194,9 +213,10 @@ public class PartyValidationServiceTest {
 	@DisplayName("에외 - 신청 취소한 멤버를 승인하는 경우")
 	void validateAcceptTest2() {
 		Member member = createMember(em, "img.jpg", "멤버");
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
 
-		party.addPartyMember(member);
+		party.addPartyMember(createPartyMember(em, party, member));
 		party.updatePartyMemberStatus(member, PartyMemberStatus.CANCELLED);
 
 		em.persist(party);
@@ -209,9 +229,10 @@ public class PartyValidationServiceTest {
 	@DisplayName("예외 - 이미 승인된 멤버를 승인하는 경우")
 	void validateAcceptTest3() {
 		Member member = createMember(em, "img.jpg", "멤버");
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
 
-		party.addPartyMember(member);
+		party.addPartyMember(createPartyMember(em, party, member));
 		party.updatePartyMemberStatus(member, PartyMemberStatus.ACCEPTED);
 
 		em.persist(party);
@@ -224,8 +245,9 @@ public class PartyValidationServiceTest {
 	@DisplayName("신청 상태의 멤버를 승인하는 경우")
 	void validateAcceptTest4() {
 		Member member = createMember(em, "img.jpg", "멤버");
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
-		party.addPartyMember(member);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
+		party.addPartyMember(createPartyMember(em, party, member));
 
 		em.persist(party);
 
@@ -235,8 +257,10 @@ public class PartyValidationServiceTest {
 	@Test
 	@DisplayName("예외 - 모집 기간이고 상태가 PENDING이 아닌 경우")
 	void validateExecutableTest1() {
-		Party party = Party.of(partyReq("모임", theme.getId(), LocalDateTime.now().plusDays(1)), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId(), LocalDateTime.now().plusDays(1)), theme);
+		party.addPartyMember(createHost(em, party, host));
 		party.updateStatus(PartyStatus.RECRUITING);
+
 		em.persist(party);
 
 		assertThatThrownBy(() -> partyValidationService.validateExecutable(party, host))
@@ -246,8 +270,10 @@ public class PartyValidationServiceTest {
 	@Test
 	@DisplayName("상태가 PENDING인 경우")
 	void validateExecutableTest2() {
-		Party party = Party.of(partyReq("모임", theme.getId(), LocalDateTime.now().plusDays(1)), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId(), LocalDateTime.now().plusDays(1)), theme);
+		party.addPartyMember(createHost(em, party, host));
 		party.updateStatus(PartyStatus.PENDING);
+
 		em.persist(party);
 
 		assertDoesNotThrow(() -> partyValidationService.validateExecutable(party, host));
@@ -257,8 +283,10 @@ public class PartyValidationServiceTest {
 	@DisplayName("예외 - 한 명이라도 신청한 모임을 수정하는 경우")
 	void validateModifiableTest1() {
 		Member member = createMember(em, "img.jpg", "멤버");
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
-		party.addPartyMember(member);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
+		party.addPartyMember(createPartyMember(em, party, member));
+
 		em.persist(party);
 
 		assertThatThrownBy(() -> partyValidationService.validateModifiable(party, host))
@@ -268,7 +296,8 @@ public class PartyValidationServiceTest {
 	@Test
 	@DisplayName("아직 신청자가 없는 모임을 수정하는 경우")
 	void validateModifiableTest2() {
-		Party party = Party.of(partyReq("모임", theme.getId()), theme, host);
+		Party party = createParty(em, partyReq("모임", theme.getId()), theme);
+		party.addPartyMember(createHost(em, party, host));
 		em.persist(party);
 
 		assertDoesNotThrow(() -> partyValidationService.validateModifiable(party, host));

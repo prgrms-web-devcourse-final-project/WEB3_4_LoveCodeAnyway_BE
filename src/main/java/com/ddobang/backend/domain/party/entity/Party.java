@@ -92,7 +92,7 @@ public class Party extends BaseTime {
 	@JoinColumn(name = "theme_id", nullable = false)
 	private Theme theme;
 
-	private Party(PartyRequest request, Theme theme, Member host) {
+	private Party(PartyRequest request, Theme theme) {
 		this.title = request.title();
 		this.content = request.content();
 		this.scheduledAt = request.scheduledAt();
@@ -104,13 +104,10 @@ public class Party extends BaseTime {
 		this.partyMembers = new ArrayList<>();
 		this.deleted = false;
 		this.theme = theme;
-
-		PartyMember partyMember = PartyMember.createHost(this, host);
-		this.partyMembers.add(partyMember);
 	}
 
-	public static Party of(PartyRequest request, Theme theme, Member host) {
-		return new Party(request, theme, host);
+	public static Party of(PartyRequest request, Theme theme) {
+		return new Party(request, theme);
 	}
 
 	public void modifyParty(PartyRequest request, Theme theme) {
@@ -125,7 +122,7 @@ public class Party extends BaseTime {
 
 	public boolean isPartyMember(Member member) {
 		return partyMembers.stream()
-			.anyMatch(pm -> pm.getMember().equals(member));
+			.anyMatch(pm -> pm.getMember().getId().equals(member.getId()));
 	}
 
 	public boolean isRecruiting() {
@@ -155,14 +152,13 @@ public class Party extends BaseTime {
 		this.status = status;
 	}
 
-	public void addPartyMember(Member member) {
-		PartyMember partyMember = PartyMember.of(this, member);
+	public void addPartyMember(PartyMember partyMember) {
 		this.partyMembers.add(partyMember);
 	}
 
 	private PartyMember getPartyMember(Member member) {
 		return partyMembers.stream()
-			.filter(pm -> pm.getMember().equals(member))
+			.filter(pm -> pm.getMember().getId().equals(member.getId()))
 			.findFirst()
 			.orElseThrow(() -> new PartyException(PartyErrorCode.PARTY_MEMBER_NOT_FOUND));
 	}

@@ -1,5 +1,6 @@
 package com.ddobang.backend.domain.party.service;
 
+import static com.ddobang.backend.domain.party.testUtils.TestDataHelper.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -33,9 +34,11 @@ import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.Party;
+import com.ddobang.backend.domain.party.entity.PartyMember;
 import com.ddobang.backend.domain.party.event.PartyApplyEvent;
 import com.ddobang.backend.domain.party.event.PartyMemberStatusUpdatedEvent;
 import com.ddobang.backend.domain.party.exception.PartyException;
+import com.ddobang.backend.domain.party.repository.PartyMemberRepository;
 import com.ddobang.backend.domain.party.repository.PartyRepository;
 import com.ddobang.backend.domain.party.testUtils.TestDataHelper;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
@@ -70,6 +73,9 @@ class PartyServiceTest {
 	private PartyValidationService partyValidationService;
 
 	@Mock
+	private PartyMemberRepository partyMemberRepository;
+
+	@Mock
 	private EventPublisher eventPublisher; // 이벤트 퍼블리셔 추가
 
 	private Theme theme;
@@ -79,12 +85,13 @@ class PartyServiceTest {
 	@SuppressWarnings("checkstyle:RegexpSinglelineJava")
 	@BeforeEach
 	void setUp() {
-		Region region = TestDataHelper.createRegion("서울", "강남");
-		Store store = TestDataHelper.createStore(region, "매장1");
-		theme = TestDataHelper.createTheme("테마1", "설명", Theme.Status.OPENED, store, List.of());
-		host = TestDataHelper.createMember("img.jpg", "멤버");
-		PartyRequest partyReq = TestDataHelper.partyReq("모임", theme.getId());
-		party = Party.of(partyReq, theme, host);
+		Region region = createRegion("서울", "강남");
+		Store store = createStore(region, "매장1");
+		theme = createTheme("테마1", "설명", Theme.Status.OPENED, store, List.of());
+		host = createMember("img.jpg", "멤버");
+		PartyRequest partyReq = partyReq("모임", theme.getId());
+		party = Party.of(partyReq, theme);
+		party.addPartyMember(createHost(party, host));
 	}
 
 	@Test
@@ -248,7 +255,7 @@ class PartyServiceTest {
 		idField.setAccessible(true);
 		idField.set(host, hostId);
 
-		Member actor = TestDataHelper.createMember("imgUrl", "신청자");
+		Member actor = createMember("imgUrl", "신청자");
 		// 리플렉션을 사용하여 actor의 id 설정
 		idField.setAccessible(true);
 		idField.set(actor, actorId);
@@ -288,7 +295,9 @@ class PartyServiceTest {
 		// 리플렉션을 사용하여 actor의 id 설정
 		idField.set(actor, actorId);
 
-		party.addPartyMember(actor);
+		PartyMember applicant = PartyMember.of(party, actor);
+
+		party.addPartyMember(applicant);
 		party.updatePartyMemberStatus(actor, PartyMemberStatus.CANCELLED);
 
 		// when
@@ -305,13 +314,24 @@ class PartyServiceTest {
 
 	@Test
 	@DisplayName("모임 신청 취소")
-	void cancelAppliedPartyTest() {
+	void cancelAppliedPartyTest() throws Exception {
 		// given
 		Long partyId = 1L;
+		Long hostId = 100L; // 모임장 ID 설정
+		Long actorId = 200L; // 신청자 ID 설정
+
+		// 리플렉션을 사용하여 host의 id 설정
+		Field idField = host.getClass().getDeclaredField("id");
+		idField.setAccessible(true);
+		idField.set(host, hostId);
+
 		when(partyRepository.findById(partyId)).thenReturn(Optional.of(party));
 
 		Member actor = TestDataHelper.createMember("imgUrl", "취소자");
-		party.addPartyMember(actor);
+		idField.set(actor, actorId);
+
+		PartyMember partyMember = PartyMember.of(party, actor);
+		party.addPartyMember(partyMember);
 
 		// when
 		partyService.cancelAppliedParty(partyId, actor);
@@ -340,7 +360,10 @@ class PartyServiceTest {
 		// 리플렉션을 사용하여 applicant의 id 설정
 		idField.set(applicant, memberId);
 
-		party.addPartyMember(applicant);
+		PartyMember partyMember = PartyMember.of(party, applicant);
+
+		party.addPartyMember(partyMember);
+
 		when(partyRepository.findById(partyId)).thenReturn(Optional.of(party));
 		when(memberService.getMember(memberId)).thenReturn(applicant);
 
@@ -406,7 +429,9 @@ class PartyServiceTest {
 					6,
 					true
 				);
-				return Party.of(request, theme, host);
+				Party party = Party.of(request, theme);
+				party.addPartyMember(PartyMember.createHost(party, host));
+				return party;
 			})
 			.collect(Collectors.toList());
 

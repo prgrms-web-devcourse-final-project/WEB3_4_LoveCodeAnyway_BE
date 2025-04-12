@@ -67,15 +67,22 @@ public class TestDataHelper {
 		return member;
 	}
 
-	public static Party createParty(EntityManager em, PartyRequest request, Theme theme, Member host) {
-		Party party = Party.of(request, theme, host);
+	public static Party createParty(EntityManager em, PartyRequest request, Theme theme) {
+		Party party = Party.of(request, theme);
 		em.persist(party);
 		return party;
 	}
 
-	public static void createPartyMember(EntityManager em, Party party, Member member) {
+	public static PartyMember createHost(EntityManager em, Party party, Member member) {
+		PartyMember partyMember = PartyMember.createHost(party, member);
+		em.persist(partyMember);
+		return partyMember;
+	}
+
+	public static PartyMember createPartyMember(EntityManager em, Party party, Member member) {
 		PartyMember partyMember = PartyMember.of(party, member);
 		em.persist(partyMember);
+		return partyMember;
 	}
 
 	// 객체만 반환
@@ -111,6 +118,21 @@ public class TestDataHelper {
 			.nickname(nickname)
 			.profilePictureUrl(profileUrl)
 			.build();
+	}
+
+	public static Party createParty(PartyRequest request, Theme theme) {
+		Party party = Party.of(request, theme);
+		return party;
+	}
+
+	public static PartyMember createPartyMember(Party party, Member member) {
+		PartyMember partyMember = PartyMember.of(party, member);
+		return partyMember;
+	}
+
+	public static PartyMember createHost(Party party, Member member) {
+		PartyMember partyMember = PartyMember.createHost(party, member);
+		return partyMember;
 	}
 
 	// PartyRequest 생성
