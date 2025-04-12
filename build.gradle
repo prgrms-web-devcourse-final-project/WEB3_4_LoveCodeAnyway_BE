@@ -65,6 +65,9 @@ dependencies {
 
     // servlet-api
     implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+
+    // health check
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 def querydslDir = "build/generated/querydsl"
