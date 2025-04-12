@@ -1,15 +1,14 @@
 package com.ddobang.backend.domain.party.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.service.MemberReviewService;
@@ -23,11 +22,13 @@ import com.ddobang.backend.domain.party.dto.response.PartyDetailResponse;
 import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.Party;
+import com.ddobang.backend.domain.party.entity.PartyMember;
 import com.ddobang.backend.domain.party.entity.PartyMemberReview;
 import com.ddobang.backend.domain.party.event.PartyApplyEvent;
 import com.ddobang.backend.domain.party.event.PartyMemberStatusUpdatedEvent;
 import com.ddobang.backend.domain.party.exception.PartyErrorCode;
 import com.ddobang.backend.domain.party.exception.PartyException;
+import com.ddobang.backend.domain.party.repository.PartyMemberRepository;
 import com.ddobang.backend.domain.party.repository.PartyMemberReviewRepository;
 import com.ddobang.backend.domain.party.repository.PartyRepository;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
@@ -51,6 +52,7 @@ public class PartyService {
 	private final PartyValidationService partyValidationService;
 	private final PartyMemberReviewRepository reviewRepository;
 	private final MemberReviewService memberReviewService;
+	private final PartyMemberRepository partyMemberRepository;
 
 	//추가 이벤트 퍼블리셔
 	private final EventPublisher eventPublisher;
@@ -80,9 +82,11 @@ public class PartyService {
 	@Transactional
 	public PartyDto createParty(PartyRequest request, Member actor) {
 		Theme theme = themeService.getThemeById(request.themeId());
-		Party party = Party.of(request, theme, actor);
-
-		return PartyDto.from(partyRepository.save(party));
+		Party party = Party.of(request, theme);
+		PartyMember host = PartyMember.createHost(party, actor);
+		party.addPartyMember(host);
+		partyRepository.save(party);
+		return PartyDto.from(party);
 	}
 
 	@Transactional
@@ -106,12 +110,15 @@ public class PartyService {
 		Party party = getPartyById(id);
 
 		partyValidationService.validateApply(party, actor);
-		boolean isNewApplication = !party.isPartyMember(actor); // 추가: 신청자 여부 확인
+
+		// boolean isNewApplication = !party.isPartyMember(actor); // 추가: 신청자 여부 확인
 
 		if (party.isPartyMember(actor)) {
 			party.updatePartyMemberStatus(actor, PartyMemberStatus.APPLICANT);
 		} else {
-			party.addPartyMember(actor);
+			PartyMember applicant = PartyMember.of(party, actor);
+			party.addPartyMember(applicant);
+			partyMemberRepository.save(applicant);
 		}
 
 		// 모임장이 아닌 경우(=신청자)만 이벤트 발행
@@ -165,10 +172,10 @@ public class PartyService {
 		Party party = getPartyById(id);
 		Member member = memberService.getMember(memberId);
 
-		partyValidationService.validateAccept(party, member, actor);
+		partyValidationService.validateReject(party, member, actor);
 
-		// 거절 처리 (취소 상태로 변경)
-		party.updatePartyMemberStatus(member, PartyMemberStatus.CANCELLED);
+		// 거절 상태로 변경
+		party.updatePartyMemberStatus(member, PartyMemberStatus.REJECTED);
 		party.updatePartyStatus();
 
 		// 상태 변경 이벤트 발행
@@ -178,7 +185,7 @@ public class PartyService {
 			.memberId(member.getId())  // 알림 수신자 (신청자)
 			.hostId(actor.getId())
 			.hostNickname(actor.getNickname())
-			.newStatus(PartyMemberStatus.CANCELLED)
+			.newStatus(PartyMemberStatus.REJECTED)
 			.build());
 	}
 
@@ -217,7 +224,6 @@ public class PartyService {
 			for (MemberReviewKeyword keyword : keywords) {
 				review.addKeyword(keyword);
 			}
-
 			reviewRepository.save(review);
 
 			reviewedMemberIds.add(receiver.getId());

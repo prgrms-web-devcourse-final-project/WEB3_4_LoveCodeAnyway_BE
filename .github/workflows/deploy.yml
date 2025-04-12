@@ -74,7 +74,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [ buildImageAndPush ]
+    needs: [buildImageAndPush]
     env:
       DOCKER_IMAGE_NAME: ${{ needs.buildImageAndPush.outputs.DOCKER_IMAGE_NAME }}
       OWNER_LC: ${{ needs.buildImageAndPush.outputs.OWNER_LC }}
@@ -106,7 +106,7 @@ jobs:
             VOLUME="/gen:/gen"
             NETWORK="common"
             HEALTH_ENDPOINT="/actuator/health"
-            TIMEOUT=60
+            TIMEOUT=120
 
             # 현재 실행 중인 컨테이너 확인
             if docker ps --format '{{.Names}}' | grep -q "app1_1"; then
