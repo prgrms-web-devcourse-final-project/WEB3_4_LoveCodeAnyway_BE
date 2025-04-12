@@ -2,6 +2,8 @@ package com.ddobang.backend.global.security.jwt;
 
 import org.springframework.stereotype.Component;
 
+import com.ddobang.backend.domain.member.entity.Member;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +23,11 @@ public class JwtTokenProvider {
 	}
 
 	//>>> 토큰 추출 그룹
+	// JWT 토큰에서 주 식별자 추출
+	public String getSubject(String token) {
+		return payloadExtractor.extractSubject(token);
+	}
+
 	// JWT 토큰에서 카카오ID 추출
 	public String extractKakaoId(String token) {
 		return payloadExtractor.extractKakaoId(token);
@@ -42,7 +49,11 @@ public class JwtTokenProvider {
 	}
 
 	//>>> 토큰 생성 그룹
-	public String generateToken(String subject, JwtTokenType type, boolean isAdmin) {
-		return tokenFactory.generateToken(subject, type, isAdmin);
+	public String generateToken(Member member, JwtTokenType type, boolean isAdmin) {
+		return tokenFactory.generateToken(member, type, isAdmin);
+	}
+
+	public String generateSignupToken(String kakaoId) {
+		return tokenFactory.generateSignupToken(kakaoId);
 	}
 }

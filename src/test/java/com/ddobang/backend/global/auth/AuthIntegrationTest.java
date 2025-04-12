@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.ddobang.backend.domain.diary.repository.DiaryRepository;
@@ -22,10 +23,12 @@ import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.global.auth.dto.request.SignupRequest;
 import com.ddobang.backend.global.security.jwt.JwtTokenFactory;
 import com.ddobang.backend.global.security.jwt.JwtTokenType;
+import com.ddobang.backend.support.MemberTestFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.Cookie;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
 class AuthIntegrationTest {
@@ -58,7 +61,8 @@ class AuthIntegrationTest {
 
 	// 테스트를 위한 JWT 토큰 쿠키 생성
 	private Cookie createSignupTokenCookie() {
-		String token = jwtTokenFactory.generateToken("12345678", JwtTokenType.SIGNUP, false);
+		Member member = MemberTestFactory.full();
+		String token = jwtTokenFactory.generateToken(member, JwtTokenType.SIGNUP, false);
 		Cookie cookie = new Cookie("signupToken", token);
 		cookie.setHttpOnly(true);
 		cookie.setPath("/");

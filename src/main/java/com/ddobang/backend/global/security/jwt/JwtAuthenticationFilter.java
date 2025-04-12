@@ -6,7 +6,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.global.exception.jwt.JwtErrorCode;
 import com.ddobang.backend.global.exception.jwt.JwtException;
@@ -45,15 +44,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			String token = jwtTokenProvider.resolveAccessToken(request);
 
 			if (token != null && jwtTokenProvider.isValidToken(token, JwtTokenType.ACCESS)) {
+				Long memberId = Long.valueOf(jwtTokenProvider.getSubject(token)); // sub = memberId
 				String nickname = jwtTokenProvider.extractNickname(token);
-				Member member = memberService.getByNickname(nickname);
+				boolean isAdmin = jwtTokenProvider.extractIsAdmin(token);
 
-				// 비밀번호가 null이 아니고 빈 문자열이 아닐 경우 관리자
-				boolean isAdmin = member.getPassword() != null && !member.getPassword().isBlank();
-
-				// SecurityContext에 인증 정보 저장
-				CustomUserDetails userDetails = new CustomUserDetails(
-					member.getId(), member.getNickname(), isAdmin);
+				CustomUserDetails userDetails = new CustomUserDetails(memberId, nickname, isAdmin);
 
 				UsernamePasswordAuthenticationToken authentication =
 					new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

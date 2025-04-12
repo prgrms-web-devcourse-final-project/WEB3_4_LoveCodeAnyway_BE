@@ -46,7 +46,9 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> {
 				auth
 					// OAuth2 로그인 관련
-					.requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/**").permitAll()
+					.requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/**").permitAll() // OAuth2 로그인 관련
+					.requestMatchers("/signup", "/api/v1/auth/signup").permitAll() // 회원가입 페이지
+					.requestMatchers("/login", "/api/v1/auth/login").permitAll() // 카카오 로그인 URL
 
 					// Swagger, 오류 페이지
 					.requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**",

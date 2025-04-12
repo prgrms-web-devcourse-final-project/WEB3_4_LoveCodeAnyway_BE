@@ -52,7 +52,7 @@ public class JwtPayloadExtractor {
 	}
 
 	// 주 식별자 추출
-	private String extractSubject(String token) {
-		return getClaims(token).getSubject();
+	public String extractSubject(String token) {
+		return getClaims(token).getSubject(); // sub = memberId
 	}
 }

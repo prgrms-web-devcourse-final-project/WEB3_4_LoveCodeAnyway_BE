@@ -3,6 +3,8 @@ package com.ddobang.backend.global.security;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.service.MemberService;
+import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.global.exception.jwt.JwtErrorCode;
 import com.ddobang.backend.global.exception.jwt.JwtException;
 
@@ -25,7 +27,7 @@ import com.ddobang.backend.global.exception.jwt.JwtException;
 class LoginMemberProviderTest {
 
 	@Mock
-	private MemberService memberService;
+	private MemberRepository memberRepository;
 
 	@InjectMocks
 	private LoginMemberProvider loginMemberProvider;
@@ -59,7 +61,7 @@ class LoginMemberProviderTest {
 
 		// MemberService가 반환할 Member 설정 (getCurrentMember()에서 호출됨)
 		Member mockMember = new Member(MEMBER_ID, NICKNAME);
-		when(memberService.getById(MEMBER_ID)).thenReturn(mockMember);
+		when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(mockMember));
 
 		// when: 실제 메서드 호출
 		Member currentMember = loginMemberProvider.getCurrentMember();

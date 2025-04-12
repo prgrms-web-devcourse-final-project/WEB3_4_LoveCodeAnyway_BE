@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.ddobang.backend.global.auth.service.AuthService;
 
 @WebMvcTest(AuthController.class)
+@DisplayName("AuthController 테스트")
 class AuthControllerTest {
 
 	@Autowired
@@ -36,4 +37,3 @@ class AuthControllerTest {
 			.andExpect(redirectedUrlPattern("**/oauth2/authorization/kakao"));
 	}
 }
-
