@@ -21,13 +21,11 @@ public class ImageEventListener {
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void onProfileImageChanged(ProfileImageChangedEvent event) {
-		System.out.println(event.oldUrl());
 		s3UploadService.delete(event.oldUrl());
 	}
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void onDiaryImageChanged(DiaryImageChangedEvent event) {
-		System.out.println(event.oldUrl());
 		s3UploadService.delete(event.oldUrl());
 	}
 
