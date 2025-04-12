@@ -61,6 +61,15 @@ public class Diary extends BaseTime {
 		this.review = review;
 	}
 
+	public static Diary toDiary(Member author, Theme theme, DiaryRequestDto dto) {
+		return Diary.builder()
+			.theme(theme)
+			.author(author)
+			.participants(dto.participants())
+			.review(dto.review())
+			.build();
+	}
+
 	public void checkActor(Member actor) {
 		if (!actor.equals(this.getAuthor()))
 			throw new DiaryException(DiaryErrorCode.DIARY_FORBIDDEN);

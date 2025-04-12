@@ -1,5 +1,8 @@
 package com.ddobang.backend.domain.diary.service;
 
+import static com.ddobang.backend.domain.diary.entity.Diary.*;
+import static com.ddobang.backend.domain.diary.entity.DiaryStat.*;
+
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
@@ -12,7 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.diary.converter.DiaryConverter;
 import com.ddobang.backend.domain.diary.dto.request.DiaryFilterRequest;
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
@@ -24,12 +26,12 @@ import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.stat.calculator.MemberStatCalculator;
-import com.ddobang.backend.domain.stat.calculator.ThemeStatCalculator;
+import com.ddobang.backend.domain.member.tool.MemberStatCalculator;
 import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
 import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.service.ThemeService;
+import com.ddobang.backend.domain.theme.tool.ThemeStatCalculator;
 import com.ddobang.backend.global.security.LoginMemberProvider;
 
 import lombok.RequiredArgsConstructor;
@@ -69,11 +71,11 @@ public class DiaryService {
 		);
 
 		Diary diary = diaryRepository.save(
-			DiaryConverter.toDiary(author, theme, diaryRequestDto)
+			toDiary(author, theme, diaryRequestDto)
 		);
 
 		DiaryStat diaryStat = diaryStatRepository.save(
-			DiaryConverter.toDiaryStat(diary, diaryRequestDto, elapsedTime)
+			toDiaryStat(diary, diaryRequestDto, elapsedTime)
 		);
 
 		diary.setDiaryStat(diaryStat);
@@ -121,7 +123,8 @@ public class DiaryService {
 			diaryRequestDto.elapsedTime()
 		);
 
-		DiaryConverter.modifyDiary(theme, diary, diaryRequestDto, elapsedTime);
+		diary.modify(theme, diaryRequestDto);
+		diary.getDiaryStat().modify(diaryRequestDto, elapsedTime);
 
 		diaryRepository.flush();
 		themeStatCalculator.updateThemeStat(theme);

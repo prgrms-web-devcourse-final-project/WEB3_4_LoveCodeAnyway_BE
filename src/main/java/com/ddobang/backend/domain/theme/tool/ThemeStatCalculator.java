@@ -1,4 +1,4 @@
-package com.ddobang.backend.domain.stat.calculator;
+package com.ddobang.backend.domain.theme.tool;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.diary.entity.DiaryStat;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
-import com.ddobang.backend.domain.stat.dto.ThemeStatResult;
+import com.ddobang.backend.domain.theme.dto.ThemeStatDto;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
@@ -26,7 +26,7 @@ public class ThemeStatCalculator {
 	public void updateThemeStat(Theme theme) {
 		Long themeId = theme.getId();
 		List<DiaryStat> diaryStats = diaryStatRepository.findByThemeId(themeId);
-		ThemeStatResult stats = calculateThemeStat(diaryStats);
+		ThemeStatDto stats = calculateThemeStat(diaryStats);
 		Optional<ThemeStat> themeStat = themeStatRepository.findById(themeId);
 
 		// 해당 테마에 대한 일지가 없을 경우 통계 삭제
@@ -38,33 +38,33 @@ public class ThemeStatCalculator {
 		// 해당 테마에 대한 통계가 없을 경우 통계 생성
 		if (themeStat.isPresent()) {
 			themeStat.get().updateStat(
-				stats.difficultyAvg(),
-				stats.fearAvg(),
-				stats.activityAvg(),
-				stats.satisfactionAvg(),
-				stats.productionAvg(),
-				stats.storyAvg(),
-				stats.questionAvg(),
-				stats.interiorAvg(),
-				stats.deviceRatioAvg(),
+				stats.difficulty(),
+				stats.fear(),
+				stats.activity(),
+				stats.satisfaction(),
+				stats.production(),
+				stats.story(),
+				stats.question(),
+				stats.interior(),
+				stats.deviceRatio(),
 				stats.noHintEscapeRate(),
-				stats.escapedRate(),
+				stats.escapeResult(),
 				stats.escapeTimeAvg(),
 				diaryStats.size());
 		} else {
 			themeStatRepository.save(ThemeStat.builder()
 				.theme(theme)
-				.difficulty(stats.difficultyAvg())
-				.fear(stats.fearAvg())
-				.activity(stats.activityAvg())
-				.satisfaction(stats.satisfactionAvg())
-				.production(stats.productionAvg())
-				.story(stats.storyAvg())
-				.question(stats.questionAvg())
-				.interior(stats.interiorAvg())
-				.deviceRatio(stats.deviceRatioAvg())
+				.difficulty(stats.difficulty())
+				.fear(stats.fear())
+				.activity(stats.activity())
+				.satisfaction(stats.satisfaction())
+				.production(stats.production())
+				.story(stats.story())
+				.question(stats.question())
+				.interior(stats.interior())
+				.deviceRatio(stats.deviceRatio())
 				.noHintEscapeRate(stats.noHintEscapeRate())
-				.escapeResult(stats.escapedRate())
+				.escapeResult(stats.escapeResult())
 				.escapeTimeAvg(stats.escapeTimeAvg())
 				.diaryCount(diaryStats.size())
 				.build());
@@ -72,7 +72,7 @@ public class ThemeStatCalculator {
 	}
 
 	// 테마 평가 및 통계 계산 메서드(힌트 갯수, 장치 비율 제외 0은 계산에서 제외합니다.)
-	private ThemeStatResult calculateThemeStat(List<DiaryStat> diaryStats) {
+	private ThemeStatDto calculateThemeStat(List<DiaryStat> diaryStats) {
 		long totalCount = diaryStats.size();
 
 		long totalDifficulty = 0;
@@ -207,18 +207,18 @@ public class ThemeStatCalculator {
 			Ut.calculator.calculateAverage(totalElapsedTime, elapsedTimeCount)
 		);
 
-		return ThemeStatResult.builder()
-			.difficultyAvg(difficultyAvg)
-			.fearAvg(fearAvg)
-			.activityAvg(activityAvg)
-			.satisfactionAvg(satisfactionAvg)
-			.productionAvg(productionAvg)
-			.storyAvg(storyAvg)
-			.questionAvg(questionAvg)
-			.interiorAvg(interiorAvg)
-			.deviceRatioAvg(deviceRatioAvg)
+		return ThemeStatDto.builder()
+			.difficulty(difficultyAvg)
+			.fear(fearAvg)
+			.activity(activityAvg)
+			.satisfaction(satisfactionAvg)
+			.production(productionAvg)
+			.story(storyAvg)
+			.question(questionAvg)
+			.interior(interiorAvg)
+			.deviceRatio(deviceRatioAvg)
 			.noHintEscapeRate(noHintEscapeRate)
-			.escapedRate(escapedRate)
+			.escapeResult(escapedRate)
 			.escapeTimeAvg(escapeTimeAvg)
 			.build();
 	}

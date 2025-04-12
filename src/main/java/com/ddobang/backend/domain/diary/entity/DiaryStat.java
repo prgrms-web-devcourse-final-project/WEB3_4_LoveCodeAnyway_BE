@@ -90,6 +90,27 @@ public class DiaryStat {
 		this.escapeDate = escapeDate;
 	}
 
+	public static DiaryStat toDiaryStat(Diary diary, DiaryRequestDto dto, int elapsedTime) {
+		return DiaryStat.builder()
+			.diary(diary)
+			.theme(diary.getTheme())
+			.author(diary.getAuthor())
+			.difficulty(dto.difficulty())
+			.fear(dto.fear())
+			.activity(dto.activity())
+			.satisfaction(dto.satisfaction())
+			.production(dto.production())
+			.story(dto.story())
+			.question(dto.question())
+			.interior(dto.interior())
+			.deviceRatio(dto.deviceRatio())
+			.hintCount(dto.hintCount())
+			.escapeResult(dto.escapeResult())
+			.elapsedTime(elapsedTime)
+			.escapeDate(dto.escapeDate())
+			.build();
+	}
+
 	public void modify(
 		DiaryRequestDto diaryRequestDto,
 		int elapsedTime
