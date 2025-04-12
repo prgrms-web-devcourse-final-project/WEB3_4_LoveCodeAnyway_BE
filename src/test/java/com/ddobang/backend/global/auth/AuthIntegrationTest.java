@@ -20,6 +20,7 @@ import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.member.entity.Gender;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.domain.member.repository.MemberStatRepository;
 import com.ddobang.backend.global.auth.dto.request.SignupRequest;
 import com.ddobang.backend.global.security.jwt.JwtTokenFactory;
 import com.ddobang.backend.global.security.jwt.JwtTokenType;
@@ -43,11 +44,14 @@ class AuthIntegrationTest {
 	private MemberRepository memberRepository;
 	@Autowired
 	private DiaryRepository diaryRepository;
+	@Autowired
+	private MemberStatRepository memberStatRepository;
 
 	// 테스트 전 데이터베이스 초기화
 	@BeforeEach
 	void setUp() {
 		diaryRepository.deleteAll();
+		memberStatRepository.deleteAll();
 		memberRepository.deleteAll();
 	}
 

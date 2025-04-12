@@ -1,6 +1,8 @@
 package com.ddobang.backend.domain.diary.entity;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+import com.ddobang.backend.domain.diary.exception.DiaryErrorCode;
+import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.global.entity.BaseTime;
@@ -32,7 +34,7 @@ public class Diary extends BaseTime {
 	private Theme theme;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id", nullable = false)
+	@JoinColumn(name = "author_id", nullable = false)
 	private Member author;
 
 	@OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -57,6 +59,11 @@ public class Diary extends BaseTime {
 		this.imageUrl = imageUrl;
 		this.participants = participants;
 		this.review = review;
+	}
+
+	public void checkActor(Member actor) {
+		if (!actor.equals(this.getAuthor()))
+			throw new DiaryException(DiaryErrorCode.DIARY_FORBIDDEN);
 	}
 
 	public void setDiaryStat(DiaryStat diaryStat) {

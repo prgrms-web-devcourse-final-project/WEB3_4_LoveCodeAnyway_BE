@@ -53,7 +53,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
 		// 작성자 확인
 		if (author != null) {
-			builder.and(diary.author.eq(author));
+			builder.and(diary.author.id.eq(author.getId()));
 		}
 
 		// 지역 필터링

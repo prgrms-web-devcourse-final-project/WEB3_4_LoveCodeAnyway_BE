@@ -32,7 +32,6 @@ import com.ddobang.backend.domain.store.repository.StoreRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
-import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.domain.theme.repository.ThemeTagRepository;
 
 import jakarta.transaction.Transactional;
@@ -45,7 +44,6 @@ public class BaseInitData {
 	private final RegionRepository regionRepository;
 	private final StoreRepository storeRepository;
 	private final ThemeRepository themeRepository;
-	private final ThemeStatRepository themeStatRepository;
 	private final ThemeTagRepository themeTagRepository;
 	private final MemberRepository memberRepository;
 	private final DiaryService diaryService;
@@ -158,12 +156,15 @@ public class BaseInitData {
 	// Diary init data
 	@Transactional
 	public void diaryInitData() {
-		if (diaryService.count() > 0) {
+		if (diaryService.getItemsAll(1, 10).getTotalElements() > 0) {
 			return;
 		}
 
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+
 		for (int i = 1; i <= 9; i++) {
-			diaryService.write(
+			diaryService.save(
+				member,
 				DiaryRequestDto.builder()
 					.themeId((long)i)
 					.escapeDate(LocalDate.of(2024, i, 15))
