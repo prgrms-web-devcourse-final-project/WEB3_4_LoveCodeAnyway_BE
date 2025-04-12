@@ -5,11 +5,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.alarm.dto.request.AlarmCreateRequest;
 import com.ddobang.backend.domain.alarm.dto.response.AlarmResponse;
+import com.ddobang.backend.domain.alarm.entity.Alarm;
 import com.ddobang.backend.domain.alarm.entity.AlarmType;
+import com.ddobang.backend.domain.alarm.repository.AlarmRepository;
 import com.ddobang.backend.domain.alarm.service.AlarmEventService;
-import com.ddobang.backend.domain.alarm.service.AlarmService;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.domain.message.event.MessageCreatedEvent;
 
 import lombok.RequiredArgsConstructor;
@@ -20,8 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MessageAlarmListener {
 
-	private final AlarmService alarmService;
 	private final AlarmEventService alarmEventService;
+	private final MemberService memberService;
+	private final AlarmRepository alarmRepository;
 
 	@EventListener
 	@Transactional(propagation = Propagation.REQUIRES_NEW) // 별도 트랜잭션으로 처리
@@ -29,23 +32,26 @@ public class MessageAlarmListener {
 		log.info("메시지 생성 이벤트 수신: 발신자 {}, 수신자 {}",
 			event.getSenderNickname(), event.getReceiverNickname());
 
-		// 알림 생성 요청 객체 구성
-		AlarmCreateRequest alarmRequest = AlarmCreateRequest.builder()
-			.receiverId(event.getReceiverId())
-			.title("새 쪽지가 도착했습니다.")
-			.content(event.getSenderNickname() + "님으로부터 쪽지가 도착했습니다.")
-			.alarmType(AlarmType.MESSAGE)
-			.relId(event.getMessageId())
-			.build();
-
 		try {
-			// 알림 생성
-			AlarmResponse createdAlarm = alarmService.createAlarm(alarmRequest);
+			// 수신자 멤버 조회
+			Member receiver = memberService.getMemberById(event.getReceiverId());
+			
+			// 알림 객체 생성 및 저장
+			Alarm alarm = Alarm.builder()
+				.receiver(receiver)
+				.title("새 쪽지가 도착했습니다.")
+				.content(event.getSenderNickname() + "님으로부터 쪽지가 도착했습니다.")
+				.alarmType(AlarmType.MESSAGE)
+				.relId(event.getMessageId())
+				.build();
+			
+			Alarm savedAlarm = alarmRepository.save(alarm);
+			AlarmResponse alarmResponse = AlarmResponse.from(savedAlarm);
 
 			// 실시간 알림 전송 (SSE)
-			alarmEventService.sendNotification(event.getReceiverId(), createdAlarm);
+			alarmEventService.sendNotification(event.getReceiverId(), alarmResponse);
 
-			log.info("메시지 알림 생성 및 전송 완료: 알림 ID {}", createdAlarm.getId());
+			log.info("메시지 알림 생성 및 전송 완료: 알림 ID {}", savedAlarm.getId());
 		} catch (Exception e) {
 			log.error("메시지 알림 생성 중 오류 발생", e);
 			// 알림 실패 시에도 메시지 기능에는 영향을 주지 않도록 예외를 잡음

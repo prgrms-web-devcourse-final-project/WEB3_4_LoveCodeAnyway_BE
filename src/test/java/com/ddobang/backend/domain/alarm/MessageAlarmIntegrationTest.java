@@ -1,4 +1,4 @@
-package com.ddobang.backend.domain.message;
+package com.ddobang.backend.domain.alarm;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.awaitility.Awaitility.*;
@@ -53,13 +53,13 @@ public class MessageAlarmIntegrationTest {
 		// Then
 		// 비동기 이벤트 처리 대기
 		await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-			List<Alarm> alarms = alarmRepository.findByReceiverIdOrderByCreatedAtDesc(receiver.getId(),
-				Pageable.unpaged()).getContent();
+			// 기존 메서드가 아닌 ID 기반 메서드를 사용하여 테스트
+			List<Alarm> alarms = alarmRepository.findByReceiverIdOrderByCreatedAtDesc(receiver.getId(), Pageable.unpaged()).getContent();
 
 			assertThat(alarms).isNotEmpty();
 			Alarm alarm = alarms.get(0);
 
-			assertThat(alarm.getReceiverId()).isEqualTo(receiver.getId());
+			assertThat(alarm.getReceiver().getId()).isEqualTo(receiver.getId());
 			assertThat(alarm.getTitle()).isEqualTo("새 쪽지가 도착했습니다.");
 			assertThat(alarm.getContent()).contains(sender.getNickname());
 			assertThat(alarm.getAlarmType()).isEqualTo(AlarmType.MESSAGE);

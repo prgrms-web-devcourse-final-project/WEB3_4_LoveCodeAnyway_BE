@@ -14,11 +14,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ddobang.backend.domain.alarm.dto.response.AlarmResponse;
+import com.ddobang.backend.domain.alarm.entity.Alarm;
 import com.ddobang.backend.domain.alarm.entity.AlarmType;
 import com.ddobang.backend.domain.alarm.listener.MessageAlarmListener;
+import com.ddobang.backend.domain.alarm.repository.AlarmRepository;
 import com.ddobang.backend.domain.alarm.service.AlarmEventService;
 import com.ddobang.backend.domain.alarm.service.AlarmService;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.domain.message.event.MessageCreatedEvent;
+import com.ddobang.backend.support.MemberTestFactory;
 
 @ExtendWith(MockitoExtension.class)
 public class MessageAlarmListenerTest {
@@ -28,6 +33,12 @@ public class MessageAlarmListenerTest {
 
 	@Mock
 	private AlarmEventService alarmEventService;
+	
+	@Mock
+	private MemberService memberService;
+	
+	@Mock
+	private AlarmRepository alarmRepository;
 
 	@InjectMocks
 	private MessageAlarmListener messageAlarmListener;
@@ -52,34 +63,29 @@ public class MessageAlarmListenerTest {
 			.messageId(messageId)
 			.build();
 
-		AlarmResponse mockResponse = AlarmResponse.builder()
-			.id(1L)
-			.receiverId(receiverId)
-			.title("새 쪽지가 도착했습니다.")
-			.content(senderNickname + "님으로부터 쪽지가 도착했습니다.")
-			.alarmType(AlarmType.MESSAGE)
-			.readStatus(false)
-			.relId(messageId)
-			.build();
-
-		when(alarmService.createAlarm(any())).thenReturn(mockResponse);
+		// Member 객체 생성
+		Member receiver = MemberTestFactory.withNickname(receiverNickname);
+		when(memberService.getMemberById(receiverId)).thenReturn(receiver);
+		
+		// 저장된 Alarm 모의 객체 생성
+		Alarm savedAlarm = mock(Alarm.class);
+		when(savedAlarm.getId()).thenReturn(1L);
+		when(savedAlarm.getReceiver()).thenReturn(receiver);
+		when(savedAlarm.getTitle()).thenReturn("새 쪽지가 도착했습니다.");
+		when(savedAlarm.getContent()).thenReturn(senderNickname + "님으로부터 쪽지가 도착했습니다.");
+		when(savedAlarm.getAlarmType()).thenReturn(AlarmType.MESSAGE);
+		when(savedAlarm.getReadStatus()).thenReturn(false);
+		when(savedAlarm.getRelId()).thenReturn(messageId);
+		
+		when(alarmRepository.save(any(Alarm.class))).thenReturn(savedAlarm);
 
 		// When
 		messageAlarmListener.handleMessageCreatedEvent(event);
 
 		// Then
-		// AlarmService.createAlarm() 호출 확인 및 인자 검증
-		ArgumentCaptor<com.ddobang.backend.domain.alarm.dto.request.AlarmCreateRequest> alarmRequestCaptor =
-			ArgumentCaptor.forClass(com.ddobang.backend.domain.alarm.dto.request.AlarmCreateRequest.class);
-		verify(alarmService, times(1)).createAlarm(alarmRequestCaptor.capture());
-
-		com.ddobang.backend.domain.alarm.dto.request.AlarmCreateRequest capturedRequest = alarmRequestCaptor.getValue();
-		assertThat(capturedRequest.getReceiverId()).isEqualTo(receiverId);
-		assertThat(capturedRequest.getTitle()).isEqualTo("새 쪽지가 도착했습니다.");
-		assertThat(capturedRequest.getContent()).contains(senderNickname);
-		assertThat(capturedRequest.getAlarmType()).isEqualTo(AlarmType.MESSAGE);
-		assertThat(capturedRequest.getRelId()).isEqualTo(messageId);
-
+		// Alarm 저장 확인
+		verify(alarmRepository, times(1)).save(any(Alarm.class));
+		
 		// AlarmEventService.sendNotification() 호출 확인
 		verify(alarmEventService, times(1)).sendNotification(eq(receiverId), any(AlarmResponse.class));
 	}
@@ -97,8 +103,8 @@ public class MessageAlarmListenerTest {
 			.messageId(10L)
 			.build();
 
-		// AlarmService가 예외를 던지도록 설정
-		when(alarmService.createAlarm(any())).thenThrow(new RuntimeException("알림 서비스 오류"));
+		// MemberService가 예외를 던지도록 설정
+		when(memberService.getMemberById(any())).thenThrow(new RuntimeException("멤버 서비스 오류"));
 
 		// When & Then
 		// 예외가 전파되지 않고 핸들러 내부에서 처리되어야 함

@@ -13,6 +13,8 @@ import com.ddobang.backend.domain.alarm.entity.AlarmType;
 import com.ddobang.backend.domain.alarm.exception.AlarmErrorCode;
 import com.ddobang.backend.domain.alarm.exception.AlarmException;
 import com.ddobang.backend.domain.alarm.repository.AlarmRepository;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.global.response.PageDto;
 
 import lombok.RequiredArgsConstructor;
@@ -24,24 +26,28 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class AlarmService {
 	private final AlarmRepository alarmRepository;
+	private final MemberService memberService;
 
 	// 사용자 알림 목록 조회
 	public PageDto<AlarmResponse> getAlarms(Long userId, Pageable pageable) {
-		Page<Alarm> alarms = alarmRepository.findByReceiverIdOrderByCreatedAtDesc(userId, pageable);
+		Member member = memberService.getMemberById(userId);
+		Page<Alarm> alarms = alarmRepository.findByReceiverOrderByCreatedAtDesc(member, pageable);
 		return PageDto.of(alarms.map(AlarmResponse::from));
 	}
 
 	// 알림 상세조회
 	public AlarmResponse getAlarm(Long alarmId, Long userId) {
-		Alarm alarm = alarmRepository.findByIdAndReceiverId(alarmId, userId)
+		Member member = memberService.getMemberById(userId);
+		Alarm alarm = alarmRepository.findByIdAndReceiver(alarmId, member)
 			.orElseThrow(() -> new AlarmException(AlarmErrorCode.ALARM_NOT_FOUND));
 		return AlarmResponse.from(alarm);
 	}
 
 	// 알림 개수 조회
 	public AlarmCountResponse getAlarmCounts(Long userId) {
-		long unreadCount = alarmRepository.countByReceiverIdAndReadStatus(userId, false);
-		long totalCount = alarmRepository.findByReceiverIdOrderByCreatedAtDesc(userId, Pageable.unpaged())
+		Member member = memberService.getMemberById(userId);
+		long unreadCount = alarmRepository.countByReceiverAndReadStatus(member, false);
+		long totalCount = alarmRepository.findByReceiverOrderByCreatedAtDesc(member, Pageable.unpaged())
 			.getTotalElements();
 
 		return AlarmCountResponse.of(totalCount, unreadCount);
@@ -50,7 +56,14 @@ public class AlarmService {
 	// 알림 생성
 	@Transactional
 	public AlarmResponse createAlarm(AlarmCreateRequest request) {
-		Alarm alarm = request.toEntity();
+		Member receiver = memberService.getMemberById(request.getReceiverId());
+		Alarm alarm = Alarm.builder()
+			.receiver(receiver)
+			.title(request.getTitle())
+			.content(request.getContent())
+			.alarmType(request.getAlarmType())
+			.relId(request.getRelId())
+			.build();
 		Alarm savedAlarm = alarmRepository.save(alarm);
 		return AlarmResponse.from(savedAlarm);
 	}
@@ -58,7 +71,8 @@ public class AlarmService {
 	//읽음 처리
 	@Transactional
 	public AlarmResponse markAsRead(Long alarmId, Long userId) {
-		Alarm alarm = alarmRepository.findByIdAndReceiverId(alarmId, userId)
+		Member member = memberService.getMemberById(userId);
+		Alarm alarm = alarmRepository.findByIdAndReceiver(alarmId, member)
 			.orElseThrow(() -> new AlarmException(AlarmErrorCode.ALARM_NOT_FOUND));
 
 		// 이미 읽은 알림 바로 반환
@@ -73,13 +87,15 @@ public class AlarmService {
 	// 전부 읽음
 	@Transactional
 	public int markAllAsRead(Long userId) {
-		return alarmRepository.markAllAsReadByReceiverId(userId);
+		Member member = memberService.getMemberById(userId);
+		return alarmRepository.markAllAsReadByReceiver(member);
 	}
 
 	//알림삭제
 	@Transactional
 	public void deleteAlarm(Long alarmId, Long userId) {
-		Alarm alarm = alarmRepository.findByIdAndReceiverId(alarmId, userId)
+		Member member = memberService.getMemberById(userId);
+		Alarm alarm = alarmRepository.findByIdAndReceiver(alarmId, member)
 			.orElseThrow(() -> new AlarmException(AlarmErrorCode.ALARM_NOT_FOUND));
 
 		alarmRepository.delete(alarm);
@@ -88,7 +104,8 @@ public class AlarmService {
 	// 알림 리다이렉트 URL 생성
 	@Transactional
 	public String getRedirectUrl(Long alarmId, Long userId) {
-		Alarm alarm = alarmRepository.findByIdAndReceiverId(alarmId, userId)
+		Member member = memberService.getMemberById(userId);
+		Alarm alarm = alarmRepository.findByIdAndReceiver(alarmId, member)
 			.orElseThrow(() -> new AlarmException(AlarmErrorCode.ALARM_NOT_FOUND));
 
 		// 읽음 처리

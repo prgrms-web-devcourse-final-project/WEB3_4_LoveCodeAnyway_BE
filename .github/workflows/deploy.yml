@@ -1,6 +1,6 @@
 name: deploy
 on:
-  push:
+  merge_group:
     paths:
       - ".github/workflows/**"
       - "src/**"
@@ -8,7 +8,7 @@ on:
       - "settings.gradle"
       - "Dockerfile"
     branches:
-      - feautre/message-alarm-410
+      - dev
 jobs:
   makeTagAndRelease:
     runs-on: ubuntu-latest

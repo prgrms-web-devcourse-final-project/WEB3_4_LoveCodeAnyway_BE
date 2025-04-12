@@ -2,6 +2,7 @@ package com.ddobang.backend.domain.alarm.dto.request;
 
 import com.ddobang.backend.domain.alarm.entity.Alarm;
 import com.ddobang.backend.domain.alarm.entity.AlarmType;
+import com.ddobang.backend.domain.member.entity.Member;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,13 +26,5 @@ public class AlarmCreateRequest { // 알림 생성데이터
 	@NotNull(message = "알림 타입은 필수입니다.")
 	private AlarmType alarmType;
 
-	public Alarm toEntity() {
-		return Alarm.builder()
-			.receiverId(receiverId)
-			.title(title)
-			.content(content)
-			.relId(relId)
-			.alarmType(alarmType)
-			.build();
-	}
+	// toEntity 메서드는 Member 객체를 필요로 하므로, Service에서 처리합니다.
 }

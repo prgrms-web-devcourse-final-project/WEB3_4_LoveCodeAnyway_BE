@@ -14,6 +14,7 @@ import lombok.Getter;
 public class AlarmResponse {
 	private Long id;
 	private Long receiverId;
+	private String receiverNickname;
 	private String title;
 	private String content;
 	private Boolean readStatus;
@@ -27,9 +28,19 @@ public class AlarmResponse {
 	private LocalDateTime modifiedAt;
 
 	public static AlarmResponse from(Alarm alarm) {
+		Long receiverId = null;
+		String receiverNickname = null;
+		
+		// Null 체크를 통해 안전하게 처리
+		if (alarm.getReceiver() != null) {
+			receiverId = alarm.getReceiver().getId();
+			receiverNickname = alarm.getReceiver().getNickname();
+		}
+		
 		return AlarmResponse.builder()
 			.id(alarm.getId())
-			.receiverId(alarm.getReceiverId())
+			.receiverId(receiverId)
+			.receiverNickname(receiverNickname)
 			.title(alarm.getTitle())
 			.content(alarm.getContent())
 			.readStatus(alarm.getReadStatus())
