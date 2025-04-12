@@ -75,10 +75,11 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [ buildImageAndPush ]
+    needs: [ buildImageAndPush, makeTagAndRelease ]
     env:
       DOCKER_IMAGE_NAME: ${{ needs.buildImageAndPush.outputs.DOCKER_IMAGE_NAME }}
       OWNER_LC: ${{ needs.buildImageAndPush.outputs.OWNER_LC }}
+      TAG_NAME: ${{ needs.makeTagAndRelease.outputs.tag_name }}
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -103,7 +104,7 @@ jobs:
           comment: Deploy
           command: |
             # 공통 변수
-            IMAGE="ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.makeTagAndRelease.outputs.tag_name }}"
+            IMAGE="ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.TAG_NAME }}"
             VOLUME="/gen:/gen"
             NETWORK="common"
             HEALTH_ENDPOINT="/actuator/health"
