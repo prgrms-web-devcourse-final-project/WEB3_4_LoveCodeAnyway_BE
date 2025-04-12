@@ -76,7 +76,7 @@ public record MemberStatResponse(
 			.build();
 	}
 
-	private record ThisMonthInfo(
+	public record ThisMonthInfo(
 		int thisMonthCount,
 		double thisMonthAvgSatisfaction,
 		double thisMonthAvgHintCount,
