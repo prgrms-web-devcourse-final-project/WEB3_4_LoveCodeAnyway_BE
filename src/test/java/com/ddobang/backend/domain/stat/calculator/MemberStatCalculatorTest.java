@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
@@ -123,7 +124,8 @@ public class MemberStatCalculatorTest {
 		assertThat(saved.getEscapeSummaryStat().getFirstEscapeDate()).isEqualTo("2025-02-25");
 		assertThat(saved.getEscapeSummaryStat().getMostActiveMonth()).isEqualTo("2025년 4월");
 		assertThat(saved.getEscapeSummaryStat().getMostActiveMonthCount()).isEqualTo(1);
-		assertThat(saved.getEscapeSummaryStat().getDaysSinceFirstEscape()).isEqualTo(46);
+		assertThat(saved.getEscapeSummaryStat().getDaysSinceFirstEscape())
+			.isEqualTo((int)ChronoUnit.DAYS.between(LocalDate.of(2025, 2, 25), LocalDate.now()));
 	}
 
 	@Test
