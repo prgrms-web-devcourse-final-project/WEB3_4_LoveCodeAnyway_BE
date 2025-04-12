@@ -1,7 +1,6 @@
 package com.ddobang.backend.global.security.oauth;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -46,16 +45,15 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		log.info("OAuth2 로그인 성공 - kakaoId: {}", kakaoId);
 
 		// 카카오 ID로 회원 정보 조회
-		Optional<Member> optionalMember = memberService.findByKakaoId(kakaoId);
+		Member searchMember = memberService.getByKakaoId(kakaoId);
 
-		// 회원 정보가 없으면 신규 회원으로 처리
-		if (optionalMember.isPresent()) {
-			// 기존 회원
-			authService.handleLoginSuccess(response, kakaoId);
+		if (searchMember != null) {
+			// 기존 회원: 토큰 생성 및 쿠키 저장
+			authService.handleLoginSuccess(response, searchMember);
 			log.info("기존 회원 로그인 처리 완료");
 			response.sendRedirect("/"); // 메인 페이지
 		} else {
-			// 신규 회원
+			// 신규 회원: 회원가입용 토큰 쿠키 전송
 			authService.handlePreSignup(response, kakaoId);
 			log.info("신규 회원 - 회원가입용 토큰 쿠키 전송 완료");
 			response.sendRedirect("/signup"); // 회원가입 페이지로 리다이렉트

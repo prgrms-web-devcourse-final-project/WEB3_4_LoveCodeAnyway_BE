@@ -29,11 +29,11 @@ public class AuthService {
 	/**
 	 * 로그인 성공 시 액세스 / 리프레시 토큰 생성 및 쿠키에 저장
 	 */
-	public void handleLoginSuccess(HttpServletResponse response, String kakaoId) {
+	public void handleLoginSuccess(HttpServletResponse response, Member member) {
 		boolean isAdmin = false;
 
-		String accessToken = jwtTokenProvider.generateToken(kakaoId, JwtTokenType.ACCESS, isAdmin);
-		String refreshToken = jwtTokenProvider.generateToken(kakaoId, JwtTokenType.REFRESH, isAdmin);
+		String accessToken = jwtTokenProvider.generateToken(member, JwtTokenType.ACCESS, isAdmin);
+		String refreshToken = jwtTokenProvider.generateToken(member, JwtTokenType.REFRESH, isAdmin);
 
 		response.addCookie(CookieUtil.createAccessTokenCookie(accessToken));
 		response.addCookie(CookieUtil.createRefreshTokenCookie(refreshToken));
@@ -47,7 +47,7 @@ public class AuthService {
 			throw new OAuth2Exception(OAuth2ErrorCode.OAUTH2_MISSING_ID);
 		}
 
-		String signupToken = jwtTokenProvider.generateToken(kakaoId, JwtTokenType.SIGNUP, false);
+		String signupToken = jwtTokenProvider.generateSignupToken(kakaoId);
 		response.addCookie(CookieUtil.createSignupTokenCookie(signupToken));
 	}
 
@@ -66,8 +66,8 @@ public class AuthService {
 		Member member = memberService.registerMember(kakaoId, request);
 
 		// 엑세스 / 리프레시 토큰 발급
-		String accessToken = jwtTokenProvider.generateToken(member.getNickname(), JwtTokenType.ACCESS, false);
-		String refreshToken = jwtTokenProvider.generateToken(member.getNickname(), JwtTokenType.REFRESH, false);
+		String accessToken = jwtTokenProvider.generateToken(member, JwtTokenType.ACCESS, false);
+		String refreshToken = jwtTokenProvider.generateToken(member, JwtTokenType.REFRESH, false);
 
 		// 쿠키에 저장
 		response.addCookie(CookieUtil.createAccessTokenCookie(accessToken));

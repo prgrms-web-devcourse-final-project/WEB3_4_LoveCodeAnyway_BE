@@ -5,9 +5,6 @@ import java.util.Date;
 import org.springframework.stereotype.Component;
 
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.exception.MemberErrorCode;
-import com.ddobang.backend.domain.member.exception.MemberException;
-import com.ddobang.backend.domain.member.service.MemberService;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -22,24 +19,29 @@ public class JwtTokenFactory {
 
 	private final JwtTokenProperties jwtTokenProperties;
 	private final JwtSigningKey jwtSigningKey;
-	private final MemberService memberService;
 
-	// JWT 토큰을 생성하는 메서드
-	public String generateToken(String kakaoId, JwtTokenType type, boolean isAdmin) {
-		Member member = memberService.findByKakaoId(kakaoId)
-			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+	// 회원가입용: kakaoId 기반
+	public String generateSignupToken(String kakaoId) {
+		return createToken(kakaoId, JwtTokenType.SIGNUP, false, null);
+	}
 
+	// 로그인/인증용: member 기반
+	public String generateToken(Member member, JwtTokenType type, boolean isAdmin) {
+		return createToken(String.valueOf(member.getId()), type, isAdmin, member.getNickname());
+	}
+
+	private String createToken(String subject, JwtTokenType type, boolean isAdmin, String nickname) {
 		long expiration = jwtTokenProperties.getExpiration(type);
 		Date now = new Date();
 		Date expiry = new Date(now.getTime() + expiration);
 
 		return Jwts.builder()
-			.setSubject(String.valueOf(member.getId()))
+			.setSubject(subject)
 			.setIssuedAt(now)
 			.setExpiration(expiry)
-			.claim("nickname", member.getNickname())
 			.claim("type", type.name())
 			.claim("isAdmin", isAdmin)
+			.claim("nickname", nickname)
 			.signWith(jwtSigningKey.getKey(), SignatureAlgorithm.HS256)
 			.compact();
 	}
