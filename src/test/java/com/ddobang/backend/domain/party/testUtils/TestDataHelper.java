@@ -120,19 +120,12 @@ public class TestDataHelper {
 			.build();
 	}
 
-	public static Party createParty(PartyRequest request, Theme theme) {
-		Party party = Party.of(request, theme);
-		return party;
-	}
-
 	public static PartyMember createPartyMember(Party party, Member member) {
-		PartyMember partyMember = PartyMember.of(party, member);
-		return partyMember;
+		return PartyMember.of(party, member);
 	}
 
 	public static PartyMember createHost(Party party, Member member) {
-		PartyMember partyMember = PartyMember.createHost(party, member);
-		return partyMember;
+		return PartyMember.createHost(party, member);
 	}
 
 	// PartyRequest 생성

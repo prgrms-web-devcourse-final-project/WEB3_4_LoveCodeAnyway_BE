@@ -27,7 +27,6 @@ import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.party.entity.PartyMember;
-import com.ddobang.backend.domain.party.repository.PartyMemberRepository;
 import com.ddobang.backend.domain.party.repository.PartyRepository;
 import com.ddobang.backend.domain.party.testUtils.TestDataHelper;
 import com.ddobang.backend.domain.party.types.PartyStatus;
@@ -62,9 +61,6 @@ public class PartyControllerTest {
 
 	@Autowired
 	private MemberRepository memberRepository;
-
-	@Autowired
-	private PartyMemberRepository partyMemberRepository;
 
 	private Theme theme;
 	private Member host;
