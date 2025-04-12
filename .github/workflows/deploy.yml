@@ -161,7 +161,7 @@ jobs:
 
             # HA Proxy DNS 캐시가 만료될 때까지 대기
             echo "Waiting for HA Proxy DNS cache to expire..."
-            sleep 15
+            sleep 12
 
             # 기존 컨테이너 중지 및 제거
             echo "Stopping old container: $CURRENT"
