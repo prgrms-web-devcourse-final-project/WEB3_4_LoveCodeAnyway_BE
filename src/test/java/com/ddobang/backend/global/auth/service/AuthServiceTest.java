@@ -24,6 +24,7 @@ import com.ddobang.backend.global.exception.oauth2.OAuth2ErrorCode;
 import com.ddobang.backend.global.exception.oauth2.OAuth2Exception;
 import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
 import com.ddobang.backend.global.security.jwt.JwtTokenType;
+import com.ddobang.backend.support.MemberTestFactory;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -47,14 +48,14 @@ class AuthServiceTest {
 	@DisplayName("기존 회원 로그인 성공 - 액세스/리프레시 토큰 발급")
 	void loginSuccess() {
 		// given
-		String kakaoId = "12345678";
 		String accessToken = "access-token";
 		String refreshToken = "refresh-token";
-		given(jwtTokenProvider.generateToken(kakaoId, JwtTokenType.ACCESS, false)).willReturn(accessToken);
-		given(jwtTokenProvider.generateToken(kakaoId, JwtTokenType.REFRESH, false)).willReturn(refreshToken);
+		Member member = MemberTestFactory.full();
+		given(jwtTokenProvider.generateToken(member, JwtTokenType.ACCESS, false)).willReturn(accessToken);
+		given(jwtTokenProvider.generateToken(member, JwtTokenType.REFRESH, false)).willReturn(refreshToken);
 
 		// when / then
-		assertThatCode(() -> authService.handleLoginSuccess(response, kakaoId))
+		assertThatCode(() -> authService.handleLoginSuccess(response, member))
 			.doesNotThrowAnyException();
 	}
 
@@ -63,9 +64,6 @@ class AuthServiceTest {
 	void preSignupSuccess() {
 		// given
 		String kakaoId = "12345678";
-		String signupToken = "signup-token";
-		given(jwtTokenProvider.generateToken(kakaoId, JwtTokenType.SIGNUP, false)).willReturn(signupToken);
-
 		// when / then
 		assertThatCode(() -> authService.handlePreSignup(response, kakaoId))
 			.doesNotThrowAnyException();
@@ -97,8 +95,8 @@ class AuthServiceTest {
 		given(jwtTokenProvider.isValidToken(signupToken, JwtTokenType.SIGNUP)).willReturn(true);
 		given(jwtTokenProvider.extractKakaoId(signupToken)).willReturn(kakaoId);
 		given(memberService.registerMember(kakaoId, request)).willReturn(member);
-		given(jwtTokenProvider.generateToken(nickname, JwtTokenType.ACCESS, false)).willReturn("access-token");
-		given(jwtTokenProvider.generateToken(nickname, JwtTokenType.REFRESH, false)).willReturn("refresh-token");
+		given(jwtTokenProvider.generateToken(member, JwtTokenType.ACCESS, false)).willReturn("access-token");
+		given(jwtTokenProvider.generateToken(member, JwtTokenType.REFRESH, false)).willReturn("refresh-token");
 
 		// when / then
 		assertThatCode(() -> authService.signup(response, request, signupToken))

@@ -65,7 +65,7 @@ class MemberControllerTest {
 	void getMyBasicProfile_success() throws Exception {
 		// given
 		Member member = memberRepository.save(MemberTestFactory.full());
-		String token = jwtTokenProvider.generateToken(member.getNickname(), JwtTokenType.ACCESS, false);
+		String token = jwtTokenProvider.generateToken(member, JwtTokenType.ACCESS, false);
 
 		// when & then
 		mockMvc.perform(get("/api/v1/members/me")
@@ -84,7 +84,7 @@ class MemberControllerTest {
 		// given
 		Member target = memberRepository.save(MemberTestFactory.withNickname("오애순"));
 		Member requester = memberRepository.save(MemberTestFactory.withNickname("또방이"));
-		String token = jwtTokenProvider.generateToken(requester.getNickname(), JwtTokenType.ACCESS, false);
+		String token = jwtTokenProvider.generateToken(requester, JwtTokenType.ACCESS, false);
 
 		ProfileRequest request = new ProfileRequest(target.getId());
 
@@ -102,7 +102,7 @@ class MemberControllerTest {
 	void getOtherProfile_notFound() throws Exception {
 		// given
 		Member requester = memberRepository.save(MemberTestFactory.full());
-		String token = jwtTokenProvider.generateToken(requester.getNickname(), JwtTokenType.ACCESS, false);
+		String token = jwtTokenProvider.generateToken(requester, JwtTokenType.ACCESS, false);
 		ProfileRequest request = new ProfileRequest(9999L); // 없는 ID
 
 		// when & then

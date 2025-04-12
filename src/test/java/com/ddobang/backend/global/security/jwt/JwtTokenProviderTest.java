@@ -8,6 +8,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.support.MemberTestFactory;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 class JwtTokenProviderTest {
@@ -93,10 +96,11 @@ class JwtTokenProviderTest {
 	@Test
 	@DisplayName("토큰 생성 위임 확인")
 	void generateToken_shouldDelegate() {
-		given(tokenFactory.generateToken("ddobang", JwtTokenType.ACCESS, false))
+		Member member = MemberTestFactory.full();
+		given(tokenFactory.generateToken(member, JwtTokenType.ACCESS, false))
 			.willReturn("access.jwt.token");
 
-		String token = jwtTokenProvider.generateToken("ddobang", JwtTokenType.ACCESS, false);
+		String token = jwtTokenProvider.generateToken(member, JwtTokenType.ACCESS, false);
 
 		assertThat(token).isEqualTo("access.jwt.token");
 	}
