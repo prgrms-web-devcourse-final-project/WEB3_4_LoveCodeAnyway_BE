@@ -301,7 +301,7 @@ public class BaseInitData {
 		messageRepository.save(Message.builder()
 			.sender(testUser1)
 			.receiver(testUser2)
-			.content("주말에 만나서 자세히 얘기해요!")
+			.content("주말에 만나서 자세히 얘기해요!!")
 			.isRead(false)
 			.build());
 	}
