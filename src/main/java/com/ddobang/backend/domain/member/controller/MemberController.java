@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ddobang.backend.domain.member.dto.request.ProfileRequest;
 import com.ddobang.backend.domain.member.dto.response.BasicProfileResponse;
+import com.ddobang.backend.domain.member.dto.response.MemberStatResponse;
 import com.ddobang.backend.domain.member.dto.response.OtherProfileResponse;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.service.MemberService;
@@ -54,5 +55,20 @@ public class MemberController {
 		Member currentMember = loginMemberProvider.getCurrentMember();
 		BasicProfileResponse response = BasicProfileResponse.of(currentMember);
 		return ResponseEntity.ok(SuccessResponse.of("기본 프로필 조회 성공", response));
+	}
+
+	@Operation(
+		summary = "사용자 분석 페이지 조회 API",
+		description = "자신의 사용자 분석 정보를 조회합니다."
+			+ "데이터가 없는 경우에는 null을 반환합니다."
+	)
+	@GetMapping("/stat")
+	public ResponseEntity<SuccessResponse<MemberStatResponse>> getMemberStat() {
+		Member currentMember = loginMemberProvider.getCurrentMember();
+		MemberStatResponse memberStatResponse = memberService.getMemberStat(currentMember);
+
+		return ResponseFactory.ok(
+			memberStatResponse
+		);
 	}
 }
