@@ -7,20 +7,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,10 +32,12 @@ import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
 import com.ddobang.backend.domain.diary.dto.response.DiaryListDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.exception.DiaryException;
+import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.service.DiaryService;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
-import com.ddobang.backend.global.security.CustomUserDetails;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -47,17 +49,15 @@ public class DiaryControllerTest {
 
 	@Autowired
 	private DiaryService diaryService;
+
+	@Autowired
+	private DiaryRepository diaryRepository;
+
 	@Autowired
 	private ThemeRepository themeRepository;
 
-	@BeforeEach
-	void setup() {
-		CustomUserDetails userDetails = new CustomUserDetails(1L, "testUser1", false);
-		UsernamePasswordAuthenticationToken auth =
-			new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-		SecurityContextHolder.getContext().setAuthentication(auth);
-	}
+	@Autowired
+	private MemberRepository memberRepository;
 
 	@Test
 	@DisplayName("탈출일지 등록")
@@ -632,9 +632,10 @@ public class DiaryControllerTest {
 			.andDo(print());
 
 		DiaryFilterRequest request = DiaryFilterRequest.builder().build();
-
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -686,8 +687,10 @@ public class DiaryControllerTest {
 			.keyword("테마 1")
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -739,8 +742,10 @@ public class DiaryControllerTest {
 			.regionId(List.of(1L))
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -792,8 +797,10 @@ public class DiaryControllerTest {
 			.tagIds(List.of(1L, 2L))
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -847,8 +854,10 @@ public class DiaryControllerTest {
 			.endDate(LocalDate.of(2024, 5, 20))
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -925,8 +934,10 @@ public class DiaryControllerTest {
 			.isSuccess("success")
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -978,8 +989,10 @@ public class DiaryControllerTest {
 			.isNoHint(true)
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -1051,8 +1064,10 @@ public class DiaryControllerTest {
 			.keyword("방탈출 A")
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -1091,8 +1106,14 @@ public class DiaryControllerTest {
 			.perform(get("/api/v1/diaries?year=2024&month=5"))
 			.andDo(print());
 
-		List<DiaryListDto> diaries = diaryService
-			.getDiariesByMonth(2024, 5);
+		LocalDate startDate = LocalDate.of(2024, 5, 1);
+		LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		List<DiaryListDto> diaries = diaryRepository.findByAuthorIdAndDiaryStat_EscapeDateBetween(member.getId(),
+				startDate, endDate)
+			.stream()
+			.map(DiaryListDto::of)
+			.toList();
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -1126,8 +1147,14 @@ public class DiaryControllerTest {
 			.andDo(print());
 
 		// 오늘 날짜로 조회
-		List<DiaryListDto> diaries = diaryService
-			.getDiariesByMonth(LocalDate.now().getYear(), LocalDate.now().getMonthValue());
+		LocalDate startDate = LocalDate.now();
+		LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		List<DiaryListDto> diaries = diaryRepository.findByAuthorIdAndDiaryStat_EscapeDateBetween(member.getId(),
+				startDate, endDate)
+			.stream()
+			.map(DiaryListDto::of)
+			.toList();
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
