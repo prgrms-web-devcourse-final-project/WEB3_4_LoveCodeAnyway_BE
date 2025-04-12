@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -29,6 +30,8 @@ import com.ddobang.backend.domain.diary.dto.response.DiaryListDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.diary.service.DiaryService;
+import com.ddobang.backend.domain.theme.entity.Theme;
+import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -40,6 +43,8 @@ public class DiaryControllerTest {
 
 	@Autowired
 	private DiaryService diaryService;
+	@Autowired
+	private ThemeRepository themeRepository;
 
 	@Test
 	@DisplayName("탈출일지 등록")
@@ -1172,10 +1177,10 @@ public class DiaryControllerTest {
 			.perform(post("/api/v1/diaries/theme")
 				.content("""
 					{
-						"themeName": "테마 1",
-						"storeName": "방탈출 A",
-						"thumbnailUrl": "https://example.com/thumbnail.jpg",
-						"tags": ["공포", "판타지"]
+					    "themeName": "테마 1",
+					    "storeName": "방탈출 A",
+					    "thumbnailUrl": "https://example.com/thumbnail.jpg",
+					    "tags": ["공포", "판타지"]
 					}
 					""")
 				.contentType(
@@ -1184,13 +1189,15 @@ public class DiaryControllerTest {
 			)
 			.andDo(print());
 
+		Theme theme = themeRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).getFirst();
+
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
 			.andExpect(handler().methodName("saveThemeForDiary"))
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.message").value("테마 등록에 성공했습니다."))
-			.andExpect(jsonPath("$.data.themeId").value(23))
-			.andExpect(jsonPath("$.data.themeName").value("테마 1"));
+			.andExpect(jsonPath("$.data.themeId").value(theme.getId()))
+			.andExpect(jsonPath("$.data.themeName").value(theme.getName()));
 	}
 
 	@Test
