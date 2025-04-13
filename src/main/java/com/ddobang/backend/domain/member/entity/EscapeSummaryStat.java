@@ -36,7 +36,7 @@ public class EscapeSummaryStat {
 		LocalDate firstEscapeDate,
 		String mostActiveMonth,
 		int mostActiveMonthCount,
-		Integer daysSinceFirstEscape
+		int daysSinceFirstEscape
 	) {
 		this.totalCount = totalCount;
 		this.successRate = successRate;
