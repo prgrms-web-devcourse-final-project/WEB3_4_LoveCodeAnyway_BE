@@ -68,6 +68,12 @@ public class PartyService {
 		return SliceDto.of(parties, size);
 	}
 
+	public SliceDto<PartySummaryResponse> getPartiesByTheme(Long themeId, Long lastId, int size) {
+		Theme theme = themeService.getThemeById(themeId);
+		List<PartySummaryResponse> parties = partyRepository.getPartiesByTheme(theme, lastId, size + 1);
+		return SliceDto.of(parties, size);
+	}
+
 	public Party getPartyById(Long id) {
 		return partyRepository.findById(id)
 			.orElseThrow(() -> new PartyException(PartyErrorCode.PARTY_NOT_FOUND));
@@ -82,10 +88,9 @@ public class PartyService {
 	@Transactional
 	public PartyDto createParty(PartyRequest request, Member actor) {
 		Theme theme = themeService.getThemeById(request.themeId());
-		Party party = Party.of(request, theme);
-		PartyMember host = PartyMember.createHost(party, actor);
+		Party party = partyRepository.save(Party.of(request, theme));
+		PartyMember host = partyMemberRepository.save(PartyMember.createHost(party, actor));
 		party.addPartyMember(host);
-		partyRepository.save(party);
 		return PartyDto.from(party);
 	}
 

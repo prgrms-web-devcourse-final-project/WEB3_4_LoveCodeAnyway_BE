@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.party.entity.Party;
-import com.ddobang.backend.domain.party.types.PartyMemberRole;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
@@ -24,7 +23,7 @@ public record PartyDetailResponse(
 	String hostNickname,
 	String hostProfilePictureUrl,
 
-	Integer recruitableCount,
+	Integer acceptedParticipantsCount,
 	Integer totalParticipants,
 
 	List<PartyMemberSummaries> acceptedPartyMembers,
@@ -46,7 +45,7 @@ public record PartyDetailResponse(
 	String storeAddress
 ) {
 	public static PartyDetailResponse from(Party party, ThemeStat themeStat, Member actor) {
-		boolean isHost = party.getPartyMemberRole(actor).equals(PartyMemberRole.HOST);
+		boolean isHost = party.getHost().getId().equals(actor.getId());
 		Theme theme = party.getTheme();
 		Member host = party.getHost();
 		Store store = theme.getStore();
@@ -61,7 +60,8 @@ public record PartyDetailResponse(
 			.hostNickname(host.getNickname())
 			.hostProfilePictureUrl(host.getProfilePictureUrl())
 
-			.recruitableCount(party.getParticipantsNeeded() - party.getAcceptedParticipantsCount())
+			.acceptedParticipantsCount(
+				party.getTotalParticipants() - party.getParticipantsNeeded() + party.getAcceptedParticipantsCount())
 			.totalParticipants(party.getTotalParticipants())
 
 			.acceptedPartyMembers(

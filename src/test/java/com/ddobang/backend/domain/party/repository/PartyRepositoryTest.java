@@ -676,4 +676,46 @@ public class PartyRepositoryTest {
 
 		assertThat(titles).contains("미스터리 공포 파티 1", "미스터리 공포 파티 3");
 	}
+
+	@Test
+	@DisplayName("테마별 모집 중 파티 목록 조회")
+	void getPartiesByThemeTest() {
+		// given
+		Region region = createRegion(em, "서울", "강남");
+		Store store = createStore(em, region, "스토어1");
+		Theme theme1 = createTheme(em, "공포테마", "무서운 방", Theme.Status.OPENED, store, List.of());
+		Theme theme2 = createTheme(em, "감성테마", "눈물의 방", Theme.Status.OPENED, store, List.of());
+
+		Member host = createMember(em, "img.jpg", "호스트");
+		Member member = createMember(em, "img.jpg", "일반멤버");
+
+		Party party1 = createParty(em, partyReq("파티1", theme1.getId()), theme1);
+		Party party2 = createParty(em, partyReq("파티2", theme1.getId()), theme1);
+		Party party3 = createParty(em, partyReq("파티3", theme2.getId()), theme2);
+
+		party1.addPartyMember(createHost(em, party1, host));
+		party2.addPartyMember(createHost(em, party2, host));
+		party3.addPartyMember(createHost(em, party3, host));
+
+		party1.addPartyMember(createPartyMember(em, party1, member));
+		party2.addPartyMember(createPartyMember(em, party2, member));
+		party3.addPartyMember(createPartyMember(em, party3, member));
+
+		party1.updateStatus(PartyStatus.PENDING);
+
+		em.flush();
+		em.clear();
+
+		// when
+		List<PartySummaryResponse> result = partyRepository.getPartiesByTheme(theme1, null, 10);
+
+		// then
+		assertThat(result).hasSize(1);
+
+		List<String> titles = result.stream()
+			.map(PartySummaryResponse::title)
+			.toList();
+
+		assertThat(titles).contains("파티2");
+	}
 }

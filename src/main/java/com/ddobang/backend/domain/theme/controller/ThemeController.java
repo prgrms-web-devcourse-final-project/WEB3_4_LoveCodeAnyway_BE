@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
+import com.ddobang.backend.domain.party.service.PartyService;
 import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeDetailResponse;
@@ -33,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/themes")
 public class ThemeController {
 	private final ThemeService themeService;
+	private final PartyService partyService;
 
 	@Operation(summary = "필터 기반 테마 다건 조회 api", description = "무한 스크롤에서 사용하기 위해 페이지네이션 처리(default = 0)")
 	@PostMapping
@@ -100,5 +103,16 @@ public class ThemeController {
 		List<ThemesResponse> newestThemes = themeService.getNewestThemesByTagName(tagName);
 
 		return ResponseFactory.ok(newestThemes);
+	}
+
+	@GetMapping("/{id}/parties")
+	@Operation(summary = "해당 테마의 모집 중인 모임 조회")
+	public ResponseEntity<SuccessResponse<SliceDto<PartySummaryResponse>>> getPartiesByTheme(
+		@PathVariable Long id,
+		@RequestParam(required = false) Long lastId,
+		@RequestParam(defaultValue = "10") int size
+	) {
+		SliceDto<PartySummaryResponse> result = partyService.getPartiesByTheme(id, lastId, size);
+		return ResponseEntity.ok(SuccessResponse.of(result));
 	}
 }
