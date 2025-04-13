@@ -33,6 +33,8 @@ import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 import com.ddobang.backend.domain.theme.support.ThemeStatCalculator;
 import com.ddobang.backend.global.security.LoginMemberProvider;
+import com.ddobang.backend.domain.upload.event.DiaryImageChangedEvent;
+import com.ddobang.backend.global.event.EventPublisher;
 
 import lombok.RequiredArgsConstructor;
 
@@ -48,6 +50,8 @@ public class DiaryService {
 	private final String TIME_MINUTES_SECONDS_PATTERN = "^\\d{1,3}:\\d{1,2}$";
 	private final String TIME_TYPE_REMAINING = "REMAINING";
 	private final String TIME_TYPE_ELAPSED = "ELAPSED";
+
+	private final EventPublisher publisher;
 
 	@Transactional
 	public DiaryDto write(DiaryRequestDto diaryRequestDto) {
@@ -140,8 +144,11 @@ public class DiaryService {
 		Member actor = loginMemberProvider.getCurrentMember();
 
 		diary.checkActor(actor);
+		String imageUrl = diary.getImageUrl();
 
 		diaryRepository.delete(diary);
+		publisher.publish(new DiaryImageChangedEvent(imageUrl));
+
 		themeStatCalculator.updateThemeStat(theme);
 		memberStatCalculator.updateMemberStatWithRetry(actor);
 	}
