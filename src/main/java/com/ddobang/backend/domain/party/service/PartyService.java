@@ -88,10 +88,9 @@ public class PartyService {
 	@Transactional
 	public PartyDto createParty(PartyRequest request, Member actor) {
 		Theme theme = themeService.getThemeById(request.themeId());
-		Party party = Party.of(request, theme);
-		PartyMember host = PartyMember.createHost(party, actor);
+		Party party = partyRepository.save(Party.of(request, theme));
+		PartyMember host = partyMemberRepository.save(PartyMember.createHost(party, actor));
 		party.addPartyMember(host);
-		partyRepository.save(party);
 		return PartyDto.from(party);
 	}
 
