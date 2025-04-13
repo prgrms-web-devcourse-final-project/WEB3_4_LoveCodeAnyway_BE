@@ -96,7 +96,7 @@ class JwtTokenProviderTest {
 	@Test
 	@DisplayName("토큰 생성 위임 확인")
 	void generateToken_shouldDelegate() {
-		Member member = MemberTestFactory.full();
+		Member member = MemberTestFactory.Basic();
 		given(tokenFactory.generateToken(member, JwtTokenType.ACCESS, false))
 			.willReturn("access.jwt.token");
 

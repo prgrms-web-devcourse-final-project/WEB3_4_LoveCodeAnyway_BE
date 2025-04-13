@@ -31,16 +31,17 @@ import jakarta.servlet.http.Cookie;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@DisplayName("AuthController 통합 테스트")
 class AuthIntegrationTest {
 
 	@Autowired
 	private MockMvc mockMvc;
 	@Autowired
-	private ObjectMapper objectMapper;
-	@Autowired
 	private JwtTokenFactory jwtTokenFactory;
 	@Autowired
 	private MemberRepository memberRepository;
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	// 테스트를 위한 데이터 생성
 	private SignupRequest createSignupRequest() {
@@ -52,7 +53,7 @@ class AuthIntegrationTest {
 
 	// 테스트를 위한 JWT 토큰 쿠키 생성
 	private Cookie createSignupTokenCookie() {
-		Member member = MemberTestFactory.full();
+		Member member = MemberTestFactory.Basic();
 		String token = jwtTokenFactory.generateToken(member, JwtTokenType.SIGNUP, false);
 		Cookie cookie = new Cookie("signupToken", token);
 		cookie.setHttpOnly(true);

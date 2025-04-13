@@ -78,27 +78,32 @@ public class MemberService {
 		return memberRepository.findByKakaoId(kakaoId);
 	}
 
+	@Transactional(readOnly = true)
 	public boolean existsByKakaoId(String kakaoId) {
 		return memberRepository.existsByKakaoId(kakaoId);
 	}
 
-	public boolean existsByNickname(@NotBlank(message = "닉네임은 필수입니다.") String nickname) {
+	@Transactional(readOnly = true)
+	public boolean existsByNickname(String nickname) {
 		return memberRepository.existsByNickname(nickname);
 	}
 
 	// 회원ID로 회원 조회
+	@Transactional(readOnly = true)
 	public Member getById(Long memberId) {
 		return memberRepository.findById(memberId)
 			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 	}
 
 	// 닉네임으로 회원 조회
+	@Transactional(readOnly = true)
 	public Member getByNickname(String nickname) {
 		return memberRepository.findByNickname(nickname)
 			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 	}
 
 	// 닉네임으로 회원 조회
+	@Transactional(readOnly = true)
 	public Member getMemberByUsername(String username) {
 		return memberRepository.findByNickname(username)
 			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
