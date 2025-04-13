@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 import com.ddobang.backend.domain.diary.entity.DiaryStat;
 
 @Repository
-public interface DiaryStatRepository extends JpaRepository<DiaryStat, Long> {
+public interface DiaryStatRepository extends JpaRepository<DiaryStat, Long>, DiaryStatRepositoryCustom {
 	List<DiaryStat> findByThemeId(Long themeId);
+
+	List<DiaryStat> findByAuthorId(Long memberId);
 }

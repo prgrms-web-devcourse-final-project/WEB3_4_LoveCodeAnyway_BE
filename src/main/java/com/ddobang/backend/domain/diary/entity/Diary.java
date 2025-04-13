@@ -1,8 +1,8 @@
 package com.ddobang.backend.domain.diary.entity;
 
-import java.time.LocalDate;
-
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+import com.ddobang.backend.domain.diary.exception.DiaryErrorCode;
+import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.global.entity.BaseTime;
@@ -34,13 +34,12 @@ public class Diary extends BaseTime {
 	private Theme theme;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id", nullable = false)
+	@JoinColumn(name = "author_id", nullable = false)
 	private Member author;
 
 	@OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
 	private DiaryStat diaryStat;
 
-	private LocalDate escapeDate;
 	private String imageUrl;
 	private String participants;
 
@@ -51,17 +50,29 @@ public class Diary extends BaseTime {
 	public Diary(
 		Theme theme,
 		Member author,
-		LocalDate escapeDate,
 		String imageUrl,
 		String participants,
 		String review
 	) {
 		this.theme = theme;
 		this.author = author;
-		this.escapeDate = escapeDate;
 		this.imageUrl = imageUrl;
 		this.participants = participants;
 		this.review = review;
+	}
+
+	public static Diary toDiary(Member author, Theme theme, DiaryRequestDto dto) {
+		return Diary.builder()
+			.theme(theme)
+			.author(author)
+			.participants(dto.participants())
+			.review(dto.review())
+			.build();
+	}
+
+	public void checkActor(Member actor) {
+		if (!actor.equals(this.getAuthor()))
+			throw new DiaryException(DiaryErrorCode.DIARY_FORBIDDEN);
 	}
 
 	public void setDiaryStat(DiaryStat diaryStat) {
@@ -77,7 +88,6 @@ public class Diary extends BaseTime {
 		DiaryRequestDto diaryRequestDto
 	) {
 		this.theme = theme;
-		this.escapeDate = diaryRequestDto.escapeDate();
 		this.participants = diaryRequestDto.participants();
 		this.review = diaryRequestDto.review();
 	}

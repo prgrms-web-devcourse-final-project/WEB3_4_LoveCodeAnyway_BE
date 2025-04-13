@@ -3,7 +3,6 @@ package com.ddobang.backend.domain.member.controller;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,14 +11,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.diary.repository.DiaryRepository;
-import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.dto.request.ProfileRequest;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
-import com.ddobang.backend.domain.member.repository.MemberStatRepository;
-import com.ddobang.backend.domain.member.repository.MemberTagMappingRepository;
 import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
 import com.ddobang.backend.global.security.jwt.JwtTokenType;
 import com.ddobang.backend.support.MemberTestFactory;
@@ -30,6 +26,7 @@ import jakarta.servlet.http.Cookie;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @SpringBootTest
+@Transactional
 @DisplayName("MemberController 테스트")
 class MemberControllerTest {
 
@@ -40,25 +37,7 @@ class MemberControllerTest {
 	@Autowired
 	private MemberRepository memberRepository;
 	@Autowired
-	private MemberStatRepository memberStatRepository;
-	@Autowired
-	private MemberTagMappingRepository memberTagMappingRepository;
-	@Autowired
-	private DiaryRepository diaryRepository;
-	@Autowired
-	private DiaryStatRepository diaryStatRepository;
-	@Autowired
 	private ObjectMapper objectMapper;
-
-	// 테스트 후 데이터 정리
-	@AfterEach
-	void tearDown() {
-		diaryStatRepository.deleteAllInBatch();
-		diaryRepository.deleteAllInBatch();
-		memberTagMappingRepository.deleteAllInBatch();
-		memberStatRepository.deleteAllInBatch();
-		memberRepository.deleteAllInBatch();
-	}
 
 	@Test
 	@DisplayName("[성공] 나의 기본 프로필을 정상적으로 조회할 수 있다.")

@@ -38,7 +38,7 @@ public record DiaryDto(
 			diary.getTheme().getThumbnailUrl(),
 			diary.getTheme().getStore().getName(),
 			diary.getImageUrl(),
-			diary.getEscapeDate(),
+			diary.getDiaryStat().getEscapeDate(),
 			diary.getParticipants(),
 			diary.getDiaryStat().getDifficulty(),
 			diary.getDiaryStat().getFear(),

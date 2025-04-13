@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.member.entity.Gender;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
@@ -31,6 +30,7 @@ import jakarta.servlet.http.Cookie;
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class AuthIntegrationTest {
 
 	@Autowired
@@ -41,15 +41,6 @@ class AuthIntegrationTest {
 	private JwtTokenFactory jwtTokenFactory;
 	@Autowired
 	private MemberRepository memberRepository;
-	@Autowired
-	private DiaryRepository diaryRepository;
-
-	// 테스트 전 데이터베이스 초기화
-	@BeforeEach
-	void setUp() {
-		diaryRepository.deleteAll();
-		memberRepository.deleteAll();
-	}
 
 	// 테스트를 위한 데이터 생성
 	private SignupRequest createSignupRequest() {
@@ -74,6 +65,7 @@ class AuthIntegrationTest {
 	void signupSuccess() throws Exception {
 		SignupRequest request = createSignupRequest();
 		String json = objectMapper.writeValueAsString(request); // JSON으로 변환
+		int memberSize = (int)memberRepository.count();
 
 		mockMvc.perform(post("/api/v1/auth/signup")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -85,8 +77,8 @@ class AuthIntegrationTest {
 			.andExpect(status().isCreated()); // 201 Created 응답
 
 		List<Member> members = memberRepository.findAll();
-		assertThat(members).hasSize(1);
-		assertThat(members.getFirst().getNickname()).isEqualTo("또방이");
+		assertThat(members).hasSize(memberSize + 1);
+		assertThat(members.getLast().getNickname()).isEqualTo("또방이");
 	}
 
 	@Test

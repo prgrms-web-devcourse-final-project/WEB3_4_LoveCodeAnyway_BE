@@ -2,18 +2,25 @@ package com.ddobang.backend.domain.member.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ddobang.backend.domain.member.dto.response.MemberStatResponse;
 import com.ddobang.backend.domain.member.dto.response.OtherProfileResponse;
+import com.ddobang.backend.domain.member.entity.EscapeProfileStat;
+import com.ddobang.backend.domain.member.entity.EscapeScheduleStat;
+import com.ddobang.backend.domain.member.entity.EscapeSummaryStat;
 import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.entity.MemberStat;
 import com.ddobang.backend.domain.member.entity.MemberTag;
 import com.ddobang.backend.domain.member.entity.MemberTagMapping;
 import com.ddobang.backend.domain.member.exception.MemberErrorCode;
 import com.ddobang.backend.domain.member.exception.MemberException;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.domain.member.repository.MemberStatRepository;
 import com.ddobang.backend.domain.member.repository.MemberTagMappingRepository;
 import com.ddobang.backend.global.auth.dto.request.SignupRequest;
 import com.ddobang.backend.global.exception.auth.AuthErrorCode;
@@ -28,6 +35,7 @@ public class MemberService {
 	private final MemberRepository memberRepository;
 	private final MemberTagMappingRepository memberTagMappingRepository;
 	private final MemberTagService memberTagService;
+	private final MemberStatRepository memberStatRepository;
 
 	// OAuth2User 정보로 회원 생성
 	public Member createMemberFromOAuth2(OAuth2User oAuth2User) {
@@ -117,6 +125,20 @@ public class MemberService {
 
 		assignTags(member, request.tags());
 		return member;
+	}
+
+	public MemberStatResponse getMemberStat(Member member) {
+		Optional<MemberStat> memberStat = memberStatRepository.findById(member.getId());
+
+		if (memberStat.isEmpty()) {
+			return null;
+		}
+
+		EscapeSummaryStat escapeSummaryStat = memberStat.get().getEscapeSummaryStat();
+		EscapeProfileStat escapeProfileStat = memberStat.get().getEscapeProfileStat();
+		EscapeScheduleStat escapeScheduleStat = memberStat.get().getEscapeScheduleStat();
+
+		return MemberStatResponse.of(escapeSummaryStat, escapeProfileStat, escapeScheduleStat);
 	}
 
 	private void validateDuplicateKakaoId(String kakaoId) {

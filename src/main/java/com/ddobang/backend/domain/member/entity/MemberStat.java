@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Version;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,9 @@ import lombok.NoArgsConstructor;
 public class MemberStat {
 	@Id
 	private Long id;
+
+	@Version
+	private Long version;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@MapsId

@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 import org.hamcrest.Matchers;
@@ -16,9 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -29,7 +32,10 @@ import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
 import com.ddobang.backend.domain.diary.dto.response.DiaryListDto;
 import com.ddobang.backend.domain.diary.entity.Diary;
 import com.ddobang.backend.domain.diary.exception.DiaryException;
+import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.service.DiaryService;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 
@@ -43,18 +49,25 @@ public class DiaryControllerTest {
 
 	@Autowired
 	private DiaryService diaryService;
+
+	@Autowired
+	private DiaryRepository diaryRepository;
+
 	@Autowired
 	private ThemeRepository themeRepository;
 
+	@Autowired
+	private MemberRepository memberRepository;
+
 	@Test
 	@DisplayName("탈출일지 등록")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails(value = "testUser1")
 	void t1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
 				.content("""
 					{
-						"themeId": 1,
+						"themeId": 10,
 						"timeType": "ELAPSED"
 					}
 					""".stripIndent())
@@ -98,7 +111,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 등록, theme id, timeType이 없을 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t1_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
@@ -124,7 +137,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 등록, 테마 평가 항목이 정해진 범위의 값이 아닐 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t1_2() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
@@ -176,13 +189,13 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 등록, timeType이 정해진 값이 아닐 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t1_3() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
 				.content("""
 					{
-						"themeId": 1,
+						"themeId": 10,
 						"timeType": "WRONG TYPE",
 						"elapsedTime": "65:00"
 					}
@@ -202,13 +215,13 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 등록, 탈출 시간이 00:00의 형식이 아닐 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t1_4() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
 				.content("""
 					{
-						"themeId": 1,
+						"themeId": 10,
 						"timeType": "REMAINING",
 						"elapsedTime": "WRONG TIME"
 					}
@@ -228,13 +241,13 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 등록, 남은 시간이 테마 진행시간보다 클 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t1_5() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
 				.content("""
 					{
-						"themeId": 1,
+						"themeId": 10,
 						"timeType": "REMAINING",
 						"elapsedTime": "70:00"
 					}
@@ -254,7 +267,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 단건 조회")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t2() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries/1"))
@@ -272,7 +285,7 @@ public class DiaryControllerTest {
 			.andExpect(jsonPath("$.data.storeName").value(diary.getTheme().getStore().getName()))
 			.andExpect(jsonPath("$.data.thumbnailUrl").value(diary.getTheme().getThumbnailUrl()))
 			.andExpect(jsonPath("$.data.imageUrl").value(diary.getImageUrl()))
-			.andExpect(jsonPath("$.data.escapeDate").value(diary.getEscapeDate().toString()))
+			.andExpect(jsonPath("$.data.escapeDate").value(diary.getDiaryStat().getEscapeDate().toString()))
 			.andExpect(jsonPath("$.data.participants").value(diary.getParticipants()))
 			.andExpect(jsonPath("$.data.difficulty").value(diary.getDiaryStat().getDifficulty()))
 			.andExpect(jsonPath("$.data.fear").value(diary.getDiaryStat().getFear()))
@@ -293,7 +306,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 단건 조회, 존재하지 않는 번호의 탈출일지 조회")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t2_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries/99999999"))
@@ -308,7 +321,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t3() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/1")
@@ -373,7 +386,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정, 존재하지 않는 번호의 탈출일지 수정")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t3_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/99999999")
@@ -413,7 +426,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정, theme id가 없을 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t3_2() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/1")
@@ -444,7 +457,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정, 테마 평가 항목이 정해진 범위의 값이 아닐 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t3_3() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/1")
@@ -495,7 +508,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정, timeType이 정해진 값이 아닐 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t3_4() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/1")
@@ -521,7 +534,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 수정, 탈출 시간이 00:00의 형식이 아닐 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t3_5() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(put("/api/v1/diaries/1")
@@ -547,13 +560,13 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 등록, 남은 시간이 테마 진행시간보다 클 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t3_6() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries")
 				.content("""
 					{
-						"themeId": 1,
+						"themeId": 10,
 						"timeType": "REMAINING",
 						"elapsedTime": "70:00"
 					}
@@ -573,7 +586,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 삭제")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t4() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(delete("/api/v1/diaries/1"))
@@ -592,7 +605,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 삭제, 존재하지 않는 번호의 탈출일지 삭제")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t4_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(delete("/api/v1/diaries/99999999"))
@@ -607,7 +620,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 필터 없이")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t5() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -619,9 +632,10 @@ public class DiaryControllerTest {
 			.andDo(print());
 
 		DiaryFilterRequest request = DiaryFilterRequest.builder().build();
-
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -654,7 +668,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 테마명 검색")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t5_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -673,8 +687,10 @@ public class DiaryControllerTest {
 			.keyword("테마 1")
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -707,7 +723,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 지역 검색")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t5_2() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -726,8 +742,10 @@ public class DiaryControllerTest {
 			.regionId(List.of(1L))
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -760,7 +778,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 장르 검색")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t5_3() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -779,8 +797,10 @@ public class DiaryControllerTest {
 			.tagIds(List.of(1L, 2L))
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -813,7 +833,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 기간 검색")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t5_4() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -834,8 +854,10 @@ public class DiaryControllerTest {
 			.endDate(LocalDate.of(2024, 5, 20))
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -868,7 +890,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 유효하지 않은 기간 검색")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t5_4_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -893,7 +915,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 성공한 테마만 검색")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t5_5() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -912,8 +934,10 @@ public class DiaryControllerTest {
 			.isSuccess("success")
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -946,7 +970,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 다건 조회, with 노힌트 테마만 검색")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t5_6() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -965,8 +989,10 @@ public class DiaryControllerTest {
 			.isNoHint(true)
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -1007,7 +1033,7 @@ public class DiaryControllerTest {
 			방탈출 A
 		)
 		""")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t5_7() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/list")
@@ -1038,8 +1064,10 @@ public class DiaryControllerTest {
 			.keyword("방탈출 A")
 			.build();
 
-		Page<DiaryListDto> diariesPage = diaryService
-			.getAllItems(request, 0, 10);
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
+		Page<DiaryListDto> diariesPage = diaryRepository.findDiariesByFilter(member, request, pageable)
+			.map(DiaryListDto::of);
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -1072,14 +1100,20 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 월별 다건 조회")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t6() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries?year=2024&month=5"))
 			.andDo(print());
 
-		List<DiaryListDto> diaries = diaryService
-			.getDiariesByMonth(2024, 5);
+		LocalDate startDate = LocalDate.of(2024, 5, 1);
+		LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		List<DiaryListDto> diaries = diaryRepository.findByAuthorIdAndDiaryStat_EscapeDateBetween(member.getId(),
+				startDate, endDate)
+			.stream()
+			.map(DiaryListDto::of)
+			.toList();
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -1106,15 +1140,21 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 월별 다건 조회, with 날짜 없을 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t6_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries"))
 			.andDo(print());
 
 		// 오늘 날짜로 조회
-		List<DiaryListDto> diaries = diaryService
-			.getDiariesByMonth(LocalDate.now().getYear(), LocalDate.now().getMonthValue());
+		LocalDate startDate = LocalDate.now();
+		LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+		Member member = memberRepository.findByNickname("testUser1").orElseThrow();
+		List<DiaryListDto> diaries = diaryRepository.findByAuthorIdAndDiaryStat_EscapeDateBetween(member.getId(),
+				startDate, endDate)
+			.stream()
+			.map(DiaryListDto::of)
+			.toList();
 
 		resultActions
 			.andExpect(handler().handlerType(DiaryController.class))
@@ -1141,7 +1181,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 월별 다건 조회, with 잘못 된 년도로 조회")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t6_2() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries?year=-1&month=5"))
@@ -1156,7 +1196,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지 월별 다건 조회, with 잘못 된 달로 조회")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t6_3() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(get("/api/v1/diaries?year=2025&month=13"))
@@ -1171,7 +1211,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지에서 테마 등록")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t7_1() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/theme")
@@ -1202,7 +1242,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지에서 테마 등록, With 테마이름 없을 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t7_2() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/theme")
@@ -1231,7 +1271,7 @@ public class DiaryControllerTest {
 
 	@Test
 	@DisplayName("탈출일지에서 테마 등록, With 매장이름 없을 때")
-	@WithMockUser(roles = "USER")
+	@WithUserDetails("testUser1")
 	void t7_3() throws Exception {
 		ResultActions resultActions = mvc
 			.perform(post("/api/v1/diaries/theme")

@@ -53,7 +53,7 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
 		// 작성자 확인
 		if (author != null) {
-			builder.and(diary.author.eq(author));
+			builder.and(diary.author.id.eq(author.getId()));
 		}
 
 		// 지역 필터링
@@ -81,15 +81,15 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
 		// 기간 필터링
 		if (request.startDate() != null && request.endDate() != null) {
-			builder.and(diary.escapeDate.between(request.startDate(), request.endDate()));
+			builder.and(diary.diaryStat.escapeDate.between(request.startDate(), request.endDate()));
 		}
 
 		// 성공 여부 필터링
 		// 값이 success / fail이 아니거나 null 일 경우 전체 조회
 		if (request.isSuccess() != null) {
-			if ("success" .equalsIgnoreCase(request.isSuccess())) {
+			if ("success".equalsIgnoreCase(request.isSuccess())) {
 				builder.and(diary.diaryStat.escapeResult.eq(true));
-			} else if ("fail" .equalsIgnoreCase(request.isSuccess())) {
+			} else if ("fail".equalsIgnoreCase(request.isSuccess())) {
 				builder.and(diary.diaryStat.escapeResult.eq(false));
 			}
 		}
@@ -160,8 +160,9 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 				query.fetchJoin();
 			}
 		}
-
-		if (request.isSuccess() != null || (request.isNoHint() != null && request.isNoHint())) {
+		if (request.isSuccess() != null
+			|| (request.isNoHint() != null && request.isNoHint())
+			|| (request.startDate() != null && request.endDate() != null)) {
 			if (fetchJoin) {
 				query.join(diary.diaryStat, diaryStat).fetchJoin();
 			} else {

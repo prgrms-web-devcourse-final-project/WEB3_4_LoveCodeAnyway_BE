@@ -1,6 +1,9 @@
 package com.ddobang.backend.domain.diary.entity;
 
+import java.time.LocalDate;
+
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
+import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.theme.entity.Theme;
 
 import jakarta.persistence.Entity;
@@ -21,13 +24,17 @@ public class DiaryStat {
 	@Id
 	private Long id;
 
-	@OneToOne
+	@OneToOne(fetch = FetchType.LAZY)
 	@MapsId
 	private Diary diary;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "theme_id", nullable = false)
 	private Theme theme;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "author_id", nullable = false)
+	private Member author;
 
 	// 평가 관련 필드
 	private int difficulty;
@@ -44,11 +51,13 @@ public class DiaryStat {
 	private Integer hintCount;
 	private boolean escapeResult;
 	private int elapsedTime;
+	private LocalDate escapeDate;
 
 	@Builder
 	public DiaryStat(
 		Diary diary,
 		Theme theme,
+		Member author,
 		int difficulty,
 		int fear,
 		int activity,
@@ -60,10 +69,12 @@ public class DiaryStat {
 		Integer deviceRatio,
 		Integer hintCount,
 		boolean escapeResult,
-		int elapsedTime
+		int elapsedTime,
+		LocalDate escapeDate
 	) {
 		this.diary = diary;
 		this.theme = theme;
+		this.author = author;
 		this.difficulty = difficulty;
 		this.fear = fear;
 		this.activity = activity;
@@ -76,6 +87,28 @@ public class DiaryStat {
 		this.hintCount = hintCount;
 		this.escapeResult = escapeResult;
 		this.elapsedTime = elapsedTime;
+		this.escapeDate = escapeDate;
+	}
+
+	public static DiaryStat toDiaryStat(Diary diary, DiaryRequestDto dto, int elapsedTime) {
+		return DiaryStat.builder()
+			.diary(diary)
+			.theme(diary.getTheme())
+			.author(diary.getAuthor())
+			.difficulty(dto.difficulty())
+			.fear(dto.fear())
+			.activity(dto.activity())
+			.satisfaction(dto.satisfaction())
+			.production(dto.production())
+			.story(dto.story())
+			.question(dto.question())
+			.interior(dto.interior())
+			.deviceRatio(dto.deviceRatio())
+			.hintCount(dto.hintCount())
+			.escapeResult(dto.escapeResult())
+			.elapsedTime(elapsedTime)
+			.escapeDate(dto.escapeDate())
+			.build();
 	}
 
 	public void modify(
@@ -95,5 +128,6 @@ public class DiaryStat {
 		this.hintCount = diaryRequestDto.hintCount();
 		this.escapeResult = diaryRequestDto.escapeResult();
 		this.elapsedTime = elapsedTime;
+		this.escapeDate = diaryRequestDto.escapeDate();
 	}
 }

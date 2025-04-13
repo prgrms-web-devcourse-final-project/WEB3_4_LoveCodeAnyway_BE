@@ -1,5 +1,8 @@
 package com.ddobang.backend.domain.diary.service;
 
+import static com.ddobang.backend.domain.diary.entity.Diary.*;
+import static com.ddobang.backend.domain.diary.entity.DiaryStat.*;
+
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
@@ -12,7 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.diary.converter.DiaryConverter;
 import com.ddobang.backend.domain.diary.dto.request.DiaryFilterRequest;
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.dto.response.DiaryDto;
@@ -24,12 +26,13 @@ import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.repository.MemberRepository;
-import com.ddobang.backend.domain.stat.calculator.ThemeStatCalculator;
+import com.ddobang.backend.domain.member.support.MemberStatCalculator;
 import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
 import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.service.ThemeService;
+import com.ddobang.backend.domain.theme.support.ThemeStatCalculator;
+import com.ddobang.backend.global.security.LoginMemberProvider;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,9 +41,10 @@ import lombok.RequiredArgsConstructor;
 public class DiaryService {
 	private final DiaryRepository diaryRepository;
 	private final DiaryStatRepository diaryStatRepository;
-	private final MemberRepository memberRepository;
 	private final ThemeService themeService;
 	private final ThemeStatCalculator themeStatCalculator;
+	private final MemberStatCalculator memberStatCalculator;
+	private final LoginMemberProvider loginMemberProvider;
 	private final String TIME_MINUTES_SECONDS_PATTERN = "^\\d{1,3}:\\d{1,2}$";
 	private final String TIME_TYPE_REMAINING = "REMAINING";
 	private final String TIME_TYPE_ELAPSED = "ELAPSED";
@@ -48,7 +52,17 @@ public class DiaryService {
 	@Transactional
 	public DiaryDto write(DiaryRequestDto diaryRequestDto) {
 		Theme theme = themeService.getThemeById(diaryRequestDto.themeId());
-		Member actor = memberRepository.findById(1L).orElseThrow();
+		Member actor = loginMemberProvider.getCurrentMember();
+
+		return DiaryDto.of(save(actor, diaryRequestDto));
+	}
+
+	public Diary save(Member author, DiaryRequestDto diaryRequestDto) {
+		Theme theme = themeService.getThemeById(diaryRequestDto.themeId());
+
+		if (diaryRepository.findByAuthorIdAndThemeId(author.getId(), diaryRequestDto.themeId()).isPresent()) {
+			throw new DiaryException(DiaryErrorCode.DIARY_THEME_ALREADY_EXISTS);
+		}
 
 		int elapsedTime = calculateElapsedTime(
 			diaryRequestDto.timeType(),
@@ -57,21 +71,18 @@ public class DiaryService {
 		);
 
 		Diary diary = diaryRepository.save(
-			DiaryConverter.toDiary(actor, theme, diaryRequestDto)
+			toDiary(author, theme, diaryRequestDto)
 		);
 
 		DiaryStat diaryStat = diaryStatRepository.save(
-			DiaryConverter.toDiaryStat(diary, diaryRequestDto, elapsedTime)
+			toDiaryStat(diary, diaryRequestDto, elapsedTime)
 		);
 
 		diary.setDiaryStat(diaryStat);
 		themeStatCalculator.updateThemeStat(theme);
+		memberStatCalculator.updateMemberStatWithRetry(author);
 
-		return DiaryDto.of(diary);
-	}
-
-	public long count() {
-		return diaryRepository.count();
+		return diary;
 	}
 
 	@Transactional(readOnly = true)
@@ -90,13 +101,21 @@ public class DiaryService {
 
 	@Transactional(readOnly = true)
 	public DiaryDto getItem(long id) {
-		return DiaryDto.of(findById(id));
+		Member actor = loginMemberProvider.getCurrentMember();
+		Diary diary = findById(id);
+
+		diary.checkActor(actor);
+
+		return DiaryDto.of(diary);
 	}
 
 	@Transactional
 	public DiaryDto modify(long id, DiaryRequestDto diaryRequestDto) {
 		Diary diary = findById(id);
 		Theme theme = themeService.getThemeById(diaryRequestDto.themeId());
+		Member actor = loginMemberProvider.getCurrentMember();
+
+		diary.checkActor(actor);
 
 		int elapsedTime = calculateElapsedTime(
 			diaryRequestDto.timeType(),
@@ -104,10 +123,12 @@ public class DiaryService {
 			diaryRequestDto.elapsedTime()
 		);
 
-		DiaryConverter.modifyDiary(theme, diary, diaryRequestDto, elapsedTime);
+		diary.modify(theme, diaryRequestDto);
+		diary.getDiaryStat().modify(diaryRequestDto, elapsedTime);
 
 		diaryRepository.flush();
 		themeStatCalculator.updateThemeStat(theme);
+		memberStatCalculator.updateMemberStatWithRetry(actor);
 
 		return DiaryDto.of(diary);
 	}
@@ -116,9 +137,13 @@ public class DiaryService {
 	public void delete(long id) {
 		Diary diary = findById(id);
 		Theme theme = diary.getTheme();
+		Member actor = loginMemberProvider.getCurrentMember();
+
+		diary.checkActor(actor);
 
 		diaryRepository.delete(diary);
 		themeStatCalculator.updateThemeStat(theme);
+		memberStatCalculator.updateMemberStatWithRetry(actor);
 	}
 
 	@Transactional(readOnly = true)
@@ -128,7 +153,7 @@ public class DiaryService {
 		}
 
 		Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Order.desc("id")));
-		Member actor = memberRepository.findById(1L).orElseThrow();
+		Member actor = loginMemberProvider.getCurrentMember();
 
 		return diaryRepository.findDiariesByFilter(actor, request, pageable)
 			.map(DiaryListDto::of);
@@ -150,8 +175,9 @@ public class DiaryService {
 
 		LocalDate startDate = LocalDate.of(year, month, 1);
 		LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+		Member actor = loginMemberProvider.getCurrentMember();
 
-		return diaryRepository.findByEscapeDateBetween(startDate, endDate)
+		return diaryRepository.findByAuthorIdAndDiaryStat_EscapeDateBetween(actor.getId(), startDate, endDate)
 			.stream()
 			.map(DiaryListDto::of)
 			.toList();
