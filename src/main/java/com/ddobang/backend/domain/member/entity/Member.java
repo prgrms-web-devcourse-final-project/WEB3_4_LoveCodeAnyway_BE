@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -34,13 +35,14 @@ public class Member extends BaseTime {
 
 	private String kakaoId;
 
+	@Setter
 	private String profilePictureUrl;
 
 	private BigDecimal mannerScore;
 
 	private Integer hostCount;
 
-	private String password; // 관리자용 비밀번호
+	private String admPassword;
 
 	@Builder // 명시, 필요시 사용
 	public Member(
@@ -51,7 +53,7 @@ public class Member extends BaseTime {
 		String profilePictureUrl,
 		BigDecimal mannerScore,
 		Integer hostCount,
-		String password
+		String admPassword
 	) {
 		this.nickname = nickname;
 		this.gender = gender;
@@ -60,7 +62,7 @@ public class Member extends BaseTime {
 		this.profilePictureUrl = profilePictureUrl;
 		this.mannerScore = mannerScore;
 		this.hostCount = hostCount;
-		this.password = password;
+		this.admPassword = admPassword;
 	}
 
 	public static Member of(String nickname, Gender gender, String introduction, String imageUrl) {
@@ -73,8 +75,9 @@ public class Member extends BaseTime {
 	}
 
 	// 신규 회원 가입 시 사용
-	public static Member ofWithKakaoId(String nickname, Gender gender, String introduction, String imageUrl,
-		String kakaoId) {
+	public static Member ofWithKakaoId(
+		String nickname, Gender gender, String introduction, String imageUrl, String kakaoId
+	) {
 		return Member.builder()
 			.nickname(nickname)
 			.gender(gender)
@@ -84,13 +87,9 @@ public class Member extends BaseTime {
 			.build();
 	}
 
-	public void setProfilePictureUrl(String profilePictureUrl) {
-		this.profilePictureUrl = profilePictureUrl;
-	}
-
-	public Member(String nickname, String password) {
+	public Member(String nickname, String admPassword) {
 		this.nickname = nickname;
-		this.password = password;
+		this.admPassword = admPassword;
 	}
 
 	public Member(Long id, String nickname) {
