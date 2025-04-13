@@ -153,7 +153,14 @@ class PartyServiceTest {
 			theme.getId(), "모임", "모임 섦명", LocalDateTime.now().plusDays(1), 2, 5, true);
 
 		when(themeService.getThemeById(theme.getId())).thenReturn(theme);
-		when(partyRepository.save(any(Party.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(partyRepository.save(any(Party.class))).thenAnswer(invocation -> {
+			Party party = invocation.getArgument(0);
+
+			PartyMember partyHost = PartyMember.createHost(party, host);
+			party.addPartyMember(partyHost);
+
+			return party;
+		});
 
 		// when
 		PartyDto result = partyService.createParty(request, host);
