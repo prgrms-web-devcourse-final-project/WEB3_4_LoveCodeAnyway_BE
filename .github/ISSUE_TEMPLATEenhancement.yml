@@ -1,0 +1,107 @@
+name: "🚀 고도화"
+description: "기존 기능의 개선 및 고도화"
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: domain
+    attributes:
+      label: 🗂 도메인
+      description: 고도화할 기능이 속한 도메인을 선택해 주세요.
+      options:
+        - 인증 (auth)
+        - 회원 (member)
+        - 테마 (theme)
+        - 매장 (store)
+        - 모임 (party)
+        - 탈출일지 (diary)
+        - 문의 (board)
+        - 쪽지 (message)
+        - 알림 (noti)
+        - 성능 (performance)
+        - 보안 (security)
+        - 안정성 (stability)
+        - 기타 (etc)
+    validations:
+      required: true
+      
+  - type: textarea
+    id: current_state
+    attributes:
+      label: "🔍 현재 상태"
+      description: "현재 기능의 상태와 문제점을 설명해 주세요."
+      placeholder: "현재 어떤 상태이고, 어떤 문제점이 있나요?"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: improvement
+    attributes:
+      label: "📈 개선 방향"
+      description: "고도화를 통해 개선하고자 하는 내용을 작성해 주세요."
+      placeholder: "어떤 부분을 어떻게 개선하고 싶은지 상세히 적어주세요."
+    validations:
+      required: true
+      
+  - type: textarea
+    id: expected_benefits
+    attributes:
+      label: "💎 기대 효과"
+      description: "고도화를 통해 얻을 수 있는 기대 효과를 작성해 주세요."
+      placeholder: "성능 향상, 사용성 개선, 안정성 증가 등"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: tasks
+    attributes:
+      label: "✅ 작업할 내용"
+      description: "구체적인 작업 항목을 체크박스 형태로 작성해주세요."
+      placeholder: |
+        - [ ] 성능 프로파일링
+        - [ ] 코드 리팩토링
+        - [ ] 테스트 추가
+        - [ ] 배포 및 모니터링
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: impact
+    attributes:
+      label: "💥 영향도"
+      description: "이 고도화가 시스템에 미치는 영향도를 선택해 주세요."
+      options:
+        - 낮음 (일부 기능에만 영향)
+        - 중간 (관련 도메인 전체에 영향)
+        - 높음 (여러 도메인에 영향)
+        - 매우 높음 (전체 시스템에 영향)
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "🔥 우선순위"
+      description: "이 고도화의 우선순위를 선택해 주세요."
+      options:
+        - 낮음
+        - 중간
+        - 높음
+        - 긴급
+    validations:
+      required: true
+      
+  - type: textarea
+    id: metrics
+    attributes:
+      label: "📊 측정 지표"
+      description: "고도화 성공을 측정할 수 있는 지표를 작성해 주세요."
+      placeholder: "응답 시간, 자원 사용량, 오류율 등"
+    validations:
+      required: false
+      
+  - type: textarea
+    id: references
+    attributes:
+      label: "🙋🏻 참고 자료"
+      description: "참고 자료가 있다면 작성해 주세요."
+      placeholder: "링크, 문서, 프로파일링 데이터 등"
