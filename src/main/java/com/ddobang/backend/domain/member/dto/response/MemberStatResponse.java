@@ -24,7 +24,7 @@ public record MemberStatResponse(
 	String mostActiveMonth,
 	int mostActiveMonthCount,
 	int daysSinceFirstEscape,
-	ThisMonthInfo thisMonthInfo,
+	LastMonthInfo lastMonthInfo,
 	Map<Integer, Double> difficultyHintAvgMap,
 	Map<Integer, Double> difficultySatisAvgMap
 ) {
@@ -58,7 +58,7 @@ public record MemberStatResponse(
 			.mostActiveMonth(escapeSummaryStat.getMostActiveMonth())
 			.mostActiveMonthCount(escapeSummaryStat.getMostActiveMonthCount())
 			.daysSinceFirstEscape(escapeSummaryStat.getDaysSinceFirstEscape())
-			.thisMonthInfo(ThisMonthInfo.of(escapeScheduleStat))
+			.lastMonthInfo(LastMonthInfo.of(escapeScheduleStat))
 			.difficultyHintAvgMap(Map.of(
 				1, escapeProfileStat.getDifficultyHintAvg1(),
 				2, escapeProfileStat.getDifficultyHintAvg2(),
@@ -76,24 +76,24 @@ public record MemberStatResponse(
 			.build();
 	}
 
-	public record ThisMonthInfo(
-		int thisMonthCount,
-		double thisMonthAvgSatisfaction,
-		double thisMonthAvgHintCount,
-		double thisMonthSuccessRate,
-		int thisMonthAvgTime,
-		String thisMonthTopTheme,
-		int thisMonthTopSatisfaction
+	public record LastMonthInfo(
+		int lastMonthCount,
+		double lastMonthAvgSatisfaction,
+		double lastMonthAvgHintCount,
+		double lastMonthSuccessRate,
+		int lastMonthAvgTime,
+		String lastMonthTopTheme,
+		int lastMonthTopSatisfaction
 	) {
-		public static MemberStatResponse.ThisMonthInfo of(EscapeScheduleStat escapeScheduleStat) {
-			return new MemberStatResponse.ThisMonthInfo(
-				escapeScheduleStat.getThisMonthCount(),
-				escapeScheduleStat.getThisMonthAvgSatisfaction(),
-				escapeScheduleStat.getThisMonthAvgHintCount(),
-				escapeScheduleStat.getThisMonthSuccessRate(),
-				escapeScheduleStat.getThisMonthAvgTime(),
-				escapeScheduleStat.getThisMonthTopTheme(),
-				escapeScheduleStat.getThisMonthTopSatisfaction()
+		public static MemberStatResponse.LastMonthInfo of(EscapeScheduleStat escapeScheduleStat) {
+			return new MemberStatResponse.LastMonthInfo(
+				escapeScheduleStat.getLastMonthCount(),
+				escapeScheduleStat.getLastMonthAvgSatisfaction(),
+				escapeScheduleStat.getLastMonthAvgHintCount(),
+				escapeScheduleStat.getLastMonthSuccessRate(),
+				escapeScheduleStat.getLastMonthAvgTime(),
+				escapeScheduleStat.getLastMonthTopTheme(),
+				escapeScheduleStat.getLastMonthTopSatisfaction()
 			);
 		}
 	}

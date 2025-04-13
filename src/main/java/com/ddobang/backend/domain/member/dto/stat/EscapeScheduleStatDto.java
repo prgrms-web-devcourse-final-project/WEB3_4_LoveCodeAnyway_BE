@@ -8,12 +8,12 @@ import lombok.Builder;
 public record EscapeScheduleStatDto(
 	Map<String, Integer> monthlyCountMap,
 
-	int thisMonthCount,
-	double thisMonthAvgSatisfaction,
-	double thisMonthAvgHintCount,
-	double thisMonthSuccessRate,
-	int thisMonthAvgTime,
-	String thisMonthTopTheme,
-	int thisMonthTopSatisfaction
+	int lastMonthCount,
+	double lastMonthAvgSatisfaction,
+	double lastMonthAvgHintCount,
+	double lastMonthSuccessRate,
+	int lastMonthAvgTime,
+	String lastMonthTopTheme,
+	int lastMonthTopSatisfaction
 ) {
 }

@@ -117,13 +117,13 @@ public class MemberStatCalculator {
 
 			EscapeScheduleStat escapeScheduleStat = EscapeScheduleStat.builder()
 				.monthlyCountMap(escapeScheduleStatDto.monthlyCountMap())
-				.thisMonthCount(escapeScheduleStatDto.thisMonthCount())
-				.thisMonthAvgSatisfaction(escapeScheduleStatDto.thisMonthAvgSatisfaction())
-				.thisMonthAvgHintCount(escapeScheduleStatDto.thisMonthAvgHintCount())
-				.thisMonthSuccessRate(escapeScheduleStatDto.thisMonthSuccessRate())
-				.thisMonthAvgTime(escapeScheduleStatDto.thisMonthAvgTime())
-				.thisMonthTopTheme(escapeScheduleStatDto.thisMonthTopTheme())
-				.thisMonthTopSatisfaction(escapeScheduleStatDto.thisMonthTopSatisfaction())
+				.lastMonthCount(escapeScheduleStatDto.lastMonthCount())
+				.lastMonthAvgSatisfaction(escapeScheduleStatDto.lastMonthAvgSatisfaction())
+				.lastMonthAvgHintCount(escapeScheduleStatDto.lastMonthAvgHintCount())
+				.lastMonthSuccessRate(escapeScheduleStatDto.lastMonthSuccessRate())
+				.lastMonthAvgTime(escapeScheduleStatDto.lastMonthAvgTime())
+				.lastMonthTopTheme(escapeScheduleStatDto.lastMonthTopTheme())
+				.lastMonthTopSatisfaction(escapeScheduleStatDto.lastMonthTopSatisfaction())
 				.build();
 
 			memberStatRepository.save(MemberStat.builder()
@@ -330,24 +330,24 @@ public class MemberStatCalculator {
 	// EscapeScheduleStat 계산 메서드
 	public EscapeScheduleStatDto calculateEscapeScheduleStat(List<DiaryStat> diaryStats) {
 		Map<String, Integer> monthlyCountMap = new LinkedHashMap<>();
-		YearMonth thisMonth = YearMonth.now();
+		YearMonth lastMonth = YearMonth.now().minusMonths(1);
 
-		long thisMonthTotalSatis = 0;
-		long thisMonthTotalTime = 0;
-		int thisMonthTopSatisfaction = 0;
-		long thisMonthTopSatisStatId = 0;
-		LocalDate thisMonthTopThemeDate = null;
+		long lastMonthTotalSatis = 0;
+		long lastMonthTotalTime = 0;
+		int lastMonthTopSatisfaction = 0;
+		long lastMonthTopSatisStatId = 0;
+		LocalDate lastMonthTopThemeDate = null;
 
-		int thisMonthCount = 0;
-		long thisMonthSatisCount = 0;
-		long thisMonthHintCount = 0;
-		long thisMonthTimeCount = 0;
-		long thisMonthTotalHintCount = 0;
-		long thisMonthSuccessCount = 0;
+		int lastMonthCount = 0;
+		long lastMonthSatisCount = 0;
+		long lastMonthHintCount = 0;
+		long lastMonthTimeCount = 0;
+		long lastMonthTotalHintCount = 0;
+		long lastMonthSuccessCount = 0;
 
 		// 최근 6개월 초기화 (0으로)
 		for (int i = 5; i >= 0; i--) {
-			monthlyCountMap.put(thisMonth.minusMonths(i).format(YM_FORMATTER), 0);
+			monthlyCountMap.put(YearMonth.now().minusMonths(i).format(YM_FORMATTER), 0);
 		}
 
 		for (DiaryStat stat : diaryStats) {
@@ -364,72 +364,72 @@ public class MemberStatCalculator {
 				monthlyCountMap.put(escapeDateYMStr, monthlyCountMap.get(escapeDateYMStr) + 1);
 			}
 
-			if (escapeDateYM.equals(thisMonth)) {
-				thisMonthCount++;
+			if (escapeDateYM.equals(lastMonth)) {
+				lastMonthCount++;
 
 				if (stat.isEscapeResult()) {
-					thisMonthSuccessCount++;
+					lastMonthSuccessCount++;
 				}
 
 				if (stat.getHintCount() != null) {
-					thisMonthHintCount++;
-					thisMonthTotalHintCount += stat.getHintCount();
+					lastMonthHintCount++;
+					lastMonthTotalHintCount += stat.getHintCount();
 				}
 
 				if (stat.getSatisfaction() != 0) {
-					thisMonthSatisCount++;
-					thisMonthTotalSatis += stat.getSatisfaction();
+					lastMonthSatisCount++;
+					lastMonthTotalSatis += stat.getSatisfaction();
 
-					if (stat.getSatisfaction() > thisMonthTopSatisfaction) {
-						thisMonthTopSatisfaction = stat.getSatisfaction();
-						thisMonthTopSatisStatId = stat.getId();
-						thisMonthTopThemeDate = stat.getEscapeDate();
+					if (stat.getSatisfaction() > lastMonthTopSatisfaction) {
+						lastMonthTopSatisfaction = stat.getSatisfaction();
+						lastMonthTopSatisStatId = stat.getId();
+						lastMonthTopThemeDate = stat.getEscapeDate();
 
 						// 이번달 최고 만족도 테마가 중복될 경우 더 최근에 했던 테마로 저장
-					} else if (stat.getSatisfaction() == thisMonthTopSatisfaction) {
-						if (stat.getEscapeDate().isAfter(thisMonthTopThemeDate)) {
-							thisMonthTopSatisStatId = stat.getId();
-							thisMonthTopThemeDate = stat.getEscapeDate();
+					} else if (stat.getSatisfaction() == lastMonthTopSatisfaction) {
+						if (stat.getEscapeDate().isAfter(lastMonthTopThemeDate)) {
+							lastMonthTopSatisStatId = stat.getId();
+							lastMonthTopThemeDate = stat.getEscapeDate();
 						}
 					}
 				}
 
 				if (stat.getElapsedTime() != 0) {
-					thisMonthTimeCount++;
-					thisMonthTotalTime += stat.getElapsedTime();
+					lastMonthTimeCount++;
+					lastMonthTotalTime += stat.getElapsedTime();
 				}
 			}
 		}
 
-		double thisMonthAvgSatisfaction = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(thisMonthTotalSatis, thisMonthSatisCount)
+		double lastMonthAvgSatisfaction = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(lastMonthTotalSatis, lastMonthSatisCount)
 		);
 
-		double thisMonthAvgHintCount = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateAverage(thisMonthTotalHintCount, thisMonthHintCount)
+		double lastMonthAvgHintCount = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateAverage(lastMonthTotalHintCount, lastMonthHintCount)
 		);
 
-		double thisMonthSuccessRate = Ut.calculator.roundToFirstDecimalAsDouble(
-			Ut.calculator.calculateRate(thisMonthCount, thisMonthSuccessCount)
+		double lastMonthSuccessRate = Ut.calculator.roundToFirstDecimalAsDouble(
+			Ut.calculator.calculateRate(lastMonthCount, lastMonthSuccessCount)
 		);
 
-		int thisMonthAvgTime = Ut.calculator.roundToInt(
-			Ut.calculator.calculateAverage(thisMonthTotalTime, thisMonthTimeCount)
+		int lastMonthAvgTime = Ut.calculator.roundToInt(
+			Ut.calculator.calculateAverage(lastMonthTotalTime, lastMonthTimeCount)
 		);
 
-		String thisMonthTopTheme = thisMonthTopSatisStatId != 0
-			? diaryStatRepository.findById(thisMonthTopSatisStatId)
+		String lastMonthTopTheme = lastMonthTopSatisStatId != 0
+			? diaryStatRepository.findById(lastMonthTopSatisStatId)
 			.orElseThrow().getTheme().getName() : null;
 
 		return EscapeScheduleStatDto.builder()
 			.monthlyCountMap(monthlyCountMap)
-			.thisMonthCount(thisMonthCount)
-			.thisMonthAvgSatisfaction(thisMonthAvgSatisfaction)
-			.thisMonthAvgHintCount(thisMonthAvgHintCount)
-			.thisMonthSuccessRate(thisMonthSuccessRate)
-			.thisMonthAvgTime(thisMonthAvgTime)
-			.thisMonthTopTheme(thisMonthTopTheme)
-			.thisMonthTopSatisfaction(thisMonthTopSatisfaction)
+			.lastMonthCount(lastMonthCount)
+			.lastMonthAvgSatisfaction(lastMonthAvgSatisfaction)
+			.lastMonthAvgHintCount(lastMonthAvgHintCount)
+			.lastMonthSuccessRate(lastMonthSuccessRate)
+			.lastMonthAvgTime(lastMonthAvgTime)
+			.lastMonthTopTheme(lastMonthTopTheme)
+			.lastMonthTopSatisfaction(lastMonthTopSatisfaction)
 			.build();
 	}
 

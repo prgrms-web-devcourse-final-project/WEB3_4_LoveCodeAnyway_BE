@@ -24,15 +24,11 @@ import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.entity.MemberStat;
 import com.ddobang.backend.domain.member.repository.MemberStatRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class MemberStatCalculatorTest {
 	@Mock
 	private DiaryStatRepository diaryStatRepository;
-
-	@Mock
-	private ThemeStatRepository themeStatRepository;
 
 	@Mock
 	private MemberStatRepository memberStatRepository;
@@ -76,7 +72,7 @@ public class MemberStatCalculatorTest {
 				.hintCount(0)
 				.escapeResult(false)
 				.elapsedTime(3600)
-				.escapeDate(LocalDate.of(2025, 4, 5))
+				.escapeDate(LocalDate.of(2025, 3, 5))
 				.build(),
 			DiaryStat.builder()
 				.theme(theme2)
@@ -122,7 +118,7 @@ public class MemberStatCalculatorTest {
 		assertThat(saved.getEscapeSummaryStat().getNoHintSuccessRate()).isEqualTo(33.3);
 		assertThat(saved.getEscapeSummaryStat().getAverageHintCount()).isEqualTo(0.3);
 		assertThat(saved.getEscapeSummaryStat().getFirstEscapeDate()).isEqualTo("2025-02-25");
-		assertThat(saved.getEscapeSummaryStat().getMostActiveMonth()).isEqualTo("2025년 4월");
+		assertThat(saved.getEscapeSummaryStat().getMostActiveMonth()).isEqualTo("2025년 3월");
 		assertThat(saved.getEscapeSummaryStat().getMostActiveMonthCount()).isEqualTo(1);
 		assertThat(saved.getEscapeSummaryStat().getDaysSinceFirstEscape())
 			.isEqualTo((int)ChronoUnit.DAYS.between(LocalDate.of(2025, 2, 25), LocalDate.now()));
@@ -165,14 +161,14 @@ public class MemberStatCalculatorTest {
 		MemberStat saved = captor.getValue();
 
 		assertThat(saved.getEscapeScheduleStat().getMonthlyCountMap()).isEqualTo(
-			Map.of("2025년 4월", 1, "2025년 3월", 0, "2025년 2월", 1, "2025년 1월", 0, "2024년 12월", 0, "2024년 11월", 0)
+			Map.of("2025년 4월", 0, "2025년 3월", 1, "2025년 2월", 1, "2025년 1월", 0, "2024년 12월", 0, "2024년 11월", 0)
 		);
-		assertThat(saved.getEscapeScheduleStat().getThisMonthCount()).isEqualTo(1);
-		assertThat(saved.getEscapeScheduleStat().getThisMonthAvgSatisfaction()).isEqualTo(0);
-		assertThat(saved.getEscapeScheduleStat().getThisMonthAvgHintCount()).isEqualTo(0);
-		assertThat(saved.getEscapeScheduleStat().getThisMonthSuccessRate()).isEqualTo(0);
-		assertThat(saved.getEscapeScheduleStat().getThisMonthAvgTime()).isEqualTo(3600);
-		assertThat(saved.getEscapeScheduleStat().getThisMonthTopTheme()).isEqualTo(null);
-		assertThat(saved.getEscapeScheduleStat().getThisMonthTopSatisfaction()).isEqualTo(0);
+		assertThat(saved.getEscapeScheduleStat().getLastMonthCount()).isEqualTo(1);
+		assertThat(saved.getEscapeScheduleStat().getLastMonthAvgSatisfaction()).isEqualTo(0);
+		assertThat(saved.getEscapeScheduleStat().getLastMonthAvgHintCount()).isEqualTo(0);
+		assertThat(saved.getEscapeScheduleStat().getLastMonthSuccessRate()).isEqualTo(0);
+		assertThat(saved.getEscapeScheduleStat().getLastMonthAvgTime()).isEqualTo(3600);
+		assertThat(saved.getEscapeScheduleStat().getLastMonthTopTheme()).isEqualTo(null);
+		assertThat(saved.getEscapeScheduleStat().getLastMonthTopSatisfaction()).isEqualTo(0);
 	}
 }
