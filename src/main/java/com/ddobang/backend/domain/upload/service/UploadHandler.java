@@ -2,8 +2,8 @@ package com.ddobang.backend.domain.upload.service;
 
 import java.util.List;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.ddobang.backend.domain.board.entity.Attachment;
 import com.ddobang.backend.domain.board.entity.Post;
@@ -17,6 +17,7 @@ import com.ddobang.backend.domain.upload.event.ProfileImageChangedEvent;
 import com.ddobang.backend.domain.upload.exception.UploadErrorCode;
 import com.ddobang.backend.domain.upload.exception.UploadException;
 import com.ddobang.backend.domain.upload.types.FileUploadTarget;
+import com.ddobang.backend.global.event.EventPublisher;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,7 @@ public class UploadHandler {
 	private final DiaryService diaryService;
 	private final BoardService boardService;
 
-	private final ApplicationEventPublisher eventPublisher;
+	private final EventPublisher publisher;
 
 	@Transactional
 	public void applyImage(FileUploadTarget target, Member member, Long diaryId, String imageUrl) {
@@ -42,8 +43,8 @@ public class UploadHandler {
 				String oldImageUrl = member.getProfilePictureUrl();
 
 				member.setProfilePictureUrl(imageUrl);
-				if (oldImageUrl != null) {
-					eventPublisher.publishEvent(new ProfileImageChangedEvent(oldImageUrl));
+				if (StringUtils.hasText(oldImageUrl)) {
+					publisher.publish(new ProfileImageChangedEvent(oldImageUrl));
 				}
 			}
 
@@ -52,8 +53,8 @@ public class UploadHandler {
 				String oldImageUrl = diary.getImageUrl();
 
 				diary.setImageUrl(imageUrl);
-				if (oldImageUrl != null) {
-					eventPublisher.publishEvent(new DiaryImageChangedEvent(oldImageUrl));
+				if (StringUtils.hasText(oldImageUrl)) {
+					publisher.publish(new DiaryImageChangedEvent(oldImageUrl));
 				}
 			}
 
@@ -77,7 +78,7 @@ public class UploadHandler {
 		boardService.clearAttachmentsByPostId(postId);
 
 		if (!urls.isEmpty()) {
-			eventPublisher.publishEvent(new PostAttachmentsUpdatedEvent(urls));
+			publisher.publish(new PostAttachmentsUpdatedEvent(urls));
 		}
 	}
 
