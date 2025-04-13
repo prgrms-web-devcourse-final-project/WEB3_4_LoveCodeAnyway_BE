@@ -104,4 +104,17 @@ public class Member extends BaseTime {
 		}
 		this.mannerScore = averageScore;
 	}
+
+	// 프로필 정보 부분 수정
+	public void updateProfile(String nickname, String introduction, String profileImageUrl) {
+		if (nickname != null) {
+			this.nickname = nickname;
+		}
+		if (introduction != null) {
+			this.introduction = introduction;
+		}
+		if (profileImageUrl != null) {
+			this.profilePictureUrl = profileImageUrl;
+		}
+	}
 }
