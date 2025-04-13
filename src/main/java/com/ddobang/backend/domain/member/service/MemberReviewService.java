@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.member.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +53,7 @@ public class MemberReviewService {
 				continue;
 			}
 
-			int score = 0;
+			int score = 50; // 기본 점수 50점부터 시작
 
 			for (PartyMemberReviewKeyword keywordMapping : review.getKeywords()) {
 				MemberReviewKeyword keyword = keywordMapping.getKeyword();
@@ -67,12 +69,16 @@ public class MemberReviewService {
 				}
 			}
 
-			totalScore += Math.max(0, Math.min(5, score));
+			totalScore += Math.max(0, Math.min(100, score));
 		}
 
-		double averageScore = totalReviews == 0 ? 0.0 : (double)totalScore / totalReviews;
+		BigDecimal averageScore = totalReviews == 0
+			? BigDecimal.ZERO
+			: BigDecimal.valueOf(totalScore)
+			.divide(BigDecimal.valueOf(totalReviews), 1, RoundingMode.HALF_UP);
 
-		MemberReview summary = memberReviewRepository.findById(memberId).orElseGet(() -> MemberReview.of(memberId));
+		MemberReview summary = memberReviewRepository.findById(memberId)
+			.orElseGet(() -> MemberReview.of(memberId));
 
 		summary.update(averageScore, totalReviews, positiveCount, negativeCount, noShowCount, keywordCountMap);
 

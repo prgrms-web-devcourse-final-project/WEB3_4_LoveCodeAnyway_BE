@@ -1,5 +1,7 @@
 package com.ddobang.backend.support;
 
+import java.math.BigDecimal;
+
 import com.ddobang.backend.domain.member.entity.Gender;
 import com.ddobang.backend.domain.member.entity.Member;
 
@@ -13,7 +15,7 @@ public class MemberTestFactory {
 			.introduction("자기소개 예시입니다.")
 			.kakaoId("kakao1234")
 			.profilePictureUrl("https://example.com/profile.jpg")
-			.mannerScore(50)
+			.mannerScore(BigDecimal.valueOf(50))
 			.hostCount(50)
 			.password(null)
 			.build();
@@ -27,7 +29,7 @@ public class MemberTestFactory {
 			.introduction("자기소개 예시입니다.")
 			.kakaoId(kakaoId)
 			.profilePictureUrl("https://example.com/profile.jpg")
-			.mannerScore(50)
+			.mannerScore(BigDecimal.valueOf(50))
 			.hostCount(50)
 			.password(null)
 			.build();
@@ -41,7 +43,7 @@ public class MemberTestFactory {
 			.introduction("자기소개 예시입니다.")
 			.kakaoId("kakao1234")
 			.profilePictureUrl("https://example.com/profile.jpg")
-			.mannerScore(50)
+			.mannerScore(BigDecimal.valueOf(50))
 			.hostCount(50)
 			.password(null)
 			.build();
@@ -55,7 +57,7 @@ public class MemberTestFactory {
 			.introduction("관리자 소개입니다.")
 			.kakaoId("adminKakaoId")
 			.profilePictureUrl("https://example.com/admin.jpg")
-			.mannerScore(0)
+			.mannerScore(BigDecimal.ZERO)
 			.hostCount(0)
 			.password("encodedPassword")
 			.build();

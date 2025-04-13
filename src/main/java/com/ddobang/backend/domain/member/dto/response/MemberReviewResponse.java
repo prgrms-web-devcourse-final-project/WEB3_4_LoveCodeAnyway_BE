@@ -1,11 +1,12 @@
 package com.ddobang.backend.domain.member.dto.response;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.ddobang.backend.domain.member.entity.MemberReview;
 
 public record MemberReviewResponse(
-	Double averageScore,
+	BigDecimal averageScore,
 	Integer totalReviews,
 	Integer positiveCount,
 	Integer negativeCount,
