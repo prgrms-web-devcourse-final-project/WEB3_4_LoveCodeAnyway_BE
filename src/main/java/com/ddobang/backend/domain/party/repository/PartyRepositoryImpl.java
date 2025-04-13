@@ -1,6 +1,5 @@
 package com.ddobang.backend.domain.party.repository;
 
-import static com.ddobang.backend.domain.party.types.PartyMemberRole.*;
 import static com.ddobang.backend.domain.party.types.PartyStatus.*;
 
 import java.time.LocalDate;
@@ -17,12 +16,14 @@ import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.QParty;
 import com.ddobang.backend.domain.party.entity.QPartyMember;
+import com.ddobang.backend.domain.party.types.PartyMemberRole;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.store.entity.QStore;
 import com.ddobang.backend.domain.theme.entity.QTheme;
 import com.ddobang.backend.domain.theme.entity.QThemeTag;
 import com.ddobang.backend.domain.theme.entity.QThemeTagMapping;
+import com.ddobang.backend.domain.theme.entity.Theme;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -51,7 +52,9 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 				party.title,
 				party.scheduledAt,
 
-				party.participantsNeeded.subtract(party.acceptedParticipantsCount),
+				party.totalParticipants
+					.subtract(party.participantsNeeded)
+					.add(party.acceptedParticipantsCount),
 				party.totalParticipants,
 				party.rookieAvailable,
 
@@ -75,7 +78,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 			.where(
 				party.status.in(RECRUITING, FULL),
 				party.deleted.eq(false),
-				pm.role.eq(HOST),
+				pm.role.eq(PartyMemberRole.HOST),
 				keywordContains(condition.keyword(), party, theme, store, host),
 				regionIn(condition.regionIds(), store),
 				dateIn(condition.dates(), party),
@@ -150,7 +153,9 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 				party.id,
 				party.title,
 				party.scheduledAt,
-				party.participantsNeeded.subtract(party.acceptedParticipantsCount),
+				party.totalParticipants
+					.subtract(party.participantsNeeded)
+					.add(party.acceptedParticipantsCount),
 				party.totalParticipants,
 				party.rookieAvailable,
 				store.name,
@@ -203,5 +208,54 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 			.and(party.status.eq(PartyStatus.COMPLETED))
 			.and(pm.status.eq(PartyMemberStatus.ACCEPTED))
 			.and(pm.member.eq(member));
+	}
+
+	@Override
+	public List<PartySummaryResponse> getPartiesByTheme(Theme theme, Long lastId, int size) {
+		QParty party = QParty.party;
+		QStore store = QStore.store;
+		QTheme qTheme = QTheme.theme;
+		QPartyMember pm = QPartyMember.partyMember;
+		QMember host = QMember.member;
+
+		return queryFactory
+			.select(Projections.constructor(PartySummaryResponse.class,
+				party.id,
+				party.title,
+				party.scheduledAt,
+
+				party.totalParticipants
+					.subtract(party.participantsNeeded)
+					.add(party.acceptedParticipantsCount),
+
+				party.totalParticipants,
+				party.rookieAvailable,
+
+				store.name,
+
+				qTheme.id,
+				qTheme.name,
+				qTheme.thumbnailUrl,
+
+				host.id,
+				host.nickname,
+				host.profilePictureUrl
+			))
+			.from(party)
+			.join(party.theme, qTheme)
+			.join(qTheme.store, store)
+
+			.join(party.partyMembers, pm)
+			.join(pm.member, host)
+			.where(
+				party.theme.eq(theme),
+				party.status.eq(PartyStatus.RECRUITING),
+				party.deleted.eq(false),
+				pm.role.eq(PartyMemberRole.HOST),
+				ltLastId(lastId, party)
+			)
+			.orderBy(party.id.desc())
+			.limit(size)
+			.fetch();
 	}
 }
