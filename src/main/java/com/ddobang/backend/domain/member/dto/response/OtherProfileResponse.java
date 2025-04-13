@@ -12,7 +12,7 @@ public record OtherProfileResponse(
 	String introduction,
 	String profilePicture,
 	BigDecimal mannerScore,
-	int hostCount
+	Integer hostCount
 ) {
 	public static OtherProfileResponse of(Member member) {
 		return new OtherProfileResponse(
