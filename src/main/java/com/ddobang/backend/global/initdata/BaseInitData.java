@@ -1,8 +1,11 @@
 package com.ddobang.backend.global.initdata;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +19,15 @@ import com.ddobang.backend.domain.alarm.entity.AlarmType;
 import com.ddobang.backend.domain.alarm.repository.AlarmRepository;
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.service.DiaryService;
+import com.ddobang.backend.domain.member.entity.Gender;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.domain.party.dto.request.PartyRequest;
+import com.ddobang.backend.domain.party.entity.Party;
+import com.ddobang.backend.domain.party.entity.PartyMember;
+import com.ddobang.backend.domain.party.repository.PartyMemberRepository;
+import com.ddobang.backend.domain.party.repository.PartyRepository;
+import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.message.entity.Message;
 import com.ddobang.backend.domain.message.repository.MessageRepository;
 import com.ddobang.backend.domain.region.entity.Region;
@@ -44,6 +54,8 @@ public class BaseInitData {
 	private final ThemeTagRepository themeTagRepository;
 	private final MemberRepository memberRepository;
 	private final DiaryService diaryService;
+	private final PartyRepository partyRepository;
+	private final PartyMemberRepository partyMemberRepository;
 	private final MessageRepository messageRepository;
 	private final AlarmRepository alarmRepository;
 
@@ -76,6 +88,7 @@ public class BaseInitData {
 			self.memberInitData();
 			self.themeInitData();
 			self.diaryInitData();
+			self.partyInitData();
 			self.messageAndAlarmInitData();
 		};
 	}
@@ -180,6 +193,73 @@ public class BaseInitData {
 					.build()
 			);
 		}
+	}
+
+	@Transactional
+	public void partyInitData() {
+		if (partyRepository.count() > 0) {
+			return;
+		}
+
+		// user0 ~ user4
+		List<Member> members = IntStream.range(0, 5)
+			.mapToObj(i -> {
+				String nickname = "user" + i;
+				return memberRepository.existsByNickname(nickname)
+					? memberRepository.findByNickname(nickname).orElseThrow()
+					: memberRepository.save(Member.of(nickname,
+					Math.random() < 0.5 ? Gender.MALE : Gender.FEMALE,
+					"소개",
+					"image.url"));
+			})
+			.toList();
+
+		List<Theme> themeList = themeRepository.findAll();
+
+		List<Party> parties = themeList.stream()
+			.flatMap(theme -> IntStream.range(0, 3)
+				.mapToObj(i -> {
+					// 1. 랜덤 호스트 선택
+					Member host = members.get((int)(Math.random() * members.size()));
+
+					// 2. 파티 생성
+					PartyRequest request = new PartyRequest(
+						theme.getId(),
+						theme.getName() + "모임_" + i,
+						"모임 소개",
+						LocalDateTime.now().plusDays((int)(Math.random() * 6 + 5)),
+						theme.getMaxParticipants() - 2,
+						theme.getMaxParticipants(),
+						Math.random() < 0.5
+					);
+					Party party = partyRepository.save(Party.of(request, theme));
+					party.addPartyMember(partyMemberRepository.save(PartyMember.createHost(party, host)));
+
+					// 3. 신청자 = host 제외한 나머지
+					List<Member> otherMembers = members.stream()
+						.filter(m -> !m.equals(host))
+						.collect(Collectors.toList());
+
+					Collections.shuffle(otherMembers);
+					int applicantCount = (int)(Math.random() * 3) + 1;
+
+					otherMembers.stream()
+						.limit(applicantCount)
+						.forEach(applicant -> {
+							if (party.isPartyMember(applicant))
+								return;
+
+							PartyMember partyMember = partyMemberRepository.save(PartyMember.of(party, applicant));
+							party.addPartyMember(partyMember);
+
+							if (Math.random() < 0.5) {
+								party.updatePartyMemberStatus(applicant, PartyMemberStatus.ACCEPTED);
+							}
+						});
+
+					return party;
+				}))
+			.toList();
 	}
 
 	// 메시지와 알림 샘플 데이터 추가
