@@ -36,7 +36,7 @@ public record PartyMainResponse(
 			party.getTitle(),
 			party.getScheduledAt(),
 
-			party.getAcceptedParticipantsCount(),
+			party.getTotalParticipants() - party.getParticipantsNeeded() + party.getAcceptedParticipantsCount(),
 			party.getTotalParticipants()
 		);
 	}

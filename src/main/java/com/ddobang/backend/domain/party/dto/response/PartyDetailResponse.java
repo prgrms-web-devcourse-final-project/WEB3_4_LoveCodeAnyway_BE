@@ -23,7 +23,7 @@ public record PartyDetailResponse(
 	String hostNickname,
 	String hostProfilePictureUrl,
 
-	Integer recruitableCount,
+	Integer acceptedParticipantsCount,
 	Integer totalParticipants,
 
 	List<PartyMemberSummaries> acceptedPartyMembers,
@@ -60,7 +60,8 @@ public record PartyDetailResponse(
 			.hostNickname(host.getNickname())
 			.hostProfilePictureUrl(host.getProfilePictureUrl())
 
-			.recruitableCount(party.getParticipantsNeeded() - party.getAcceptedParticipantsCount())
+			.acceptedParticipantsCount(
+				party.getTotalParticipants() - party.getParticipantsNeeded() + party.getAcceptedParticipantsCount())
 			.totalParticipants(party.getTotalParticipants())
 
 			.acceptedPartyMembers(
