@@ -80,7 +80,7 @@ public class DiaryService {
 
 		diary.setDiaryStat(diaryStat);
 		themeStatCalculator.updateThemeStat(theme);
-		memberStatCalculator.updateMemberStat(author);
+		memberStatCalculator.updateMemberStatWithRetry(author);
 
 		return diary;
 	}
@@ -128,7 +128,7 @@ public class DiaryService {
 
 		diaryRepository.flush();
 		themeStatCalculator.updateThemeStat(theme);
-		memberStatCalculator.updateMemberStat(actor);
+		memberStatCalculator.updateMemberStatWithRetry(actor);
 
 		return DiaryDto.of(diary);
 	}
@@ -143,7 +143,7 @@ public class DiaryService {
 
 		diaryRepository.delete(diary);
 		themeStatCalculator.updateThemeStat(theme);
-		memberStatCalculator.updateMemberStat(actor);
+		memberStatCalculator.updateMemberStatWithRetry(actor);
 	}
 
 	@Transactional(readOnly = true)

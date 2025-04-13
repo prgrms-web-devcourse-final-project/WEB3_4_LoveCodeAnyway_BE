@@ -109,7 +109,7 @@ public class MemberStatCalculatorTest {
 		when(diaryStatRepository.findByAuthorId(1L)).thenReturn(diaryStats);
 
 		// when
-		memberStatCalculator.updateMemberStat(member);
+		memberStatCalculator.updateMemberStatWithRetry(member);
 
 		// then
 		ArgumentCaptor<MemberStat> captor = ArgumentCaptor.forClass(MemberStat.class);
@@ -135,7 +135,7 @@ public class MemberStatCalculatorTest {
 		when(diaryStatRepository.findByAuthorId(1L)).thenReturn(diaryStats);
 
 		// when
-		memberStatCalculator.updateMemberStat(member);
+		memberStatCalculator.updateMemberStatWithRetry(member);
 
 		// then
 		ArgumentCaptor<MemberStat> captor = ArgumentCaptor.forClass(MemberStat.class);
@@ -157,7 +157,7 @@ public class MemberStatCalculatorTest {
 		when(diaryStatRepository.findByAuthorId(1L)).thenReturn(diaryStats);
 
 		// when
-		memberStatCalculator.updateMemberStat(member);
+		memberStatCalculator.updateMemberStatWithRetry(member);
 
 		// then
 		ArgumentCaptor<MemberStat> captor = ArgumentCaptor.forClass(MemberStat.class);

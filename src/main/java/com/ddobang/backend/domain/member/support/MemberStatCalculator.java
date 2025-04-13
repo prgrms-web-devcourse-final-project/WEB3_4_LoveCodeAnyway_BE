@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,9 @@ import com.ddobang.backend.global.util.Ut;
 import com.querydsl.core.Tuple;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MemberStatCalculator {
@@ -38,6 +41,27 @@ public class MemberStatCalculator {
 	private static final DateTimeFormatter YM_FORMATTER = DateTimeFormatter.ofPattern("yyyy년 M월");
 
 	@Transactional
+	public void updateMemberStatWithRetry(Member author) {
+		int retryCount = 0;
+
+		while (retryCount < 3) {
+			try {
+				updateMemberStat(author);
+
+				return;
+			} catch (ObjectOptimisticLockingFailureException e) {
+				retryCount++;
+
+				log.warn("OptimisticLock 충돌 발생, 재시도 중... ({}회)", retryCount);
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException ignored) {
+				}
+			}
+		}
+		log.error("최대 재시도 횟수 초과. author id = {} 업데이트 실패", author.getId());
+	}
+
 	public void updateMemberStat(Member author) {
 		List<DiaryStat> diaryStats = diaryStatRepository.findByAuthorId(author.getId());
 		EscapeSummaryStatDto escapeSummaryStatDto = calculateEscapeSummaryStat(diaryStats);
