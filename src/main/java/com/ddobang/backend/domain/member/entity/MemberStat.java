@@ -60,4 +60,9 @@ public class MemberStat {
 		escapeProfileStat.update(escapeProfileStatDto);
 		escapeScheduleStat.update(escapeScheduleStatDto);
 	}
+
+	public MemberStat(Member member, EscapeSummaryStat escapeSummaryStat) {
+		this.member = member;
+		this.escapeSummaryStat = escapeSummaryStat;
+	}
 }
