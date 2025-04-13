@@ -77,10 +77,3 @@ custom:
     timeout: 600000  # SSE 타임아웃 설정 (밀리초, 10분)
   fileUpload:
     dirPath: c:/temp/ddobang_dev
-
-  # OAuth2 redirect URIs
-  oauth2:
-    redirect:
-      frontend:
-        main: https://www.ddobang.site/
-        signup: https://www.ddobang.site/signup
