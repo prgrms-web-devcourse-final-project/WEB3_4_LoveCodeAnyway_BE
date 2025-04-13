@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum FileUploadTarget {
 	PROFILE("profile"),
 	DIARY("diary"),
-	BOARD("board"),
+	POST("post"),
 	NONE("none");
 
 	private final String type;

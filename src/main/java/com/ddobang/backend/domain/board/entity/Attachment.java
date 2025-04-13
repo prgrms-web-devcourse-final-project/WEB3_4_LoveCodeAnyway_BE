@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,11 +31,13 @@ public class Attachment {
 	@Column(nullable = false)
 	private String fileName;
 
+	@Setter
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "post_id", nullable = false)
 	private Post post;
 
-	private Attachment(
+	@Builder
+	public Attachment(
 		String url,
 		String fileName,
 		Post post
@@ -42,9 +45,5 @@ public class Attachment {
 		this.url = url;
 		this.fileName = fileName;
 		this.post = post;
-	}
-
-	public static Attachment of(String url, String fileName, Post post) {
-		return new Attachment(url, fileName, post);
 	}
 }
