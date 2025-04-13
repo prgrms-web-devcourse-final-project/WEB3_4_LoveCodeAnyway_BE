@@ -35,5 +35,3 @@ logging:
 custom:
   sse:
     timeout: 600000
-  fileUpload:
-    dirPath: /gen
