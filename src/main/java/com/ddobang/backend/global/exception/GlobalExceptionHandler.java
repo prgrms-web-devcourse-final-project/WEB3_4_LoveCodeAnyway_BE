@@ -98,7 +98,7 @@ public class GlobalExceptionHandler {
 		MethodArgumentTypeMismatchException e) {
 		ErrorCode errorCode = GlobalErrorCode.INVALID_REQUEST;
 
-		log.warn("[ServiceException] status={}, code={}, message={}",
+		log.warn("[MethodArgumentTypeMismatchException] status={}, code={}, message={}",
 			errorCode.getStatus().value(),
 			errorCode.getErrorCode(),
 			errorCode.getMessage());

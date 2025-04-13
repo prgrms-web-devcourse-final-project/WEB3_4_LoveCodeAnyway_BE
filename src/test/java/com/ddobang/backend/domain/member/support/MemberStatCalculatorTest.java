@@ -1,4 +1,4 @@
-package com.ddobang.backend.domain.member.tool;
+package com.ddobang.backend.domain.member.support;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;

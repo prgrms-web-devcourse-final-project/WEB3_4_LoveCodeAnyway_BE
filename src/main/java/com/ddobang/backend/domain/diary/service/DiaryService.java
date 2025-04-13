@@ -26,12 +26,12 @@ import com.ddobang.backend.domain.diary.exception.DiaryException;
 import com.ddobang.backend.domain.diary.repository.DiaryRepository;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.tool.MemberStatCalculator;
+import com.ddobang.backend.domain.member.support.MemberStatCalculator;
 import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
 import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.service.ThemeService;
-import com.ddobang.backend.domain.theme.tool.ThemeStatCalculator;
+import com.ddobang.backend.domain.theme.support.ThemeStatCalculator;
 import com.ddobang.backend.global.security.LoginMemberProvider;
 
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.ddobang.backend.domain.member.tool;
+package com.ddobang.backend.domain.member.support;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -112,8 +112,7 @@ public class MemberStatCalculator {
 	}
 
 	// 매달 1일 스케쥴링용 메서드
-	@Transactional
-	public void upDateEscapeScheduleStat(MemberStat memberStat) {
+	void upDateEscapeScheduleStat(MemberStat memberStat) {
 		List<DiaryStat> diaryStats = diaryStatRepository.findByAuthorId(memberStat.getId());
 
 		EscapeScheduleStatDto escapeScheduleStatDto = calculateEscapeScheduleStat(diaryStats);
