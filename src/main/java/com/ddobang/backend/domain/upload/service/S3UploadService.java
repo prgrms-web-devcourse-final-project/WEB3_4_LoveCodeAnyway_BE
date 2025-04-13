@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ddobang.backend.domain.board.entity.Attachment;
@@ -44,6 +45,9 @@ public class S3UploadService {
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
 
+	@Value("${cloud.aws.region.static}")
+	private String region;
+
 	private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpeg", "jpg", "gif", "png", "svg", "webp");
 
 	public void uploadImage(long diaryId, FileUploadTarget target, MultipartFile file) throws IOException {
@@ -53,7 +57,6 @@ public class S3UploadService {
 		}
 
 		Member member = loginMemberProvider.getCurrentMember();
-		System.out.println("member.getProfilePictureUrl() = " + member.getProfilePictureUrl());
 
 		if (file == null || file.isEmpty()) {
 			uploadHandler.applyImage(target, member, diaryId, null);
@@ -97,6 +100,9 @@ public class S3UploadService {
 
 	public void delete(String url) {
 		String key = extractKeyFromUrl(url);
+		if (!StringUtils.hasText(key)) {
+			return;
+		}
 
 		DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
 			.bucket(bucket)
@@ -143,14 +149,19 @@ public class S3UploadService {
 	}
 
 	private String getPublicUrl(String key) {
-		return String.format("https://%s.s3.ap-northeast-2.amazonaws.com/%s", bucket, key);
+		return getBucketDomain() + key;
 	}
 
 	private String extractKeyFromUrl(String url) {
-		String bucketDomain = String.format("https://%s.s3.ap-northeast-2.amazonaws.com/", bucket);
+		String bucketDomain = getBucketDomain();
 		if (!url.startsWith(bucketDomain)) {
 			log.warn("사진 삭제 중 잘못된 URL이 전달되었습니다. URL: {}", url);
+			return "";
 		}
 		return url.substring(bucketDomain.length());
+	}
+
+	private String getBucketDomain() {
+		return String.format("https://%s.s3.%s.amazonaws.com/", bucket, region);
 	}
 }
