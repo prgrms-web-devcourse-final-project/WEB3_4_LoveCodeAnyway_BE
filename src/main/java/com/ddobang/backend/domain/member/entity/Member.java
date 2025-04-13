@@ -95,4 +95,12 @@ public class Member extends BaseTime {
 		this.id = id;
 		this.nickname = nickname;
 	}
+
+	public void updateMannerScore(Double averageScore) {
+		if (averageScore == null) {
+			this.mannerScore = 0;
+			return;
+		}
+		this.mannerScore = (int)Math.round(averageScore);
+	}
 }

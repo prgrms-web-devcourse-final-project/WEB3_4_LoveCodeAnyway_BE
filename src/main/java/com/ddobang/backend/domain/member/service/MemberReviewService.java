@@ -76,6 +76,9 @@ public class MemberReviewService {
 
 		summary.update(averageScore, totalReviews, positiveCount, negativeCount, noShowCount, keywordCountMap);
 
+		Member member = memberService.getMember(memberId);
+		member.updateMannerScore(averageScore);
+
 		memberReviewRepository.save(summary);
 	}
 
@@ -91,9 +94,6 @@ public class MemberReviewService {
 				stat.getCount()))
 			.toList();
 
-		Member member = memberService.getMember(memberId);
-		//        entity 와 충돌 우려해서 수정 변경 하지 못했습니다.
-		//        member.updateMannerScore(review.getAverageScore());
 		return MemberReviewResponse.from(review, keywords);
 	}
 }
