@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.member.entity;
 
+import java.math.BigDecimal;
+
 import com.ddobang.backend.global.entity.BaseTime;
 
 import jakarta.persistence.Column;
@@ -34,7 +36,7 @@ public class Member extends BaseTime {
 
 	private String profilePictureUrl;
 
-	private Integer mannerScore;
+	private BigDecimal mannerScore;
 
 	private Integer hostCount;
 
@@ -47,7 +49,7 @@ public class Member extends BaseTime {
 		String introduction,
 		String kakaoId,
 		String profilePictureUrl,
-		Integer mannerScore,
+		BigDecimal mannerScore,
 		Integer hostCount,
 		String password
 	) {
@@ -94,5 +96,13 @@ public class Member extends BaseTime {
 	public Member(Long id, String nickname) {
 		this.id = id;
 		this.nickname = nickname;
+	}
+
+	public void updateMannerScore(BigDecimal averageScore) {
+		if (averageScore == null) {
+			this.mannerScore = BigDecimal.valueOf(0);
+			return;
+		}
+		this.mannerScore = averageScore;
 	}
 }

@@ -1,5 +1,6 @@
 package com.ddobang.backend.domain.member.entity;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ public class MemberReview extends BaseTime { // 누적 리뷰
 
 	private Long memberId;
 
-	private Double averageScore;
+	private BigDecimal averageScore;
 	private Integer totalReviews;
 	private Integer positiveCount;
 	private Integer negativeCount;
@@ -36,7 +37,7 @@ public class MemberReview extends BaseTime { // 누적 리뷰
 
 	private MemberReview(Long memberId) {
 		this.memberId = memberId;
-		this.averageScore = 0.0;
+		this.averageScore = BigDecimal.valueOf(0);
 		this.totalReviews = 0;
 		this.positiveCount = 0;
 		this.negativeCount = 0;
@@ -49,7 +50,7 @@ public class MemberReview extends BaseTime { // 누적 리뷰
 	}
 
 	public void update(
-		double averageScore,
+		BigDecimal averageScore,
 		int totalReviews,
 		int positiveCount,
 		int negativeCount,

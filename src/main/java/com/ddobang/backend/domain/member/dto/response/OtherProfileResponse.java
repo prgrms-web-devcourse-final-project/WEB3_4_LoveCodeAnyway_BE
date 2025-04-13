@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.member.dto.response;
 
+import java.math.BigDecimal;
+
 import com.ddobang.backend.domain.member.entity.Gender;
 import com.ddobang.backend.domain.member.entity.Member;
 
@@ -9,7 +11,7 @@ public record OtherProfileResponse(
 	Gender gender,
 	String introduction,
 	String profilePicture,
-	int mannerScore,
+	BigDecimal mannerScore,
 	int hostCount
 ) {
 	public static OtherProfileResponse of(Member member) {

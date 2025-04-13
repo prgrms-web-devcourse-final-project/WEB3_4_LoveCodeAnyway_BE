@@ -3,6 +3,7 @@ package com.ddobang.backend.domain.message;
 import static org.assertj.core.api.Assertions.*;
 import static org.awaitility.Awaitility.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -72,7 +73,7 @@ public class MessageAlarmIntegrationTest {
 		return Member.builder()
 			.nickname(nickname)
 			.gender(Gender.MALE)
-			.mannerScore(100)
+			.mannerScore(BigDecimal.valueOf(50))
 			.hostCount(0)
 			.build();
 	}
