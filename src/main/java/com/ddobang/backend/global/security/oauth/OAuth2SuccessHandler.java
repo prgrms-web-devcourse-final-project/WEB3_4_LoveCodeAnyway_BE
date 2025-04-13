@@ -25,7 +25,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 	private final MemberService memberService;
 	private final AuthService authService;
-	private final OAuth2RedirectProperties redirectProperties;
 
 	// OAuth2 로그인 성공 시 호출되는 메서드
 	@Override
@@ -55,16 +54,23 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			log.info("기존 회원 - 카카오 ID로 회원 정보 조회 결과: {}", searchMember);
 		}
 
+		String baseRedirectUrl = request.getParameter("state");
+
+		if (baseRedirectUrl == null) {
+			log.info("state 파라미터가 null입니다.");
+			throw new OAuth2Exception(OAuth2ErrorCode.OAUTH2_MISSING_STATE);
+		}
+
 		if (searchMember != null) {
 			// 기존 회원: 토큰 생성 및 쿠키 저장
 			authService.handleLoginSuccess(response, searchMember);
 			log.info("기존 회원 로그인 처리 완료");
-			response.sendRedirect(redirectProperties.getMain()); // 메인 페이지로 리다이렉트
+			response.sendRedirect(baseRedirectUrl); // 메인 페이지로 리다이렉트
 		} else {
 			// 신규 회원: 회원가입용 토큰 쿠키 전송
 			authService.handlePreSignup(response, kakaoId);
 			log.info("신규 회원 - 회원가입용 토큰 쿠키 전송 완료");
-			response.sendRedirect(redirectProperties.getSignup()); // 회원가입 페이지로 리다이렉트
+			response.sendRedirect(baseRedirectUrl + "/signup"); // 회원가입 페이지로 리다이렉트
 		}
 	}
 }
