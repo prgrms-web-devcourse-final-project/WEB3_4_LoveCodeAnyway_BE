@@ -24,6 +24,7 @@ import com.ddobang.backend.global.exception.oauth2.OAuth2ErrorCode;
 import com.ddobang.backend.global.exception.oauth2.OAuth2Exception;
 import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
 import com.ddobang.backend.global.security.jwt.JwtTokenType;
+import com.ddobang.backend.global.util.CookieUtil;
 import com.ddobang.backend.support.MemberTestFactory;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,6 +42,8 @@ class AuthServiceTest {
 	private MemberTagMappingRepository memberTagMappingRepository;
 	@Mock
 	private HttpServletResponse response;
+	@Mock
+	private CookieUtil cookieUtil;
 	@InjectMocks
 	private AuthService authService;
 
