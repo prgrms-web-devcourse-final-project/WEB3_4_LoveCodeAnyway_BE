@@ -1,42 +1,36 @@
 package com.ddobang.backend.global.util;
 
+import org.springframework.stereotype.Component;
+
 import com.ddobang.backend.global.config.AppConfig;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
+@Component
 public class CookieUtil {
 
-	private static final int ACCESS_TOKEN_EXPIRE_SEC = 60 * 30; // 30분
-	private static final int REFRESH_TOKEN_EXPIRE_SEC = 60 * 60 * 24; // 1일
+	private final int ACCESS_TOKEN_EXPIRE_SEC = 60 * 60 * 12; // 12시간
+	private final int REFRESH_TOKEN_EXPIRE_SEC = 60 * 60 * 24 * 7; // 7일
 
-	private static final String ACCESS_TOKEN_KEY = "accessToken";
-	private static final String REFRESH_TOKEN_KEY = "refreshToken";
+	private final String ACCESS_TOKEN_KEY = "accessToken";
+	private final String REFRESH_TOKEN_KEY = "refreshToken";
 
 	// Access Token 쿠키 생성
-	public static Cookie createAccessTokenCookie(String token) {
+	public Cookie createAccessTokenCookie(String token) {
 		Cookie cookie = new Cookie(ACCESS_TOKEN_KEY, token);
-		cookie.setHttpOnly(true);
-		cookie.setAttribute("SameSite", "None");
-		cookie.setSecure(true); // 배포 환경에서 true
 
-		if (AppConfig.isProd())
-			cookie.setSecure(true);
+		commonCookieSetting(cookie);
 
-		cookie.setPath("/");
 		cookie.setMaxAge(ACCESS_TOKEN_EXPIRE_SEC);
 		return cookie;
 	}
 
 	// Refresh Token 쿠키 생성
-	public static Cookie createRefreshTokenCookie(String token) {
+	public Cookie createRefreshTokenCookie(String token) {
 		Cookie cookie = new Cookie(REFRESH_TOKEN_KEY, token);
-		cookie.setHttpOnly(true);
-		cookie.setAttribute("SameSite", "None");
-		cookie.setSecure(true); // 배포 환경에서 true
 
-		if (AppConfig.isProd())
-			cookie.setSecure(true);
+		commonCookieSetting(cookie);
 
 		cookie.setPath("/");
 		cookie.setMaxAge(REFRESH_TOKEN_EXPIRE_SEC);
@@ -44,21 +38,18 @@ public class CookieUtil {
 	}
 
 	// 회원가입용 토큰 쿠키 생성
-	public static Cookie createSignupTokenCookie(String token) {
+	public Cookie createSignupTokenCookie(String token) {
 		Cookie cookie = new Cookie("signupToken", token);
-		cookie.setHttpOnly(true);
-		cookie.setAttribute("SameSite", "None");
-		cookie.setSecure(true); // 배포 환경에서 true
 
-		if (AppConfig.isProd())
-			cookie.setSecure(true);
+		commonCookieSetting(cookie);
+
 		cookie.setPath("/");
 		cookie.setMaxAge(60 * 10); // 10분
 		return cookie;
 	}
 
 	// Access Token 쿠키 값 가져오기
-	public static String getAccessToken(HttpServletRequest request) {
+	public String getAccessToken(HttpServletRequest request) {
 		if (request.getCookies() == null)
 			return null;
 
@@ -71,7 +62,7 @@ public class CookieUtil {
 	}
 
 	// 쿠키 제거
-	public static Cookie deleteCookie(String name) {
+	public Cookie deleteCookie(String name) {
 		Cookie cookie = new Cookie(name, null);
 		cookie.setHttpOnly(true);
 		cookie.setAttribute("SameSite", "None");
@@ -82,5 +73,17 @@ public class CookieUtil {
 		cookie.setMaxAge(0);
 		cookie.setPath("/");
 		return cookie;
+	}
+
+	private void commonCookieSetting(Cookie cookie) {
+		cookie.setHttpOnly(true);
+		if (AppConfig.isProd()) {
+			cookie.setSecure(true);
+			cookie.setAttribute("SameSite", "None");
+		} else {
+			cookie.setSecure(false);
+			cookie.setAttribute("SameSite", "Lax");
+		}
+		cookie.setPath("/");
 	}
 }

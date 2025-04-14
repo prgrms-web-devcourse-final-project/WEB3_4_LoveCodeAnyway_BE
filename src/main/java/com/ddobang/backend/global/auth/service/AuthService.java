@@ -27,6 +27,7 @@ public class AuthService {
 	private final MemberService memberService;
 	private final MemberTagService memberTagService;
 	private final MemberTagMappingRepository memberTagMappingRepository;
+	private final CookieUtil cookieUtil;
 
 	/**
 	 * 로그인 성공 시 액세스 / 리프레시 토큰 생성 및 쿠키에 저장
@@ -37,8 +38,8 @@ public class AuthService {
 		String accessToken = jwtTokenProvider.generateToken(member, JwtTokenType.ACCESS, isAdmin);
 		String refreshToken = jwtTokenProvider.generateToken(member, JwtTokenType.REFRESH, isAdmin);
 
-		response.addCookie(CookieUtil.createAccessTokenCookie(accessToken));
-		response.addCookie(CookieUtil.createRefreshTokenCookie(refreshToken));
+		response.addCookie(cookieUtil.createAccessTokenCookie(accessToken));
+		response.addCookie(cookieUtil.createRefreshTokenCookie(refreshToken));
 	}
 
 	/**
@@ -50,7 +51,7 @@ public class AuthService {
 		}
 
 		String signupToken = jwtTokenProvider.generateSignupToken(kakaoId);
-		response.addCookie(CookieUtil.createSignupTokenCookie(signupToken));
+		response.addCookie(cookieUtil.createSignupTokenCookie(signupToken));
 	}
 
 	/**
@@ -72,14 +73,13 @@ public class AuthService {
 		String refreshToken = jwtTokenProvider.generateToken(member, JwtTokenType.REFRESH, false);
 
 		// 쿠키에 저장
-		response.addCookie(CookieUtil.createAccessTokenCookie(accessToken));
-		response.addCookie(CookieUtil.createRefreshTokenCookie(refreshToken));
+		response.addCookie(cookieUtil.createAccessTokenCookie(accessToken));
+		response.addCookie(cookieUtil.createRefreshTokenCookie(refreshToken));
 	}
 
 	/**
 	 * 로그아웃 시 쿠키 삭제
 	 */
-	@Transactional
 	public void logout(HttpServletResponse response) {
 		// accessToken 쿠키 삭제
 		ResponseCookie accessToken = ResponseCookie.from("accessToken", "")
