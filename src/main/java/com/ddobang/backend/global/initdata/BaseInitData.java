@@ -22,7 +22,9 @@ import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
 import com.ddobang.backend.domain.diary.service.DiaryService;
 import com.ddobang.backend.domain.member.entity.Gender;
 import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.entity.MemberTag;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.domain.member.repository.MemberTagRepository;
 import com.ddobang.backend.domain.message.entity.Message;
 import com.ddobang.backend.domain.message.repository.MessageRepository;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
@@ -57,6 +59,7 @@ public class BaseInitData {
 	private final PartyMemberRepository partyMemberRepository;
 	private final MessageRepository messageRepository;  // 추가
 	private final AlarmRepository alarmRepository; // 추가
+	private final MemberTagRepository memberTagRepository;
 
 	@Autowired
 	@Lazy
@@ -98,6 +101,10 @@ public class BaseInitData {
 	public void memberInitData() {
 		if (memberRepository.count() > 0) {
 			return;
+		}
+		// 1. 기본 태그 저장
+		for (int i = 1; i <= 5; i++) {
+			memberTagRepository.save(new MemberTag("기본 태그 " + i));
 		}
 
 		// TODO: 테스트용 회원 생성 - 추후 삭제 예정 or 변경
@@ -147,9 +154,6 @@ public class BaseInitData {
 		if (themeRepository.count() > 0) {
 			return;
 		}
-
-		if (themeRepository.count() > 0)
-			return;
 
 		// 1. 지역 2개 저장
 		region1 = regionRepository.save(new Region("서울", "강남"));
