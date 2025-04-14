@@ -16,6 +16,8 @@ import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -165,9 +167,15 @@ public class ThemeRepositoryImpl implements ThemeRepositoryCustom {
 		}
 
 		if (request.participants() != null) {
+			// 최대 인원 수가 0인 경우, 20명으로 간주
+			NumberExpression<Integer> adjustedMaxParticipants = new CaseBuilder()
+				.when(theme.maxParticipants.eq(0))
+				.then(20)
+				.otherwise(theme.maxParticipants);
+
 			builder.and(
 				theme.minParticipants.loe(request.participants())
-					.and(theme.maxParticipants.goe(request.participants()))
+					.and(adjustedMaxParticipants.goe(request.participants()))
 			);
 		}
 
