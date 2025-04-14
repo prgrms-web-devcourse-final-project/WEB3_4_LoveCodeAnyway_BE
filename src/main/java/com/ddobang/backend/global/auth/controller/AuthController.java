@@ -38,4 +38,11 @@ public class AuthController {
 	) throws IOException {
 		response.sendRedirect("/oauth2/authorization/kakao?redirectUrl=" + redirectUrl);
 	}
+
+	// 로그아웃
+	@PostMapping("/logout")
+	public ResponseEntity<SuccessResponse<Void>> logout(HttpServletResponse response) {
+		authService.logout(response);
+		return ResponseFactory.ok("로그아웃을 성공하였습니다.");
+	}
 }

@@ -10,11 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -38,11 +41,19 @@ public class SecurityConfig {
 		HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
 
 		http
-			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-			.csrf(AbstractHttpConfigurer::disable)
-			.sessionManagement(session
-				-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			// 인가 정책
+			.cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정
+			.csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화 (REST API에서는 CSRF 필요 없음)
+			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
+
+			// JWT 인증 필터 등록
+			.exceptionHandling(ex -> ex
+				.defaultAuthenticationEntryPointFor(
+					new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), // 401 에러 처리
+					new AntPathRequestMatcher("/api/**") // API 요청에 대해 401 에러 처리
+				)
+			)
+
+			// 인증 및 인가 필터 등록
 			.authorizeHttpRequests(auth -> {
 				auth
 					// OAuth2 로그인 관련
