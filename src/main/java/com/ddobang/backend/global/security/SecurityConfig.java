@@ -1,27 +1,29 @@
 package com.ddobang.backend.global.security;
 
-import java.util.List;
-
+import com.ddobang.backend.domain.member.service.MemberService;
+import com.ddobang.backend.global.security.jwt.JwtAuthenticationFilter;
+import com.ddobang.backend.global.security.jwt.JwtExceptionFilter;
+import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
+import com.ddobang.backend.global.security.oauth.CustomAuthorizationRequestResolver;
+import com.ddobang.backend.global.security.oauth.OAuth2SuccessHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
-import com.ddobang.backend.domain.member.service.MemberService;
-import com.ddobang.backend.global.security.jwt.JwtAuthenticationFilter;
-import com.ddobang.backend.global.security.jwt.JwtExceptionFilter;
-import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
-import com.ddobang.backend.global.security.oauth.OAuth2SuccessHandler;
-
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class SecurityConfig {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final MemberService memberService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
+	private final CustomAuthorizationRequestResolver customAuthorizationRequestResolver;
 
 	/**
 	 * SecurityFilterChain 설정
@@ -38,11 +41,19 @@ public class SecurityConfig {
 		HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
 
 		http
-			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-			.csrf(AbstractHttpConfigurer::disable)
-			.sessionManagement(session
-				-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			// 인가 정책
+			.cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정
+			.csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화 (REST API에서는 CSRF 필요 없음)
+			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
+
+			// JWT 인증 필터 등록
+			.exceptionHandling(ex -> ex
+				.defaultAuthenticationEntryPointFor(
+					new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), // 401 에러 처리
+					new AntPathRequestMatcher("/api/**") // API 요청에 대해 401 에러 처리
+				)
+			)
+
+			// 인증 및 인가 필터 등록
 			.authorizeHttpRequests(auth -> {
 				auth
 					// OAuth2 로그인 관련
@@ -82,9 +93,15 @@ public class SecurityConfig {
 			})
 
 			// OAuth2 로그인 설정
-			.oauth2Login(oauth -> oauth
-				.successHandler(oAuth2SuccessHandler)
-			)
+				.oauth2Login(
+						oauth2Login -> oauth2Login
+								.successHandler(oAuth2SuccessHandler)
+								.authorizationEndpoint(
+										authorizationEndpoint ->
+												authorizationEndpoint
+														.authorizationRequestResolver(customAuthorizationRequestResolver)
+								)
+				)
 
 			// 인증 필터 등록
 			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, memberService),
@@ -108,6 +125,7 @@ public class SecurityConfig {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(List.of(
 			"http://localhost:3000",                       // 로컬 개발용
+			"https://localhost:3000",                       // 로컬 개발용
 			"https://www.ddobang.site",                        // 배포 주소
 			"https://ddobang.site",                        // 배포 주소
 			"https://web-1-2-pitching-mate-fe.vercel.app"  // Vercel 배포 주소

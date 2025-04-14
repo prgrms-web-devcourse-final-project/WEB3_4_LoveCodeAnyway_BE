@@ -8,8 +8,12 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ddobang.backend.domain.member.dto.request.UpdateProfileRequest;
+import com.ddobang.backend.domain.member.dto.response.BasicProfileResponse;
 import com.ddobang.backend.domain.member.dto.response.MemberStatResponse;
+import com.ddobang.backend.domain.member.dto.response.MemberTagResponse;
 import com.ddobang.backend.domain.member.dto.response.OtherProfileResponse;
+import com.ddobang.backend.domain.member.dto.stat.EscapeProfileSummaryDto;
 import com.ddobang.backend.domain.member.entity.EscapeProfileStat;
 import com.ddobang.backend.domain.member.entity.EscapeScheduleStat;
 import com.ddobang.backend.domain.member.entity.EscapeSummaryStat;
@@ -22,11 +26,12 @@ import com.ddobang.backend.domain.member.exception.MemberException;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.domain.member.repository.MemberStatRepository;
 import com.ddobang.backend.domain.member.repository.MemberTagMappingRepository;
+import com.ddobang.backend.domain.member.repository.MemberTagRepository;
 import com.ddobang.backend.global.auth.dto.request.SignupRequest;
 import com.ddobang.backend.global.exception.auth.AuthErrorCode;
 import com.ddobang.backend.global.exception.auth.AuthException;
+import com.ddobang.backend.global.security.LoginMemberProvider;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -36,6 +41,8 @@ public class MemberService {
 	private final MemberTagMappingRepository memberTagMappingRepository;
 	private final MemberTagService memberTagService;
 	private final MemberStatRepository memberStatRepository;
+	private final LoginMemberProvider loginMemberProvider;
+	private final MemberTagRepository memberTagRepository;
 
 	// OAuth2User 정보로 회원 생성
 	public Member createMemberFromOAuth2(OAuth2User oAuth2User) {
@@ -67,38 +74,37 @@ public class MemberService {
 			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 	}
 
-	// 다른 회원의 프로필 조회
 	@Transactional(readOnly = true)
-	public OtherProfileResponse getOtherProfile(Long id) {
-		Member member = getMemberById(id);
-		return OtherProfileResponse.of(member);
-	}
-
 	public Member getByKakaoId(String kakaoId) {
 		return memberRepository.findByKakaoId(kakaoId);
 	}
 
+	@Transactional(readOnly = true)
 	public boolean existsByKakaoId(String kakaoId) {
 		return memberRepository.existsByKakaoId(kakaoId);
 	}
 
-	public boolean existsByNickname(@NotBlank(message = "닉네임은 필수입니다.") String nickname) {
+	@Transactional(readOnly = true)
+	public boolean existsByNickname(String nickname) {
 		return memberRepository.existsByNickname(nickname);
 	}
 
 	// 회원ID로 회원 조회
+	@Transactional(readOnly = true)
 	public Member getById(Long memberId) {
 		return memberRepository.findById(memberId)
 			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 	}
 
 	// 닉네임으로 회원 조회
+	@Transactional(readOnly = true)
 	public Member getByNickname(String nickname) {
 		return memberRepository.findByNickname(nickname)
 			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 	}
 
 	// 닉네임으로 회원 조회
+	@Transactional(readOnly = true)
 	public Member getMemberByUsername(String username) {
 		return memberRepository.findByNickname(username)
 			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
@@ -160,5 +166,78 @@ public class MemberService {
 			MemberTagMapping mapping = new MemberTagMapping(member, tag);
 			memberTagMappingRepository.save(mapping);
 		}
+	}
+
+	// 내 프로필 수정
+	@Transactional
+	public BasicProfileResponse updateProfile(Long memberId, UpdateProfileRequest request) {
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+		member.updateProfile(
+			request.nickname(),
+			request.introduction(),
+			request.profileImageUrl()
+		);
+
+		return BasicProfileResponse.of(member);
+	}
+
+	// 내 사용자 태그 조회
+	@Transactional(readOnly = true)
+	public List<MemberTagResponse> getMyTags() {
+		Member currentMember = loginMemberProvider.getCurrentMember();
+
+		List<MemberTagMapping> mappings = memberTagMappingRepository.findByMemberId(currentMember.getId());
+
+		return mappings.stream()
+			.map(mapping -> MemberTagResponse.from(mapping.getTag()))
+			.toList();
+	}
+
+	// 내 사용자 태그 수정
+	@Transactional
+	public void updateTags(Long memberId, List<Long> tagIds) {
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+		// 기존 태그 매핑 삭제
+		memberTagMappingRepository.deleteByMemberId(memberId);
+
+		// 새 태그 리스트 조회
+		List<MemberTag> tags = memberTagRepository.findAllById(tagIds);
+
+		// 새 매핑 등록
+		List<MemberTagMapping> mappings = tags.stream()
+			.map(tag -> new MemberTagMapping(member, tag))
+			.toList();
+
+		memberTagMappingRepository.saveAll(mappings);
+	}
+
+	// 사용자(나, 타인) 통계 조회
+	@Transactional(readOnly = true)
+	public EscapeProfileSummaryDto getStatsByMemberId(Long memberId) {
+		MemberStat stat = memberStatRepository.findByMemberId(memberId)
+			.orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_STAT));
+		return EscapeProfileSummaryDto.from(stat.getEscapeSummaryStat());
+	}
+
+	// 타 회원 프로필 조회
+	@Transactional(readOnly = true)
+	public OtherProfileResponse getOtherProfile(Long memberId) {
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+		return OtherProfileResponse.of(member);
+	}
+
+	// 타 회원 사용자 태그 조회
+	@Transactional(readOnly = true)
+	public List<MemberTagResponse> getTagsByMemberId(Long memberId) {
+		List<MemberTagMapping> mappings = memberTagMappingRepository.findByMemberId(memberId);
+		return mappings.stream()
+			.map(mapping -> MemberTagResponse.from(mapping.getTag()))
+			.toList();
 	}
 }

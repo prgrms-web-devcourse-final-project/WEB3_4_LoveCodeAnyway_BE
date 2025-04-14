@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.member.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +18,6 @@ public interface MemberStatRepository extends JpaRepository<MemberStat, Long> {
 		nativeQuery = true
 	)
 	int incrementDaysSinceFirstEscape();
+
+	Optional<MemberStat> findByMemberId(Long memberId); // 회원 ID로 통계 조회
 }

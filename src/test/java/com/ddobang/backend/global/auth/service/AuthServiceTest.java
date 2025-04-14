@@ -50,7 +50,7 @@ class AuthServiceTest {
 		// given
 		String accessToken = "access-token";
 		String refreshToken = "refresh-token";
-		Member member = MemberTestFactory.full();
+		Member member = MemberTestFactory.Basic();
 		given(jwtTokenProvider.generateToken(member, JwtTokenType.ACCESS, false)).willReturn(accessToken);
 		given(jwtTokenProvider.generateToken(member, JwtTokenType.REFRESH, false)).willReturn(refreshToken);
 

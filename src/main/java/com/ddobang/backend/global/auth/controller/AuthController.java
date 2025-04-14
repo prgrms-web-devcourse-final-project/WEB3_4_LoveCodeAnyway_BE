@@ -1,23 +1,16 @@
 package com.ddobang.backend.global.auth.controller;
 
-import java.io.IOException;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.ddobang.backend.global.auth.dto.request.SignupRequest;
 import com.ddobang.backend.global.auth.service.AuthService;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SuccessResponse;
-
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -39,7 +32,17 @@ public class AuthController {
 
 	// 로그인
 	@GetMapping("/login")
-	public void kakaoLogin(HttpServletResponse response) throws IOException {
-		response.sendRedirect("/oauth2/authorization/kakao");
+	public void kakaoLogin(
+			String redirectUrl,
+			HttpServletResponse response
+	) throws IOException {
+		response.sendRedirect("/oauth2/authorization/kakao?redirectUrl=" + redirectUrl);
+	}
+
+	// 로그아웃
+	@PostMapping("/logout")
+	public ResponseEntity<SuccessResponse<Void>> logout(HttpServletResponse response) {
+		authService.logout(response);
+		return ResponseFactory.ok("로그아웃을 성공하였습니다.");
 	}
 }
