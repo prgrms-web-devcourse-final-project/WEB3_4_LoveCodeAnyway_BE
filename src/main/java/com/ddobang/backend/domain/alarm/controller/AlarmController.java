@@ -19,10 +19,12 @@ import com.ddobang.backend.domain.alarm.dto.response.AlarmCountResponse;
 import com.ddobang.backend.domain.alarm.dto.response.AlarmResponse;
 import com.ddobang.backend.domain.alarm.service.AlarmEventService;
 import com.ddobang.backend.domain.alarm.service.AlarmService;
+import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SuccessResponse;
+import com.ddobang.backend.global.security.LoginMemberProvider;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,6 +39,7 @@ public class AlarmController {
 	private final AlarmService alarmService;
 	private final AlarmEventService alarmEventService; //
 	private final MemberService memberService; //
+	private final LoginMemberProvider loginMemberProvider; // 추가
 
 	// TODO: 실제 구현 시 사용자 인증 로직 추가 필요
 	// 임시로 요청 헤더나 파라미터로 사용자 ID를 받는 방식으로 구현
@@ -45,22 +48,22 @@ public class AlarmController {
 	@Operation(summary = "알림 SSE 구독", description = "실시간 알림을 위한 SSE 연결을 구독합니다.")
 	@GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter subscribeAlarm() {
-		// 테스트 중에는 인증 로직 없이 임시 사용자 ID 사용
-		Long userId = TEMP_USER_ID;
 
 		// 실제 인증 로직이 구현되면 아래와 같이 변경
-		// Member member = memberService.getMemberByUsername(userDetails.getUsername());
-		// return alarmEventService.subscribe(member.getId());
+		Member currentMember = loginMemberProvider.getCurrentMember();
+		Long userId = currentMember.getId();
 
 		return alarmEventService.subscribe(userId);
+
 	}
 
 	@Operation(summary = "알림 목록 조회", description = "사용자의 알림 목록을 페이징하여 조회합니다.")
 	@GetMapping
 	public ResponseEntity<SuccessResponse<PageDto<AlarmResponse>>> getAlarms(
 		@PageableDefault(size = 10) Pageable pageable) {
-		// TODO: 실제 구현 시 인증된 사용자 ID를 사용
-		Long userId = TEMP_USER_ID;
+		// 수정: 현재 로그인한 사용자의 ID 사용
+		Member currentMember = loginMemberProvider.getCurrentMember();
+		Long userId = currentMember.getId();
 		PageDto<AlarmResponse> alarms = alarmService.getAlarms(userId, pageable);
 		return ResponseFactory.ok("알림 목록 조회 성공", alarms);
 	}
@@ -69,8 +72,10 @@ public class AlarmController {
 	@GetMapping("/{id}")
 	public ResponseEntity<SuccessResponse<AlarmResponse>> getAlarm(
 		@PathVariable("id") Long alarmId) {
-		// TODO: 실제 구현 시 인증된 사용자 ID를 사용
-		Long userId = TEMP_USER_ID;
+		// 수정: 현재 로그인한 사용자의 ID 사용
+		Member currentMember = loginMemberProvider.getCurrentMember();
+		Long userId = currentMember.getId();
+
 		AlarmResponse alarm = alarmService.getAlarm(alarmId, userId);
 		return ResponseFactory.ok("알림 상세 조회 성공", alarm);
 	}
@@ -78,8 +83,10 @@ public class AlarmController {
 	@Operation(summary = "알림 개수 조회", description = "사용자의 전체 및 읽지 않은 알림 개수를 조회합니다.")
 	@GetMapping("/count")
 	public ResponseEntity<SuccessResponse<AlarmCountResponse>> getAlarmCounts() {
-		// TODO: 실제 구현 시 인증된 사용자 ID를 사용
-		Long userId = TEMP_USER_ID;
+		// 수정: 현재 로그인한 사용자의 ID 사용
+		Member currentMember = loginMemberProvider.getCurrentMember();
+		Long userId = currentMember.getId();
+
 		AlarmCountResponse counts = alarmService.getAlarmCounts(userId);
 		return ResponseFactory.ok("알림 개수 조회 성공", counts);
 	}
@@ -96,8 +103,9 @@ public class AlarmController {
 	@PatchMapping("/{id}/read")
 	public ResponseEntity<SuccessResponse<AlarmResponse>> markAsRead(
 		@PathVariable("id") Long alarmId) {
-		// TODO: 실제 구현 시 인증된 사용자 ID를 사용
-		Long userId = TEMP_USER_ID;
+		// 수정: 현재 로그인한 사용자의 ID 사용
+		Member currentMember = loginMemberProvider.getCurrentMember();
+		Long userId = currentMember.getId();
 		AlarmResponse updatedAlarm = alarmService.markAsRead(alarmId, userId);
 		return ResponseFactory.ok("알림 읽음 처리 성공", updatedAlarm);
 	}
@@ -105,8 +113,9 @@ public class AlarmController {
 	@Operation(summary = "모든 알림 읽음 처리", description = "사용자의 모든 알림을 읽음 상태로 변경합니다.")
 	@PatchMapping("/read-all")
 	public ResponseEntity<SuccessResponse<Integer>> markAllAsRead() {
-		// TODO: 실제 구현 시 인증된 사용자 ID를 사용
-		Long userId = TEMP_USER_ID;
+		// 수정: 현재 로그인한 사용자의 ID 사용
+		Member currentMember = loginMemberProvider.getCurrentMember();
+		Long userId = currentMember.getId();
 		int updatedCount = alarmService.markAllAsRead(userId);
 		return ResponseFactory.ok("모든 알림 읽음 처리 성공", updatedCount);
 	}
@@ -115,8 +124,9 @@ public class AlarmController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteAlarm(
 		@PathVariable("id") Long alarmId) {
-		// TODO: 실제 구현 시 인증된 사용자 ID를 사용
-		Long userId = TEMP_USER_ID;
+		// 수정: 현재 로그인한 사용자의 ID 사용
+		Member currentMember = loginMemberProvider.getCurrentMember();
+		Long userId = currentMember.getId();
 		alarmService.deleteAlarm(alarmId, userId);
 		return ResponseFactory.noContent();
 	}
@@ -125,8 +135,9 @@ public class AlarmController {
 	@Operation(summary = "알림 클릭 처리", description = "알림을 클릭했을 때 관련 페이지로 리다이렉트합니다.")
 	@GetMapping("/{id}/redirect")
 	public ResponseEntity<SuccessResponse<String>> redirectAlarm(@PathVariable("id") Long alarmId) {
-		// TODO: 실제 구현 시 인증된 사용자 ID를 사용
-		Long userId = TEMP_USER_ID;
+		// 수정: 현재 로그인한 사용자의 ID 사용
+		Member currentMember = loginMemberProvider.getCurrentMember();
+		Long userId = currentMember.getId();
 		String redirectUrl = alarmService.getRedirectUrl(alarmId, userId);
 		return ResponseFactory.ok("알림 리다이렉트 URL 조회 성공", redirectUrl);
 	}
