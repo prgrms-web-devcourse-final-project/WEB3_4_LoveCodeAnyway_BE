@@ -2,13 +2,13 @@ package com.ddobang.backend.domain.party.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
-import com.ddobang.backend.domain.theme.entity.ThemeTagMapping;
 
 import lombok.Builder;
 
@@ -35,7 +35,7 @@ public record PartyDetailResponse(
 	String themeName,
 	String themeThumbnailUrl,
 
-	List<ThemeTagMapping> themeTagMappings,
+	List<String> tagNames,
 
 	float noHintEscapeRate,
 	float escapeResult,
@@ -80,7 +80,9 @@ public record PartyDetailResponse(
 			.themeId(theme.getId())
 			.themeName(theme.getName())
 			.themeThumbnailUrl(theme.getThumbnailUrl())
-			.themeTagMappings(theme.getThemeTagMappings())
+			.tagNames(theme.getThemeTagMappings().stream()
+				.map(ttm -> ttm.getThemeTag().getName())
+				.collect(Collectors.toList()))
 
 			.noHintEscapeRate(themeStat != null ? themeStat.getNoHintEscapeRate() : 0)
 			.escapeResult(themeStat != null ? themeStat.getEscapeResult() : 0)
