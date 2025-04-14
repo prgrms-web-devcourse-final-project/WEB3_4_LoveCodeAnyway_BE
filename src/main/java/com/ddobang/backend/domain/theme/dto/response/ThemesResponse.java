@@ -23,13 +23,20 @@ public record ThemesResponse(
 ) {
 
 	public static ThemesResponse of(Theme theme) {
+		int min = theme.getMinParticipants();
+		int max = theme.getMaxParticipants();
+
+		String recommendedParticipants = (min > 0 && max > 0) ? String.format("%d~%d인", min, max)
+			: (min > 0) ? String.format("%d인~", min)
+			: (max > 0) ? String.format("~%d인", max)
+			: "?인";
+
 		return ThemesResponse.builder()
 			.id(theme.getId())
 			.name(theme.getName())
 			.storeName(theme.getStore().getName())
 			.runtime(theme.getRuntime())
-			.recommendedParticipants(
-				theme.getMinParticipants() + "~" + theme.getMaxParticipants() + "인")
+			.recommendedParticipants(recommendedParticipants)
 			.thumbnailUrl(theme.getThumbnailUrl())
 			.tags(theme.getThemeTagMappings().stream()
 				.map(ttm -> ttm.getThemeTag().getName())

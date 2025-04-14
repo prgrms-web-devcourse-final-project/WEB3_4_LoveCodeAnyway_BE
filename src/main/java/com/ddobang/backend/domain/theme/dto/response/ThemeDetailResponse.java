@@ -29,14 +29,21 @@ public record ThemeDetailResponse(
 	ThemeStatDto diaryBasedThemeStat
 ) {
 	public static ThemeDetailResponse of(Theme theme, ThemeStatDto themeStatDto) {
+		int min = theme.getMinParticipants();
+		int max = theme.getMaxParticipants();
+
+		String recommendedParticipants = (min > 0 && max > 0) ? String.format("%d~%d인", min, max)
+			: (min > 0) ? String.format("%d인~", min)
+			: (max > 0) ? String.format("~%d인", max)
+			: "?인";
+
 		return ThemeDetailResponse.builder()
 			.name(theme.getName())
 			.description(theme.getDescription())
 			.runtime(theme.getRuntime())
 			.officialDifficulty(theme.getOfficialDifficulty())
 			.price(theme.getPrice())
-			.recommendedParticipants(
-				theme.getMinParticipants() + "~" + theme.getMaxParticipants() + "인")
+			.recommendedParticipants(recommendedParticipants)
 			.thumbnailUrl(theme.getThumbnailUrl())
 			.reservationUrl(theme.getReservationUrl())
 			.tags(theme.getThemeTagMappings().stream()
