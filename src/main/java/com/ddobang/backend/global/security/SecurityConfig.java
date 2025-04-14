@@ -1,12 +1,7 @@
 package com.ddobang.backend.global.security;
 
-import com.ddobang.backend.domain.member.service.MemberService;
-import com.ddobang.backend.global.security.jwt.JwtAuthenticationFilter;
-import com.ddobang.backend.global.security.jwt.JwtExceptionFilter;
-import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
-import com.ddobang.backend.global.security.oauth.CustomAuthorizationRequestResolver;
-import com.ddobang.backend.global.security.oauth.OAuth2SuccessHandler;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,7 +18,14 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
-import java.util.List;
+import com.ddobang.backend.domain.member.service.MemberService;
+import com.ddobang.backend.global.security.jwt.JwtAuthenticationFilter;
+import com.ddobang.backend.global.security.jwt.JwtExceptionFilter;
+import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
+import com.ddobang.backend.global.security.oauth.CustomAuthorizationRequestResolver;
+import com.ddobang.backend.global.security.oauth.OAuth2SuccessHandler;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -57,51 +59,70 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> {
 				auth
 					// OAuth2 로그인 관련
-					.requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/**").permitAll() // OAuth2 로그인 관련
-					.requestMatchers("/signup", "/api/v1/auth/signup").permitAll() // 회원가입 페이지
-					.requestMatchers("/login", "/api/v1/auth/login").permitAll() // 카카오 로그인 URL
+					.requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/**")
+					.permitAll()
 
-					// Swagger, 오류 페이지
+					// 로그인, 회원가입 관련 URL & API 접근 설정
+					.requestMatchers("/login", "/signup")
+					.permitAll() // 로그인 및 회원가입 페이지
+					.requestMatchers(HttpMethod.GET, "/api/v1/auth/login")
+					.permitAll() // 카카오 로그인
+					.requestMatchers(HttpMethod.POST, "/api/v1/auth/signup")
+					.permitAll() // 회원가입
+					.requestMatchers(HttpMethod.GET, "/api/v1/members/check-nickname")
+					.permitAll() // 닉네임 중복 체크
+					.requestMatchers(HttpMethod.GET, "/api/v1/members/tags")
+					.permitAll() // 사용자 태그 목록 조회
+
+					// 관리자 관련 URL & API 접근 설정
+					.requestMatchers("/admin/login")
+					.permitAll() // 관리자 로그인 페이지 접근 허용
+					.requestMatchers(HttpMethod.POST, "/api/v1/auth/admin-login")
+					.permitAll() // 관리자 로그인 API 접근 허용
+					.requestMatchers("/admin/**", "/api/v1/admin/**")
+					.hasRole("ADMIN") // 그 외 관리자만 접근 가능
+
+					// 인증이 필요없는 API 접근 설정
+					.requestMatchers(HttpMethod.GET, "/api/v1/regions")
+					.permitAll() // 지역 소분류 조회
+					.requestMatchers(HttpMethod.POST, "/api/v1/themes")
+					.permitAll() // 테마 - 목록 필터 조회
+					.requestMatchers(HttpMethod.GET, "/api/v1/themes/*")
+					.permitAll() // 테마 - 조회 API
+					.requestMatchers(HttpMethod.GET, "/api/v1/themes/*/parties")
+					.permitAll() // 테마별 - 모임 목록 조회
+					.requestMatchers(HttpMethod.GET, "/api/v1/parties/main")
+					.permitAll() // 모임 - 메인 페이지 조회
+					.requestMatchers(HttpMethod.POST, "/api/v1/parties/search")
+					.permitAll() // 모임 - 목록 조회
+					.requestMatchers(HttpMethod.GET, "/api/v1/parties/*")
+					.permitAll() // 모임 - 상세 조회
+
+					// Swagger, 오류 페이지 관련 URL & API 접근 설정
 					.requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**",
-						"/webjars/**").permitAll()
+						"/webjars/**")
+					.permitAll()
 
-					// 관리자 관련 API
-					.requestMatchers("/admin/login").permitAll() // 로그인만 공개
-					.requestMatchers("/admin/**").hasRole("ADMIN")
-					// TODO : 관리자 관련 API 추가
+					.requestMatchers(HttpMethod.OPTIONS, "/**")
+					.permitAll() // CORS preflight 요청 허용
+					.requestMatchers("/actuator/**")
+					.permitAll() // Actuator API 접근 허용
 
-					// 닉네임 중복 체크
-					.requestMatchers("/api/v1/members/check-nickname").permitAll()
-
-					// 로그인 관련 API 허용
-					.requestMatchers(HttpMethod.GET, "/api/v1/auth/login").permitAll() // 카카오 로그인 URL
-
-					// 공개 API
-					.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight 요청 허용
-					.requestMatchers(HttpMethod.GET, "/api/v1/regions").permitAll()      // 지역 조회
-					.requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll() // 회원가입
-					.requestMatchers("/api/v1/themes").permitAll()
-					.requestMatchers("/api/v1/themes/*").permitAll()
-					.requestMatchers("/api/v1/parties").permitAll()
-					.requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll() // 회원가입
-					.requestMatchers("/api/v1/parties/*").permitAll()
-					.requestMatchers("/api/v1/stores/*").permitAll()
-					.requestMatchers("/actuator/**").permitAll()
-
-					// 인증 필요 API
-					.anyRequest().hasAnyRole("USER", "ADMIN");
+					// 그 외 인증 필요
+					.anyRequest()
+					.hasAnyRole("USER", "ADMIN");
 			})
 
 			// OAuth2 로그인 설정
-				.oauth2Login(
-						oauth2Login -> oauth2Login
-								.successHandler(oAuth2SuccessHandler)
-								.authorizationEndpoint(
-										authorizationEndpoint ->
-												authorizationEndpoint
-														.authorizationRequestResolver(customAuthorizationRequestResolver)
-								)
-				)
+			.oauth2Login(
+				oauth2Login -> oauth2Login
+					.successHandler(oAuth2SuccessHandler)
+					.authorizationEndpoint(
+						authorizationEndpoint ->
+							authorizationEndpoint
+								.authorizationRequestResolver(customAuthorizationRequestResolver)
+					)
+			)
 
 			// 인증 필터 등록
 			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, memberService),
