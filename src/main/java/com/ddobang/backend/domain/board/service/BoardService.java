@@ -1,5 +1,7 @@
 package com.ddobang.backend.domain.board.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +15,7 @@ import com.ddobang.backend.domain.board.dto.response.PostSummaryResponse;
 import com.ddobang.backend.domain.board.entity.Post;
 import com.ddobang.backend.domain.board.exception.BoardErrorCode;
 import com.ddobang.backend.domain.board.exception.BoardException;
+import com.ddobang.backend.domain.board.repository.AttachmentRepository;
 import com.ddobang.backend.domain.board.repository.PostRepository;
 import com.ddobang.backend.domain.board.types.PostType;
 import com.ddobang.backend.domain.member.entity.Member;
@@ -26,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class BoardService {
 	private final PostRepository postRepository;
 	private final BoardValidationService boardValidationService;
+	private final AttachmentRepository attachmentRepository;
 
 	public PageDto<PostSummaryResponse> getMyPosts(PostType type, String keyword, int page, int size, Long id) {
 		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -63,5 +67,16 @@ public class BoardService {
 		Post post = getPostById(id);
 		boardValidationService.validateWriter(post, actor);
 		post.delete();
+	}
+
+	@Transactional
+	public void clearAttachmentsByPostId(Long postId) {
+		Post post = getPostById(postId);
+		post.getAttachments().clear();
+	}
+
+	@Transactional
+	public List<String> getAttachmentUrlsByPostId(Long postId) {
+		return attachmentRepository.findUrlsByPostId(postId);
 	}
 }
