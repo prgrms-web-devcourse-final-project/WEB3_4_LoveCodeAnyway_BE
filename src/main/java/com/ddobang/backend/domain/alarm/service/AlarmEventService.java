@@ -24,10 +24,18 @@ public class AlarmEventService {
 
 	// SSE 연결 수립 (구독)
 	public SseEmitter subscribe(Long userId) {
-		log.info("사용자 {}의 SSE 구독 시작", userId);
-
-		// 기존 연결이 있으면 제거
-		emitterRepository.remove(userId);
+		// 기존 emitterRepository.remove(userId) 대신 기존 연결이 있는지 확인
+		SseEmitter existingEmitter = emitterRepository.get(userId);
+		if (existingEmitter != null) {
+			try {
+				// 기존 연결이 살아있는지 확인하는 ping 전송 시도
+				existingEmitter.send(SseEmitter.event().name("ping").data("ping"));
+				return existingEmitter; // 연결이 살아있으면 재사용
+			} catch (Exception e) {
+				// 예외 발생 시 기존 연결 제거
+				emitterRepository.remove(userId);
+			}
+		}
 
 		// 새 이미터 생성 (1시간 타임아웃)
 		SseEmitter emitter = new SseEmitter(sseTimeout);
@@ -41,7 +49,7 @@ public class AlarmEventService {
 		emitter.onTimeout(() -> {
 			log.warn("사용자 {}의 SSE 연결 타임아웃", userId);
 			emitterRepository.remove(userId);
-			throw new SseException(AlarmErrorCode.SSE_TIMEOUT);
+			// throw new SseException(AlarmErrorCode.SSE_TIMEOUT);
 		});
 
 		emitter.onError((e) -> {

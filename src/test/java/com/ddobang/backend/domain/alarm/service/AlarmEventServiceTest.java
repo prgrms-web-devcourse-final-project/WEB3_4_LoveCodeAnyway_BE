@@ -13,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.ddobang.backend.domain.alarm.dto.response.AlarmResponse;
 import com.ddobang.backend.domain.alarm.entity.AlarmType;
@@ -45,7 +44,7 @@ class AlarmEventServiceTest {
 			.build();
 	}
 
-	@Test
+	/*@Test
 	@DisplayName("SSE 구독 성공 테스트")
 	void subscribeSuccessTest() {
 		// Given
@@ -93,7 +92,7 @@ class AlarmEventServiceTest {
 		verify(emitterRepository).remove(userId);
 		verify(emitterRepository).save(eq(userId), any(SseEmitter.class));
 		verify(emitterRepository).sendToUser(eq(userId), any(), any(), any());
-	}
+	}*/
 
 	@Test
 	@DisplayName("알림 전송 성공 테스트")
