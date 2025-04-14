@@ -1,11 +1,15 @@
 package com.ddobang.backend.global.auth;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.util.List;
-
+import com.ddobang.backend.domain.member.entity.Gender;
+import com.ddobang.backend.domain.member.entity.Member;
+import com.ddobang.backend.domain.member.repository.MemberRepository;
+import com.ddobang.backend.global.auth.dto.request.SignupRequest;
+import com.ddobang.backend.global.security.jwt.JwtTokenFactory;
+import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
+import com.ddobang.backend.global.security.jwt.JwtTokenType;
+import com.ddobang.backend.support.MemberTestFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,17 +21,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.member.entity.Gender;
-import com.ddobang.backend.domain.member.entity.Member;
-import com.ddobang.backend.domain.member.repository.MemberRepository;
-import com.ddobang.backend.global.auth.dto.request.SignupRequest;
-import com.ddobang.backend.global.security.jwt.JwtTokenFactory;
-import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
-import com.ddobang.backend.global.security.jwt.JwtTokenType;
-import com.ddobang.backend.support.MemberTestFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 
-import jakarta.servlet.http.Cookie;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -89,9 +88,9 @@ class AuthIntegrationTest {
 	@Test
 	@DisplayName("카카오 로그인 진입 시 OAuth2 인증 URL로 리다이렉트")
 	void login_redirectToKakaoAuthorization() throws Exception {
-		mockMvc.perform(get("/api/v1/auth/login"))
+		mockMvc.perform(get("/api/v1/auth/login?redirectUrl=/"))
 			.andExpect(status().is3xxRedirection())
-			.andExpect(header().string("Location", "/oauth2/authorization/kakao"));
+			.andExpect(header().string("Location", "/oauth2/authorization/kakao?redirectUrl=/"));
 	}
 
 	@Test
