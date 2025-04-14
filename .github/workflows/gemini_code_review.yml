@@ -1,0 +1,75 @@
+name: Gemini Code Review
+
+on:
+  # dev 브랜치로 들어오는 Pull Request 시에만 실행
+  pull_request:
+    branches: [ dev ]
+    types: [ opened, reopened ]
+
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+
+      - name: Install GoogleGenerativeAI
+        run: |
+          npm install @google/generative-ai
+
+      # PR 이벤트에서의 변경사항 처리
+      - name: Get git diff for PR
+        run: |
+          git fetch origin "${{ github.event.pull_request.base.ref }}"
+          git fetch origin "${{ github.event.pull_request.head.ref }}"
+          git diff --unified=0 "origin/${{ github.event.pull_request.base.ref }}" > "diff.txt"
+          echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
+
+      # Gemini를 사용한 코드 분석
+      - name: Run Gemini-2.5-flash
+        id: gemini_review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const diff_output = fs.readFileSync("diff.txt",'utf8');
+
+            const { GoogleGenerativeAI } = require("@google/generative-ai");
+            const genAI = new GoogleGenerativeAI("${{ secrets.GEMINI_API_KEY }}");
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash"});            
+
+            // Pull Request 전용 프롬프트
+            const prompt = `Explain in korean. You are a senior software engineer and need to perform a code review based on the results of a given git diff. Review the changed code from different perspectives and let us know if there are any changes that need to be made. If you see any code that needs to be fixed in the result of the git diff, you need to calculate the exact line number by referring to the "@@ -0,0 +0,0 @@" part. The output format is \[{"path":"{ filepath }", "line": { line }, "text": { review comment }, "side": "RIGHT"}\] format must be respected.\n<git diff>${diff_output}</git diff>`;
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+            
+            fs.writeFileSync('review_result.txt', text);
+            console.log('Review results saved!');
+
+      # 라인별 리뷰 코멘트 추가
+      - name: Format and add PR review comments
+        id: store
+        run: |
+          # JSON 파싱이 가능하도록 처리
+          COMMENT=$(sed '/^```/d' review_result.txt | jq -c .)
+          echo "comment=$COMMENT" >> $GITHUB_OUTPUT
+
+      - name: Add Pull Request Review Comment
+        uses: nbaztec/add-pr-review-comment@v1.0.7
+        with:
+          comments: ${{ steps.store.outputs.comment }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token-user-login: 'github-actions[bot]'
+          allow-repeats: false

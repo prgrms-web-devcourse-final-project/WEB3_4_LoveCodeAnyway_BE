@@ -1,0 +1,61 @@
+name: "Pick Random Reviewer"
+
+on:
+  pull_request:
+    types:
+      - opened
+    branches:
+      - dev
+
+jobs:
+  pick-random-reviewer:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Repository 체크아웃
+      - uses: actions/checkout@v2
+
+      # 2. JavaScript로 무작위 2명의 리뷰어 선택 (PR 작성자 제외)
+      - name: pick_random_reviewer
+        id: pick_random_reviewer
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prAuthor = context.payload.pull_request.user.login;
+            const candidate = ['100gammmit', 'BeigeBearDev', 'universechoi', 'notmybussiness', 'solji-choi'];
+            const filteredCandidates = candidate.filter(username => username !== prAuthor);
+            
+            if (filteredCandidates.length < 2) {
+              const comment = `선택할 수 있는 리뷰어가 충분하지 않습니다.`;
+              core.setOutput('comment', comment);
+              core.setOutput('reviewers', '');
+            } else {
+              function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                  const j = Math.floor(Math.random() * (i + 1));
+                  [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+              }
+            
+              const shuffledCandidates = shuffle(filteredCandidates);
+              const selectedReviewers = shuffledCandidates.slice(0, 2);
+              const comment = `🎉 @${selectedReviewers.join(', @')} 님 랜덤 리뷰어로 선정되셨습니다! 리뷰를 부탁드립니다. 🙏`;
+              core.setOutput('comment', comment);
+              core.setOutput('reviewers', selectedReviewers.join(','));
+            }
+
+      # 3. PR에 댓글 추가
+      - name: comment PR
+        uses: mshick/add-pr-comment@v1
+        with:
+          message: ${{ steps.pick_random_reviewer.outputs.comment }}
+          repo-token: ${{ secrets.GH_TOKEN }}
+          repo-token-user-login: 'github-actions[bot]'
+
+      # 4. 선택된 리뷰어를 PR 리뷰어로 추가
+      - name: Add Pull Request Reviewer
+        uses: madrapps/add-reviewers@v1
+        with:
+          reviewers: ${{ steps.pick_random_reviewer.outputs.reviewers }}
+          token: ${{ secrets.GH_TOKEN }}

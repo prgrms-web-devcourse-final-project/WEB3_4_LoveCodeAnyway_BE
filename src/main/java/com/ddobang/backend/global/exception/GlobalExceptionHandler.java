@@ -3,12 +3,15 @@ package com.ddobang.backend.global.exception;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.ddobang.backend.domain.alarm.exception.SseException;
 import com.ddobang.backend.global.response.ErrorResponse;
 import com.ddobang.backend.global.response.ResponseFactory;
 
@@ -73,5 +76,44 @@ public class GlobalExceptionHandler {
 		log.warn("[ValidationException] errorFields={}", errors);
 
 		return ResponseFactory.error(GlobalErrorCode.NOT_VALID, errors);
+	}
+
+	@ExceptionHandler(SseException.class)
+	public ResponseEntity<ErrorResponse> handleSseException(SseException e) {
+		ErrorCode errorCode = e.getErrorCode();
+		log.warn("[SseException] status={}, code={}, message={}",
+			errorCode.getStatus().value(),
+			errorCode.getErrorCode(),
+			errorCode.getMessage());
+
+		if (e.getCauseIoException() != null) {
+			log.debug("Caused by IOException: {}", e.getCauseIoException().getMessage());
+		}
+
+		return ResponseFactory.error(errorCode);
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
+		MethodArgumentTypeMismatchException e) {
+		ErrorCode errorCode = GlobalErrorCode.INVALID_REQUEST;
+
+		log.warn("[MethodArgumentTypeMismatchException] status={}, code={}, message={}",
+			errorCode.getStatus().value(),
+			errorCode.getErrorCode(),
+			errorCode.getMessage());
+
+		return ResponseFactory.error(errorCode);
+	}
+
+	@ExceptionHandler(OptimisticLockingFailureException.class)
+	public ResponseEntity<ErrorResponse> handleOptimisticLockingFailure(OptimisticLockingFailureException e) {
+		ErrorCode errorCode = GlobalErrorCode.OPTIMISTIC_LOCKING_FAILURE;
+		log.warn("[OptimisticLockingFailureException] status={}, code={}, message={}",
+			errorCode.getStatus().value(),
+			errorCode.getErrorCode(),
+			errorCode.getMessage());
+
+		return ResponseFactory.error(errorCode);
 	}
 }

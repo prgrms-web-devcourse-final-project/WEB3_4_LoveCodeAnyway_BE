@@ -1,3 +1,21 @@
 spring:
+  config:
+    activate:
+      on-profile: test
+
   datasource:
     url: jdbc:h2:mem:db_test;MODE=MySQL
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+# Custom settings
+custom:
+  fileUpload:
+    dirPath: c:/temp/ddobang_test
+
+jwt:
+  signup-token-expiration: 600000      # 10분
+  access-token-expiration: 3600000     # 1시간
+  refresh-token-expiration: 604800000  # 7일

@@ -1,0 +1,6 @@
+package com.ddobang.backend.global.event;
+
+// 도메인 이벤트 인터페이스
+public interface DomainEvent {
+	String getEventType();
+}
