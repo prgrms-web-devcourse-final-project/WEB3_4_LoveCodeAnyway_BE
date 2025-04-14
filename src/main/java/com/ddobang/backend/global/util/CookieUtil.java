@@ -1,5 +1,6 @@
 package com.ddobang.backend.global.util;
 
+import com.ddobang.backend.global.config.AppConfig;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -15,7 +16,11 @@ public class CookieUtil {
 	public static Cookie createAccessTokenCookie(String token) {
 		Cookie cookie = new Cookie(ACCESS_TOKEN_KEY, token);
 		cookie.setHttpOnly(true);
+		cookie.setAttribute("SameSite", "None");
 		cookie.setSecure(false); // 배포 환경에서 true
+
+		if (AppConfig.isProd()) cookie.setSecure(true);
+
 		cookie.setPath("/");
 		cookie.setMaxAge(ACCESS_TOKEN_EXPIRE_SEC);
 		return cookie;
@@ -25,7 +30,11 @@ public class CookieUtil {
 	public static Cookie createRefreshTokenCookie(String token) {
 		Cookie cookie = new Cookie(REFRESH_TOKEN_KEY, token);
 		cookie.setHttpOnly(true);
+		cookie.setAttribute("SameSite", "None");
 		cookie.setSecure(false); // 배포 환경에서 true
+
+		if (AppConfig.isProd()) cookie.setSecure(true);
+
 		cookie.setPath("/");
 		cookie.setMaxAge(REFRESH_TOKEN_EXPIRE_SEC);
 		return cookie;
@@ -35,6 +44,10 @@ public class CookieUtil {
 	public static Cookie createSignupTokenCookie(String token) {
 		Cookie cookie = new Cookie("signupToken", token);
 		cookie.setHttpOnly(true);
+		cookie.setAttribute("SameSite", "None");
+		cookie.setSecure(false); // 배포 환경에서 true
+
+		if (AppConfig.isProd()) cookie.setSecure(true);
 		cookie.setPath("/");
 		cookie.setMaxAge(60 * 10); // 10분
 		return cookie;
@@ -56,6 +69,11 @@ public class CookieUtil {
 	// 쿠키 제거
 	public static Cookie deleteCookie(String name) {
 		Cookie cookie = new Cookie(name, null);
+		cookie.setHttpOnly(true);
+		cookie.setAttribute("SameSite", "None");
+		cookie.setSecure(false); // 배포 환경에서 true
+
+		if (AppConfig.isProd()) cookie.setSecure(true);
 		cookie.setMaxAge(0);
 		cookie.setPath("/");
 		return cookie;

@@ -1,7 +1,12 @@
 package com.ddobang.backend.global.security;
 
-import java.util.List;
-
+import com.ddobang.backend.domain.member.service.MemberService;
+import com.ddobang.backend.global.security.jwt.JwtAuthenticationFilter;
+import com.ddobang.backend.global.security.jwt.JwtExceptionFilter;
+import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
+import com.ddobang.backend.global.security.oauth.CustomAuthorizationRequestResolver;
+import com.ddobang.backend.global.security.oauth.OAuth2SuccessHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,13 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
-import com.ddobang.backend.domain.member.service.MemberService;
-import com.ddobang.backend.global.security.jwt.JwtAuthenticationFilter;
-import com.ddobang.backend.global.security.jwt.JwtExceptionFilter;
-import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
-import com.ddobang.backend.global.security.oauth.OAuth2SuccessHandler;
-
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -29,6 +28,7 @@ public class SecurityConfig {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final MemberService memberService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
+	private final CustomAuthorizationRequestResolver customAuthorizationRequestResolver;
 
 	/**
 	 * SecurityFilterChain 설정
@@ -81,9 +81,15 @@ public class SecurityConfig {
 			})
 
 			// OAuth2 로그인 설정
-			.oauth2Login(oauth -> oauth
-				.successHandler(oAuth2SuccessHandler)
-			)
+				.oauth2Login(
+						oauth2Login -> oauth2Login
+								.successHandler(oAuth2SuccessHandler)
+								.authorizationEndpoint(
+										authorizationEndpoint ->
+												authorizationEndpoint
+														.authorizationRequestResolver(customAuthorizationRequestResolver)
+								)
+				)
 
 			// 인증 필터 등록
 			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, memberService),
@@ -107,6 +113,7 @@ public class SecurityConfig {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(List.of(
 			"http://localhost:3000",                       // 로컬 개발용
+			"https://localhost:3000",                       // 로컬 개발용
 			"https://www.ddobang.site",                        // 배포 주소
 			"https://ddobang.site",                        // 배포 주소
 			"https://web-1-2-pitching-mate-fe.vercel.app"  // Vercel 배포 주소
