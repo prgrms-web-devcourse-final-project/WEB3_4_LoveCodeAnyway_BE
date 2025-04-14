@@ -61,9 +61,6 @@ public class ThemeControllerTest {
 	private ThemeTag tag3; // 판타지
 
 	private List<Theme> themes;
-	// 1~10번 테마
-	// 짝수 번호 (2, 4, 6, 8, 10): store1 + 4의 배수는 tag3 + status OPENED
-	// 홀수 번호 (1, 3, 5, 7, 9): store2 + tag1, tag2 + status는 3의 배수만 CLOSED
 
 	private ThemeStat themeStat;
 	// themes 0~4번 인덱스 테마 (테마 1~5)에 매핑된 통계
@@ -94,7 +91,6 @@ public class ThemeControllerTest {
 		);
 	}
 
-	// 10, 8, 7, 5, 4번 테마
 	@Test
 	@DisplayName("필터 없이 테마 다건 조회 테스트")
 	void getThemesWhenNoFilterTest() throws Exception {
@@ -109,17 +105,16 @@ public class ThemeControllerTest {
 		result
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.content.length()").value(5))
-			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(9).getName()))
+			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(28).getName()))
 			.andExpect(jsonPath("$.data.content[0].tags[0]").value(tag1.getName()))
 			.andExpect(jsonPath("$.data.content[0].tags[1]").value(tag2.getName()))
-			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(7).getName()))
+			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(27).getName()))
 			.andExpect(jsonPath("$.data.content[1].tags[0]").value(tag3.getName()))
 			.andExpect(jsonPath("$.data.content[1].recommendedParticipants").value("2~3인"))
-			.andExpect(jsonPath("$.data.content[2].name").value(themes.get(6).getName()))
+			.andExpect(jsonPath("$.data.content[2].name").value(themes.get(25).getName()))
 		;
 	}
 
-	// 10, 8, 4, 2번 테마
 	@Test
 	@DisplayName("단수 지역 필터로 테마 다건 조회 테스트")
 	void getThemesWithOneRegionFilterTest() throws Exception {
@@ -134,14 +129,13 @@ public class ThemeControllerTest {
 		result
 			.andExpect(status().isOk())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.content.length()").value(4))
-			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(9).getName()))
-			.andExpect(jsonPath("$.data.content[0].tags[0]").value(tag1.getName()))
-			.andExpect(jsonPath("$.data.content[0].tags[1]").value(tag2.getName()))
-			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(7).getName()))
-			.andExpect(jsonPath("$.data.content[1].tags[0]").value(tag3.getName()))
+			.andExpect(jsonPath("$.data.content.length()").value(5))
+			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(27).getName()))
+			.andExpect(jsonPath("$.data.content[0].tags[0]").value(tag3.getName()))
+			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(25).getName()))
+			.andExpect(jsonPath("$.data.content[1].tags[0]").value(tag1.getName()))
 			.andExpect(jsonPath("$.data.content[1].storeName").value(store1.getName()))
-			.andExpect(jsonPath("$.data.content[2].name").value(themes.get(3).getName()))
+			.andExpect(jsonPath("$.data.content[2].name").value(themes.get(21).getName()))
 		;
 	}
 
@@ -160,13 +154,13 @@ public class ThemeControllerTest {
 		result
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.content.length()").value(5))
-			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(9).getName()))
+			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(28).getName()))
 			.andExpect(jsonPath("$.data.content[0].tags[0]").value(tag1.getName()))
 			.andExpect(jsonPath("$.data.content[0].tags[1]").value(tag2.getName()))
-			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(7).getName()))
+			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(27).getName()))
 			.andExpect(jsonPath("$.data.content[1].tags[0]").value(tag3.getName()))
 			.andExpect(jsonPath("$.data.content[1].recommendedParticipants").value("2~3인"))
-			.andExpect(jsonPath("$.data.content[2].name").value(themes.get(6).getName()))
+			.andExpect(jsonPath("$.data.content[2].name").value(themes.get(25).getName()))
 		;
 	}
 
@@ -183,9 +177,9 @@ public class ThemeControllerTest {
 		result
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.content.length()").value(5))
-			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(9).getName()))
-			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(6).getName()))
-			.andExpect(jsonPath("$.data.content[2].name").value(themes.get(4).getName()));
+			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(28).getName()))
+			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(25).getName()))
+			.andExpect(jsonPath("$.data.content[2].name").value(themes.get(24).getName()));
 	}
 
 	@Test
@@ -200,9 +194,9 @@ public class ThemeControllerTest {
 		// then
 		result
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.content.length()").value(4))
-			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(9).getName()))
-			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(7).getName()));
+			.andExpect(jsonPath("$.data.content.length()").value(5))
+			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(27).getName()))
+			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(25).getName()));
 	}
 
 	@Test
@@ -217,9 +211,9 @@ public class ThemeControllerTest {
 		// then
 		result
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.content.length()").value(2))
-			.andExpect(jsonPath("$.data.content[0].name").value("테마 10"))
-			.andExpect(jsonPath("$.data.content[1].name").value("테마 1"));
+			.andExpect(jsonPath("$.data.content.length()").value(5))
+			.andExpect(jsonPath("$.data.content[0].name").value("테마 19"))
+			.andExpect(jsonPath("$.data.content[1].name").value("테마 17"));
 	}
 
 	@Test
@@ -270,10 +264,10 @@ public class ThemeControllerTest {
 		// then
 		result
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.hasNext").value(false))
-			.andExpect(jsonPath("$.data.content.length()").value(2))
-			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(1).getName()))
-			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(0).getName()));
+			.andExpect(jsonPath("$.data.hasNext").value(true))
+			.andExpect(jsonPath("$.data.content.length()").value(5))
+			.andExpect(jsonPath("$.data.content[0].name").value(themes.get(21).getName()))
+			.andExpect(jsonPath("$.data.content[1].name").value(themes.get(19).getName()));
 	}
 
 	@Test
@@ -381,7 +375,7 @@ public class ThemeControllerTest {
 		// then
 		result
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.length()").value(4))
+			.andExpect(jsonPath("$.data.length()").value(10))
 			.andExpect(jsonPath("$.data[1].name").value(themes.get(3).getName()))
 			.andExpect(jsonPath("$.data[1].tags[0]").value(tag3.getName()))
 		;
@@ -443,9 +437,9 @@ public class ThemeControllerTest {
 		// then
 		result
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.length()").value(5))
-			.andExpect(jsonPath("$.data[1].themeId").value(themes.get(2).getId()))
-			.andExpect(jsonPath("$.data[1].themeName").value(themes.get(2).getName()))
+			.andExpect(jsonPath("$.data.length()").value(15))
+			.andExpect(jsonPath("$.data[1].themeId").value(themes.get(10).getId()))
+			.andExpect(jsonPath("$.data[1].themeName").value(themes.get(10).getName()))
 			.andExpect(jsonPath("$.data[1].storeName").value(store2.getName()))
 		;
 	}
@@ -543,10 +537,10 @@ public class ThemeControllerTest {
 		// then
 		result
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.length()").value(2))
-			.andExpect(jsonPath("$.data[0].name").value(themes.get(7).getName()))
+			.andExpect(jsonPath("$.data.length()").value(5))
+			.andExpect(jsonPath("$.data[0].name").value(themes.get(27).getName()))
 			.andExpect(jsonPath("$.data[0].tags[0]").value(tag3.getName()))
-			.andExpect(jsonPath("$.data[1].name").value(themes.get(3).getName()))
+			.andExpect(jsonPath("$.data[1].name").value(themes.get(19).getName()))
 			.andExpect(jsonPath("$.data[1].recommendedParticipants").value("2~3인"));
 	}
 
