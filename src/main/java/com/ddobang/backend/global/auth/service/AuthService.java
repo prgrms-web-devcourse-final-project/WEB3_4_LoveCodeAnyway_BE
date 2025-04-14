@@ -1,5 +1,7 @@
 package com.ddobang.backend.global.auth.service;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 import com.ddobang.backend.domain.member.entity.Member;
@@ -72,5 +74,28 @@ public class AuthService {
 		// 쿠키에 저장
 		response.addCookie(CookieUtil.createAccessTokenCookie(accessToken));
 		response.addCookie(CookieUtil.createRefreshTokenCookie(refreshToken));
+	}
+
+	/**
+	 * 로그아웃 시 쿠키 삭제
+	 */
+	@Transactional
+	public void logout(HttpServletResponse response) {
+		// accessToken 쿠키 삭제
+		ResponseCookie accessToken = ResponseCookie.from("accessToken", "")
+			.path("/")
+			.httpOnly(true)
+			.maxAge(0)
+			.build();
+
+		// refreshToken 쿠키 삭제
+		ResponseCookie refreshToken = ResponseCookie.from("refreshToken", "")
+			.path("/")
+			.httpOnly(true)
+			.maxAge(0)
+			.build();
+
+		response.addHeader(HttpHeaders.SET_COOKIE, accessToken.toString());
+		response.addHeader(HttpHeaders.SET_COOKIE, refreshToken.toString());
 	}
 }

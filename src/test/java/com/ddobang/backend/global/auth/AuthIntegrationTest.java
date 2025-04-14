@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.repository.MemberRepository;
 import com.ddobang.backend.global.auth.dto.request.SignupRequest;
 import com.ddobang.backend.global.security.jwt.JwtTokenFactory;
+import com.ddobang.backend.global.security.jwt.JwtTokenProvider;
 import com.ddobang.backend.global.security.jwt.JwtTokenType;
 import com.ddobang.backend.support.MemberTestFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +40,8 @@ class AuthIntegrationTest {
 	private MockMvc mockMvc;
 	@Autowired
 	private JwtTokenFactory jwtTokenFactory;
+	@Autowired
+	private JwtTokenProvider jwtTokenProvider;
 	@Autowired
 	private MemberRepository memberRepository;
 	@Autowired
@@ -88,5 +92,43 @@ class AuthIntegrationTest {
 		mockMvc.perform(get("/api/v1/auth/login"))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(header().string("Location", "/oauth2/authorization/kakao"));
+	}
+
+	@Test
+	@DisplayName("[성공] 로그아웃 시 쿠키 삭제 후 인증 API 접근 시 401이 발생한다")
+	void logout_thenUnauthorizedOnProtectedApi() throws Exception {
+		// given: 멤버 및 토큰 생성
+		Member member = memberRepository.save(MemberTestFactory.Basic());
+		String accessToken = jwtTokenProvider.generateToken(member, JwtTokenType.ACCESS, false);
+
+		// when: 로그아웃 요청 (accessToken 쿠키 삭제)
+		mockMvc.perform(post("/api/v1/auth/logout")
+				.cookie(new Cookie("accessToken", accessToken))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("로그아웃을 성공하였습니다."));
+
+		// then: 로그아웃 후 인증이 필요한 API에 접근 시 401
+		mockMvc.perform(get("/api/v1/members/me"))
+			.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@DisplayName("[성공] 로그아웃 시 access/refresh 토큰이 모두 삭제된다")
+	void logout_shouldRemoveBothTokens() throws Exception {
+		Member member = memberRepository.save(MemberTestFactory.Basic());
+		String accessToken = jwtTokenProvider.generateToken(member, JwtTokenType.ACCESS, false);
+		String refreshToken = jwtTokenProvider.generateToken(member, JwtTokenType.REFRESH, false);
+
+		mockMvc.perform(post("/api/v1/auth/logout")
+				.cookie(new Cookie("accessToken", accessToken))
+				.cookie(new Cookie("refreshToken", refreshToken))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("로그아웃을 성공하였습니다."))
+			.andExpect(header().stringValues("Set-Cookie", Matchers.hasItems(
+				Matchers.containsString("accessToken=;"),
+				Matchers.containsString("refreshToken=;")
+			)));
 	}
 }
