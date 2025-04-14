@@ -21,6 +21,7 @@ import com.ddobang.backend.domain.member.dto.response.OtherProfileResponse;
 import com.ddobang.backend.domain.member.dto.stat.EscapeProfileSummaryDto;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.service.MemberService;
+import com.ddobang.backend.domain.member.service.MemberTagService;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SuccessResponse;
 import com.ddobang.backend.global.security.LoginMemberProvider;
@@ -37,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberController {
 
 	private final MemberService memberService;
+	private final MemberTagService memberTagService;
 	private final LoginMemberProvider loginMemberProvider;
 
 	@Operation(
@@ -147,5 +149,11 @@ public class MemberController {
 			"사용자 분석 데이터 조회 성공",
 			memberStatResponse
 		);
+	}
+
+	@GetMapping("/tags")
+	public ResponseEntity<SuccessResponse<List<MemberTagResponse>>> getAllTags() {
+		List<MemberTagResponse> tags = memberTagService.getAllTags();
+		return ResponseEntity.ok(SuccessResponse.of(tags));
 	}
 }
