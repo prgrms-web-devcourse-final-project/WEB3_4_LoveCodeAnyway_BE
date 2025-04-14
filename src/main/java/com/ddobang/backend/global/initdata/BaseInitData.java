@@ -178,7 +178,7 @@ public class BaseInitData {
 		tag3 = themeTagRepository.save(new ThemeTag("판타지"));
 
 		// 4. 테마 10개 저장
-		themes = IntStream.range(1, 11)
+		themes = IntStream.range(1, 31)
 			.mapToObj(i -> themeRepository.save(Theme.builder()
 				.name("테마 " + i)
 				.description("테마 설명 " + i)
