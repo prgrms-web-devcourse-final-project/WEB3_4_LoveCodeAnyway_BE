@@ -70,9 +70,7 @@ public class Post extends BaseTime {
 		this.member = member;
 		this.answered = false;
 		this.deleted = false;
-		this.attachments = postRequest.attachments() == null
-			? new ArrayList<>()
-			: new ArrayList<>(postRequest.attachments());
+		this.attachments = new ArrayList<>();
 		this.replies = new ArrayList<>();
 	}
 
