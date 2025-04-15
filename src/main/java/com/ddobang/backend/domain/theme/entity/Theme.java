@@ -70,8 +70,10 @@ public class Theme extends BaseTime {
 		OPENED, CLOSED, INACTIVE, DELETED
 	}
 
+	@Column(length = 1024)
 	private String reservationUrl;
 
+	@Column(length = 1024)
 	private String thumbnailUrl;
 
 	@NotNull
