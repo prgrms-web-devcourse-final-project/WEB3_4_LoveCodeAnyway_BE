@@ -267,8 +267,8 @@ public class BaseInitData {
 					theme.getName() + "모임",
 					"모임 소개",
 					LocalDateTime.now().plusDays((int)(Math.random() * 6 + 5)),
-					theme.getMaxParticipants() - 2,
-					theme.getMaxParticipants(),
+					theme.getMaxParticipants() == 0 ? theme.getMinParticipants() + 2 : theme.getMaxParticipants() - 1,
+					theme.getMaxParticipants() == 0 ? theme.getMinParticipants() + 4 : theme.getMaxParticipants(),
 					Math.random() < 0.5
 				);
 				Party party = partyRepository.save(Party.of(request, theme));
