@@ -2,7 +2,6 @@ package com.ddobang.backend.domain.board.dto.request;
 
 import java.util.List;
 
-import com.ddobang.backend.domain.board.entity.Attachment;
 import com.ddobang.backend.domain.board.types.PostType;
 
 import jakarta.validation.constraints.NotBlank;
@@ -21,6 +20,6 @@ public record PostRequest(
 	@Size(max = 5000)
 	String content,
 
-	List<Attachment> attachments
+	List<AttachmentRequest> attachmentRequests
 ) {
 }

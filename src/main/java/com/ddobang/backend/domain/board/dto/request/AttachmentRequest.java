@@ -7,6 +7,6 @@ public record AttachmentRequest(
 	String url,
 
 	@Size(max = 255)
-	String originalName
+	String fileName
 ) {
 }
