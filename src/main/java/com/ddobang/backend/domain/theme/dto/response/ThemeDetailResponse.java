@@ -16,7 +16,7 @@ import lombok.Builder;
  */
 @Builder
 public record ThemeDetailResponse(
-	Long themeId,
+	Long id,
 	String name,
 	String description,
 	int runtime,
@@ -39,7 +39,7 @@ public record ThemeDetailResponse(
 			: "?인";
 
 		return ThemeDetailResponse.builder()
-			.themeId(theme.getId())
+			.id(theme.getId())
 			.name(theme.getName())
 			.description(theme.getDescription())
 			.runtime(theme.getRuntime())
