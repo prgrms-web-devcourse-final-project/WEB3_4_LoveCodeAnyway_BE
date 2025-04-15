@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.party.entity.Party;
+import com.ddobang.backend.domain.party.types.PartyMemberRole;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
@@ -66,6 +67,7 @@ public record PartyDetailResponse(
 
 			.acceptedPartyMembers(
 				party.getAcceptedMembers().stream()
+					.filter(pm -> pm.getRole() != PartyMemberRole.HOST)
 					.map(PartyMemberSummaries::from)
 					.toList()
 			)
