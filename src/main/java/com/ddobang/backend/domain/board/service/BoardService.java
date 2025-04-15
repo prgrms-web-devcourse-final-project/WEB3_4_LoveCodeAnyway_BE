@@ -1,6 +1,8 @@
 package com.ddobang.backend.domain.board.service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,9 +11,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.ddobang.backend.domain.board.dto.PostDto;
+import com.ddobang.backend.domain.board.dto.request.AttachmentRequest;
 import com.ddobang.backend.domain.board.dto.request.PostRequest;
 import com.ddobang.backend.domain.board.dto.response.PostDetailResponse;
 import com.ddobang.backend.domain.board.dto.response.PostSummaryResponse;
+import com.ddobang.backend.domain.board.entity.Attachment;
 import com.ddobang.backend.domain.board.entity.Post;
 import com.ddobang.backend.domain.board.exception.BoardErrorCode;
 import com.ddobang.backend.domain.board.exception.BoardException;
@@ -48,9 +52,24 @@ public class BoardService {
 		return PostDetailResponse.from(post);
 	}
 
+	public List<Attachment> createAttachment(List<AttachmentRequest> requests) {
+		if (requests == null || requests.isEmpty()) {
+			return Collections.emptyList();
+		}
+		return attachmentRepository.saveAll(
+			requests.stream()
+				.map(request -> Attachment.builder()
+					.url(request.url())
+					.fileName(request.fileName())
+					.build())
+				.collect(Collectors.toList())
+		);
+	}
+
 	@Transactional
 	public PostDto createPost(PostRequest request, Member actor) {
-		Post post = Post.of(request, actor);
+		List<Attachment> attachments = createAttachment(request.attachmentRequests());
+		Post post = Post.of(request, actor, attachments);
 		return PostDto.from(postRepository.save(post));
 	}
 

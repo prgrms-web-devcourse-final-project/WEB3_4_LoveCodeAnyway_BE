@@ -63,21 +63,21 @@ public class Post extends BaseTime {
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<PostReply> replies;
 
-	private Post(PostRequest postRequest, Member member) {
+	private Post(PostRequest postRequest, Member member, List<Attachment> attachments) {
 		this.type = postRequest.type();
 		this.title = postRequest.title();
 		this.content = postRequest.content();
 		this.member = member;
 		this.answered = false;
 		this.deleted = false;
-		this.attachments = postRequest.attachments() == null
+		this.attachments = attachments.isEmpty()
 			? new ArrayList<>()
-			: new ArrayList<>(postRequest.attachments());
+			: new ArrayList<>(attachments);
 		this.replies = new ArrayList<>();
 	}
 
-	public static Post of(PostRequest request, Member member) {
-		return new Post(request, member);
+	public static Post of(PostRequest request, Member member, List<Attachment> attachments) {
+		return new Post(request, member, attachments);
 	}
 
 	public void update(PostRequest postRequest) {

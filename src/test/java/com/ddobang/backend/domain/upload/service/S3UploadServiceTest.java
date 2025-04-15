@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -126,7 +128,8 @@ class S3UploadServiceTest {
 		MultipartFile file2 = new MockMultipartFile("file", "b.jpg", "image/jpeg", "456".getBytes());
 
 		PostRequest postRequest = new PostRequest(PostType.REPORT, "test", "test_content", null);
-		Post mockPost = Post.of(postRequest, testMember);
+		List<Attachment> attachments = new ArrayList<>();
+		Post mockPost = Post.of(postRequest, testMember, attachments);
 		when(uploadHandler.getPostById(anyLong())).thenReturn(mockPost);
 
 		// when

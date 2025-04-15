@@ -112,7 +112,7 @@ public class UploadHandlerTest {
 		Member member = Member.builder().build();
 		PostRequest postRequest = new PostRequest(PostType.QNA, "test", "test_content", Collections.emptyList());
 
-		Post post = Post.of(postRequest, member);
+		Post post = Post.of(postRequest, member, Collections.emptyList());
 		Attachment attachment = Attachment.builder().url("url").fileName("file.jpg").build();
 
 		// when
@@ -129,7 +129,7 @@ public class UploadHandlerTest {
 		Member member = Member.builder().build();
 		PostRequest postRequest = new PostRequest(PostType.QNA, "test", "test_content", Collections.emptyList());
 
-		Post post = Post.of(postRequest, member);
+		Post post = Post.of(postRequest, member, Collections.emptyList());
 		when(boardService.getPostById(1L)).thenReturn(post);
 
 		// when
