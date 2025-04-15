@@ -110,7 +110,7 @@ public class UploadHandlerTest {
 	void t2_1() {
 		// given
 		Member member = Member.builder().build();
-		PostRequest postRequest = new PostRequest(PostType.QNA, "test", "test_content", Collections.emptyList());
+		PostRequest postRequest = new PostRequest(PostType.QNA, "test", "test_content");
 
 		Post post = Post.of(postRequest, member);
 		Attachment attachment = Attachment.builder().url("url").fileName("file.jpg").build();
@@ -127,7 +127,7 @@ public class UploadHandlerTest {
 	void t4_1() {
 		// given
 		Member member = Member.builder().build();
-		PostRequest postRequest = new PostRequest(PostType.QNA, "test", "test_content", Collections.emptyList());
+		PostRequest postRequest = new PostRequest(PostType.QNA, "test", "test_content");
 
 		Post post = Post.of(postRequest, member);
 		when(boardService.getPostById(1L)).thenReturn(post);

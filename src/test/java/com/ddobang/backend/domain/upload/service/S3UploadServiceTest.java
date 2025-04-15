@@ -125,7 +125,7 @@ class S3UploadServiceTest {
 		MultipartFile file1 = new MockMultipartFile("file", "a.png", "image/png", "123".getBytes());
 		MultipartFile file2 = new MockMultipartFile("file", "b.jpg", "image/jpeg", "456".getBytes());
 
-		PostRequest postRequest = new PostRequest(PostType.REPORT, "test", "test_content", null);
+		PostRequest postRequest = new PostRequest(PostType.REPORT, "test", "test_content");
 		Post mockPost = Post.of(postRequest, testMember);
 		when(uploadHandler.getPostById(anyLong())).thenReturn(mockPost);
 
