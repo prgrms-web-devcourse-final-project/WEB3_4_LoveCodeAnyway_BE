@@ -1,4 +1,4 @@
-package com.ddobang.backend.domain.theme.entity;
+package com.ddobang.backend.domain.theme.tag.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

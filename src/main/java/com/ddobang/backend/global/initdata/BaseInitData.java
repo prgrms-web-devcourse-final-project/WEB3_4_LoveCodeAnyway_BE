@@ -38,9 +38,9 @@ import com.ddobang.backend.domain.region.repository.RegionRepository;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.repository.StoreRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
-import com.ddobang.backend.domain.theme.repository.ThemeTagRepository;
+import com.ddobang.backend.domain.theme.tag.entity.ThemeTag;
+import com.ddobang.backend.domain.theme.tag.repository.ThemeTagRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.Getter;

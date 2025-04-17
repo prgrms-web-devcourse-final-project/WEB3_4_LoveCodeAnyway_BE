@@ -13,9 +13,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.domain.theme.exception.ThemeException;
-import com.ddobang.backend.domain.theme.repository.ThemeTagRepository;
+import com.ddobang.backend.domain.theme.tag.entity.ThemeTag;
+import com.ddobang.backend.domain.theme.tag.repository.ThemeTagRepository;
+import com.ddobang.backend.domain.theme.tag.service.ThemeTagService;
 
 /**
  * ThemeTagServiceTest

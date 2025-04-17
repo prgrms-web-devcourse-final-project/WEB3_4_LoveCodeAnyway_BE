@@ -34,7 +34,7 @@ import com.ddobang.backend.domain.party.repository.PartyRepository;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.entity.ThemeStat;
+import com.ddobang.backend.domain.theme.stat.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.service.ThemeService;
 import com.ddobang.backend.global.event.EventPublisher;
 import com.ddobang.backend.global.response.PageDto;

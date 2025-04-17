@@ -14,8 +14,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.theme.dto.response.ThemeTagResponse;
-import com.ddobang.backend.domain.theme.entity.ThemeTag;
+import com.ddobang.backend.domain.theme.tag.dto.ThemeTagResponse;
+import com.ddobang.backend.domain.theme.tag.entity.ThemeTag;
+import com.ddobang.backend.domain.theme.tag.repository.ThemeTagRepository;
 import com.ddobang.backend.global.config.QuerydslConfig;
 
 import jakarta.persistence.EntityManager;

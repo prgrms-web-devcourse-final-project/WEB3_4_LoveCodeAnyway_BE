@@ -17,7 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.repository.StoreRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.entity.ThemeStat;
+import com.ddobang.backend.domain.theme.stat.entity.ThemeStat;
+import com.ddobang.backend.domain.theme.stat.repository.ThemeStatRepository;
 import com.ddobang.backend.global.config.QuerydslConfig;
 
 import jakarta.persistence.EntityManager;

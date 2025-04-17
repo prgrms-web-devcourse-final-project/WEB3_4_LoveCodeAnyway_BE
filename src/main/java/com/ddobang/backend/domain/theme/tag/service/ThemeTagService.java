@@ -1,15 +1,15 @@
-package com.ddobang.backend.domain.theme.service;
+package com.ddobang.backend.domain.theme.tag.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ddobang.backend.domain.theme.dto.response.ThemeTagResponse;
-import com.ddobang.backend.domain.theme.entity.ThemeTag;
+import com.ddobang.backend.domain.theme.tag.dto.ThemeTagResponse;
 import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
 import com.ddobang.backend.domain.theme.exception.ThemeException;
-import com.ddobang.backend.domain.theme.repository.ThemeTagRepository;
+import com.ddobang.backend.domain.theme.tag.entity.ThemeTag;
+import com.ddobang.backend.domain.theme.tag.repository.ThemeTagRepository;
 
 import lombok.RequiredArgsConstructor;
 

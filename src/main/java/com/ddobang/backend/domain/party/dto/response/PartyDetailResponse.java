@@ -9,7 +9,7 @@ import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.party.types.PartyMemberRole;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.entity.ThemeStat;
+import com.ddobang.backend.domain.theme.stat.entity.ThemeStat;
 
 import lombok.Builder;
 

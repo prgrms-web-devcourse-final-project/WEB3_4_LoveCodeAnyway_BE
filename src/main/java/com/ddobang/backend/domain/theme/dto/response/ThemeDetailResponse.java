@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.ddobang.backend.domain.store.entity.Store;
-import com.ddobang.backend.domain.theme.dto.ThemeStatDto;
+import com.ddobang.backend.domain.theme.stat.dto.ThemeStatDto;
 import com.ddobang.backend.domain.theme.entity.Theme;
 
 import lombok.Builder;

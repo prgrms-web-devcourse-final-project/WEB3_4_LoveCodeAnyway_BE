@@ -22,12 +22,13 @@ import com.ddobang.backend.domain.theme.dto.response.ThemeDetailResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeForPartyResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemesResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.entity.ThemeStat;
-import com.ddobang.backend.domain.theme.entity.ThemeTag;
+import com.ddobang.backend.domain.theme.stat.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
 import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
-import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
+import com.ddobang.backend.domain.theme.stat.repository.ThemeStatRepository;
+import com.ddobang.backend.domain.theme.tag.entity.ThemeTag;
+import com.ddobang.backend.domain.theme.tag.service.ThemeTagService;
 import com.ddobang.backend.global.response.SliceDto;
 
 /**

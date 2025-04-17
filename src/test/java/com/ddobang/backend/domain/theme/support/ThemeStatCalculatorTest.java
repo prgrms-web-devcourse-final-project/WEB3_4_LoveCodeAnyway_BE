@@ -17,8 +17,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.ddobang.backend.domain.diary.entity.DiaryStat;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.entity.ThemeStat;
-import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
+import com.ddobang.backend.domain.theme.stat.entity.ThemeStat;
+import com.ddobang.backend.domain.theme.stat.repository.ThemeStatRepository;
+import com.ddobang.backend.domain.theme.stat.support.ThemeStatCalculator;
 
 @ExtendWith(MockitoExtension.class)
 public class ThemeStatCalculatorTest {

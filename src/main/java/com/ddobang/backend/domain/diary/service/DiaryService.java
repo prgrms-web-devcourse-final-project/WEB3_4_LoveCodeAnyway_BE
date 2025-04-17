@@ -31,7 +31,7 @@ import com.ddobang.backend.domain.theme.dto.request.ThemeForMemberRequest;
 import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.service.ThemeService;
-import com.ddobang.backend.domain.theme.support.ThemeStatCalculator;
+import com.ddobang.backend.domain.theme.stat.support.ThemeStatCalculator;
 import com.ddobang.backend.global.security.LoginMemberProvider;
 import com.ddobang.backend.domain.upload.event.DiaryImageChangedEvent;
 import com.ddobang.backend.global.event.EventPublisher;
