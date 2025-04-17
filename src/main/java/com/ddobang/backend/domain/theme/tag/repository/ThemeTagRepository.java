@@ -23,7 +23,7 @@ public interface ThemeTagRepository extends JpaRepository<ThemeTag, Long> {
 	List<ThemeTag> findAllByIdIn(Collection<Long> ids);
 
 	@Query("""
-		SELECT new com.ddobang.backend.domain.theme.dto.response.ThemeTagResponse(t.id,t.name)
+		SELECT new com.ddobang.backend.domain.theme.tag.dto.ThemeTagResponse(t.id,t.name)
 		FROM ThemeTag t
 		""")
 	List<ThemeTagResponse> findAllTags();
