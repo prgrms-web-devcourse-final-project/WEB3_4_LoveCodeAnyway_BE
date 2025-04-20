@@ -1,6 +1,6 @@
-package com.ddobang.backend.domain.theme.stat.dto;
+package com.ddobang.backend.domain.theme.dto;
 
-import com.ddobang.backend.domain.theme.stat.entity.ThemeStat;
+import com.ddobang.backend.domain.theme.entity.ThemeStat;
 
 import lombok.Builder;
 

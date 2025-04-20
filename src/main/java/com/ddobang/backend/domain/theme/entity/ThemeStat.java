@@ -1,6 +1,4 @@
-package com.ddobang.backend.domain.theme.stat.entity;
-
-import com.ddobang.backend.domain.theme.entity.Theme;
+package com.ddobang.backend.domain.theme.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

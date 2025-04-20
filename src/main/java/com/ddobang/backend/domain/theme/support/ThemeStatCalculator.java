@@ -1,4 +1,4 @@
-package com.ddobang.backend.domain.theme.stat.support;
+package com.ddobang.backend.domain.theme.support;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,10 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.diary.entity.DiaryStat;
 import com.ddobang.backend.domain.diary.repository.DiaryStatRepository;
-import com.ddobang.backend.domain.theme.stat.dto.ThemeStatDto;
+import com.ddobang.backend.domain.theme.dto.ThemeStatDto;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.stat.entity.ThemeStat;
-import com.ddobang.backend.domain.theme.stat.repository.ThemeStatRepository;
+import com.ddobang.backend.domain.theme.entity.ThemeStat;
+import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.global.util.Ut;
 
 import lombok.RequiredArgsConstructor;

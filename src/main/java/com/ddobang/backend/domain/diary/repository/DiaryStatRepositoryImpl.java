@@ -2,8 +2,8 @@ package com.ddobang.backend.domain.diary.repository;
 
 import static com.ddobang.backend.domain.diary.entity.QDiaryStat.*;
 import static com.ddobang.backend.domain.theme.entity.QTheme.*;
+import static com.ddobang.backend.domain.theme.entity.QThemeStat.*;
 import static com.ddobang.backend.domain.theme.entity.QThemeTagMapping.*;
-import static com.ddobang.backend.domain.theme.stat.entity.QThemeStat.*;
 import static com.ddobang.backend.domain.theme.tag.entity.QThemeTag.*;
 
 import java.util.LinkedHashMap;

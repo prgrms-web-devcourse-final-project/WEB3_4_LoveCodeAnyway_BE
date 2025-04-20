@@ -1,9 +1,9 @@
-package com.ddobang.backend.domain.theme.stat.repository;
+package com.ddobang.backend.domain.theme.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ddobang.backend.domain.theme.stat.entity.ThemeStat;
+import com.ddobang.backend.domain.theme.entity.ThemeStat;
 
 /**
  * ThemeStatRepository

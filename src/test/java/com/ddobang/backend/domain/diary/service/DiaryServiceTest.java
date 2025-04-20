@@ -16,8 +16,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ddobang.backend.domain.diary.dto.request.DiaryRequestDto;
-import com.ddobang.backend.domain.theme.stat.entity.ThemeStat;
-import com.ddobang.backend.domain.theme.stat.repository.ThemeStatRepository;
+import com.ddobang.backend.domain.theme.entity.ThemeStat;
+import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
 import com.ddobang.backend.global.security.CustomUserDetails;
 
 /**
