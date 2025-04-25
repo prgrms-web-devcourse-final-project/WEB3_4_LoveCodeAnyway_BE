@@ -182,8 +182,10 @@ public class BaseInitData {
 		tag3 = themeTagRepository.save(new ThemeTag("판타지"));
 
 		// 4. 테마 10개 저장
-		themes = IntStream.range(1, 31)
-			.mapToObj(i -> themeRepository.save(Theme.builder()
+		LocalDateTime baseTime = LocalDateTime.of(2025, 4, 1, 0, 0);
+
+		for (int i = 1; i <= 30; i++) {
+			Theme theme = Theme.builder()
 				.name("테마 " + i)
 				.description("테마 설명 " + i)
 				.officialDifficulty(3.0f)
@@ -196,8 +198,12 @@ public class BaseInitData {
 				.thumbnailUrl("https://www.roomlescape.com/file/theme_info/1723787821_10bd760472.gif")
 				.store(i % 2 == 0 ? store1 : store2)
 				.themeTags(i % 4 != 0 ? List.of(tag1, tag2) : List.of(tag3))
-				.build()))
-			.toList();
+				.build();
+
+			Theme savedtheme = themeRepository.save(theme);
+			savedtheme.forceSetCreatedAt(baseTime.plusMinutes(i));
+			themes.add(savedtheme);
+		}
 	}
 
 	// Diary init data
