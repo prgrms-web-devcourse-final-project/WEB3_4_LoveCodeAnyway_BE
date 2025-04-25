@@ -31,6 +31,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
 				post.type,
 				post.title,
 				post.answered,
+				post.attachments.isEmpty().not(),
 				post.createdAt
 			))
 			.from(post)
