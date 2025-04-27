@@ -1,6 +1,7 @@
 package com.ddobang.backend.domain.theme.entity;
 
 import com.ddobang.backend.domain.theme.entity.id.ThemeTagMappingId;
+import com.ddobang.backend.domain.theme.tag.entity.ThemeTag;
 
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;

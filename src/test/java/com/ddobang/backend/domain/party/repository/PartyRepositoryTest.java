@@ -26,7 +26,7 @@ import com.ddobang.backend.domain.party.types.PartyStatus;
 import com.ddobang.backend.domain.region.entity.Region;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.entity.Theme;
-import com.ddobang.backend.domain.theme.entity.ThemeTag;
+import com.ddobang.backend.domain.theme.tag.entity.ThemeTag;
 import com.ddobang.backend.global.config.QuerydslConfig;
 
 import jakarta.persistence.EntityManager;

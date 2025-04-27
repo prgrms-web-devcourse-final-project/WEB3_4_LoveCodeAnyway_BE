@@ -1,7 +1,6 @@
 package com.ddobang.backend.domain.theme.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -9,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.store.service.StoreService;
 import com.ddobang.backend.domain.theme.dto.ThemeStatDto;
@@ -19,16 +19,21 @@ import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeDetailResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeForAdminResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeForPartyResponse;
-import com.ddobang.backend.domain.theme.dto.response.ThemeTagResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemesResponse;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
-import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
 import com.ddobang.backend.domain.theme.exception.ThemeException;
 import com.ddobang.backend.domain.theme.repository.ThemeRepository;
 import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
+import com.ddobang.backend.domain.theme.tag.dto.ThemeTagResponse;
+import com.ddobang.backend.domain.theme.tag.entity.ThemeTag;
+import com.ddobang.backend.domain.theme.tag.service.ThemeTagService;
+import com.ddobang.backend.domain.themewish.entity.ThemeWish;
+import com.ddobang.backend.domain.themewish.entity.id.ThemeWishId;
+import com.ddobang.backend.domain.themewish.service.ThemeWishService;
 import com.ddobang.backend.global.response.SliceDto;
+import com.ddobang.backend.global.security.LoginMemberProvider;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +48,9 @@ public class ThemeService {
 
 	private final StoreService storeService;
 	private final ThemeTagService themeTagService;
+	private final ThemeWishService themeWishService;
+
+	private final LoginMemberProvider loginMemberProvider;
 
 	@Transactional(readOnly = true)
 	public SliceDto<ThemesResponse> getThemesWithFilter(ThemeFilterRequest filterRequest, int page, int size) {
@@ -69,7 +77,7 @@ public class ThemeService {
 
 		List<Theme> themes = themeRepository.findThemesForPartySearch(keyword);
 
-		return themes.stream().map(ThemeForPartyResponse::of).collect(Collectors.toList());
+		return themes.stream().map(ThemeForPartyResponse::of).toList();
 	}
 
 	@Transactional(readOnly = true)
@@ -169,5 +177,27 @@ public class ThemeService {
 	@CacheEvict(cacheNames = {"popularThemesByTag", "newestThemesByTag"}, allEntries = true)
 	public void clearThemeCachesDaily() {
 		log.info("매일 자정 캐시 초기화: 인기 테마 / 최신 테마 캐시 삭제 완료");
+	}
+
+	@Transactional
+	public void addThemeWish(Long themeId) {
+		Theme theme = getThemeById(themeId);
+		Member member = loginMemberProvider.getCurrentMember();
+		themeWishService.addThemeWish(theme, member);
+	}
+
+	@Transactional
+	public void deleteThemeWish(Long themeId) {
+		Member member = loginMemberProvider.getCurrentMember();
+		themeWishService.deleteThemeWish(new ThemeWishId(themeId, member.getId()));
+	}
+
+	@Transactional(readOnly = true)
+	public List<ThemesResponse> getThemeWishes() {
+		Member member = loginMemberProvider.getCurrentMember();
+		List<ThemeWish> themeWishes = themeWishService.getThemeWishesByMemberId(member.getId());
+		List<Theme> themes = themeWishes.stream().map(ThemeWish::getTheme).toList();
+
+		return themes.stream().map(ThemesResponse::of).toList();
 	}
 }

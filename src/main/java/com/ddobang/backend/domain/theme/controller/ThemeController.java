@@ -3,6 +3,7 @@ package com.ddobang.backend.domain.theme.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,9 +18,9 @@ import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.dto.response.SimpleThemeResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeDetailResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemeForPartyResponse;
-import com.ddobang.backend.domain.theme.dto.response.ThemeTagResponse;
 import com.ddobang.backend.domain.theme.dto.response.ThemesResponse;
 import com.ddobang.backend.domain.theme.service.ThemeService;
+import com.ddobang.backend.domain.theme.tag.dto.ThemeTagResponse;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SliceDto;
 import com.ddobang.backend.global.response.SuccessResponse;
@@ -113,6 +114,31 @@ public class ThemeController {
 		@RequestParam(defaultValue = "10") int size
 	) {
 		SliceDto<PartySummaryResponse> result = partyService.getPartiesByTheme(id, lastId, size);
-		return ResponseEntity.ok(SuccessResponse.of(result));
+		return ResponseFactory.ok(result);
+	}
+
+	@PostMapping("/{id}/wishes")
+	@Operation(summary = "현재 로그인 중인 사용자의 모임 희망 테마 등록")
+	public ResponseEntity<SuccessResponse<Void>> addWishTheme(
+		@PathVariable Long id
+	) {
+		themeService.addThemeWish(id);
+		return ResponseFactory.ok("모임 희망 테마 등록에 성공했습니다.");
+	}
+
+	@DeleteMapping("/{id}/wishes")
+	@Operation(summary = "현재 로그인 중인 사용자의 모임 희망 테마 삭제")
+	public ResponseEntity<SuccessResponse<Void>> deleteWishTheme(
+		@PathVariable Long id
+	) {
+		themeService.deleteThemeWish(id);
+		return ResponseFactory.ok("모임 희망 테마 삭제에 성공했습니다.");
+	}
+
+	@GetMapping("/wishes")
+	@Operation(summary = "현재 로그인 중인 사용자의 모임 희망 테마 목록 조회")
+	public ResponseEntity<SuccessResponse<List<ThemesResponse>>> getWishThemes() {
+		List<ThemesResponse> themes = themeService.getThemeWishes();
+		return ResponseFactory.ok(themes);
 	}
 }

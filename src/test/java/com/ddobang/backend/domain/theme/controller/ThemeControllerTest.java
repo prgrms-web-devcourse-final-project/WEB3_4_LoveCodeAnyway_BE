@@ -22,9 +22,9 @@ import com.ddobang.backend.domain.store.entity.Store;
 import com.ddobang.backend.domain.theme.dto.request.ThemeFilterRequest;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
-import com.ddobang.backend.domain.theme.entity.ThemeTag;
 import com.ddobang.backend.domain.theme.exception.ThemeErrorCode;
 import com.ddobang.backend.domain.theme.repository.ThemeStatRepository;
+import com.ddobang.backend.domain.theme.tag.entity.ThemeTag;
 import com.ddobang.backend.global.initdata.BaseInitData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

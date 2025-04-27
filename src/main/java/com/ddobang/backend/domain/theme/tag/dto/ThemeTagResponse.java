@@ -1,4 +1,4 @@
-package com.ddobang.backend.domain.theme.dto.response;
+package com.ddobang.backend.domain.theme.tag.dto;
 
 /**
  * ThemeTagResponse
