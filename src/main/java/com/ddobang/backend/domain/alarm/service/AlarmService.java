@@ -107,7 +107,7 @@ public class AlarmService {
 
 		switch (alarmType) {
 			case MESSAGE -> {
-				return "/messages/" + relId;
+				return "/my/messages?messageId=" + relId; // 프론트엔드 요청에 맞게 수정
 			}
 			case SUBSCRIBE, PARTY_APPLY, PARTY_STATUS -> {
 				return "/parties/" + relId;
