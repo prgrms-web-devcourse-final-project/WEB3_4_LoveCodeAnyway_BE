@@ -25,12 +25,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.service.MemberService;
 import com.ddobang.backend.domain.party.dto.PartyDto;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
+import com.ddobang.backend.domain.party.dto.response.MyJoinedPartySummaryResponse;
 import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.Party;
@@ -88,9 +90,9 @@ class PartyServiceTest {
 		Region region = createRegion("서울", "강남");
 		Store store = createStore(region, "매장1");
 		theme = createTheme("테마1", "설명", Theme.Status.OPENED, store, List.of());
-		host = createMember("img.jpg", "멤버");
 		PartyRequest partyReq = partyReq("모임", theme.getId());
 		party = Party.of(partyReq, theme);
+		host = createMember("img.jpg", "멤버");
 		party.addPartyMember(createHost(party, host));
 	}
 
@@ -463,25 +465,33 @@ class PartyServiceTest {
 	}
 
 	@Test
-	@DisplayName("참여한 파티 목록 조회")
-	void getJoinedPartiesTest() {
+	@DisplayName("내가 참여한 파티 목록 조회")
+	void getMyJoinedPartiesTest() {
 		// given
 		int page = 0;
 		int size = 1;
 		Pageable pageable = PageRequest.of(page, size);
-		PartySummaryResponse expectedResponse = PartySummaryResponse.from(party);
-		Page<PartySummaryResponse> expectedPage = new PageImpl<>(List.of(expectedResponse), pageable, 1);
 
-		when(partyRepository.findByMemberJoined(host, pageable, true)).thenReturn(expectedPage);
+		ReflectionTestUtils.setField(host, "id", 1L);
+
+		MyJoinedPartySummaryResponse expectedResponse =
+			MyJoinedPartySummaryResponse.from(party, host, true);
+
+		Page<MyJoinedPartySummaryResponse> expectedPage =
+			new PageImpl<>(List.of(expectedResponse), pageable, 1);
+
+		when(partyRepository.findMyPartyHistories(host, null, null, pageable))
+			.thenReturn(expectedPage);
 
 		// when
-		PageDto<PartySummaryResponse> result = partyService.getMyJoinedParties(host, page, size);
+		PageDto<MyJoinedPartySummaryResponse> result =
+			partyService.getMyJoinedParties(host, null, null, page, size);
 
 		// then
 		assertNotNull(result);
-		assertEquals(expectedPage.getContent().size(), result.items().size());
 		assertEquals(1, result.items().size());
 		assertEquals(expectedResponse, result.items().getFirst());
-		verify(partyRepository).findByMemberJoined(host, pageable, true);
+
+		verify(partyRepository).findMyPartyHistories(host, null, null, pageable);
 	}
 }
