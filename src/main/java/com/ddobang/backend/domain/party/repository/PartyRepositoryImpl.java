@@ -13,12 +13,15 @@ import org.springframework.data.domain.Pageable;
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.entity.QMember;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
+import com.ddobang.backend.domain.party.dto.response.MyJoinedPartySummaryResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.QParty;
 import com.ddobang.backend.domain.party.entity.QPartyMember;
+import com.ddobang.backend.domain.party.entity.QPartyMemberReview;
 import com.ddobang.backend.domain.party.types.PartyMemberRole;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.party.types.PartyStatus;
+import com.ddobang.backend.domain.party.types.PartyTodoFilter;
 import com.ddobang.backend.domain.store.entity.QStore;
 import com.ddobang.backend.domain.theme.entity.QTheme;
 import com.ddobang.backend.domain.theme.entity.QThemeTagMapping;
@@ -27,6 +30,7 @@ import com.ddobang.backend.domain.theme.tag.entity.QThemeTag;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -133,7 +137,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 	}
 
 	@Override
-	public Page<PartySummaryResponse> findByMemberJoined(Member member, Pageable pageable, boolean myList) {
+	public Page<PartySummaryResponse> findOtherMemberJoinedParties(Member member, Pageable pageable) {
 		QParty party = QParty.party;
 		QPartyMember pm = QPartyMember.partyMember;
 		QStore store = QStore.store;
@@ -143,10 +147,6 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 		BooleanBuilder builder = new BooleanBuilder();
 
 		builder.and(getCompletedAndAcceptedCondition(member, party, pm));
-		if (myList) {
-			builder.or(getFullAndAcceptedCondition(member, party, pm));
-			builder.or(getRecruitingAndAcceptedOrApplicantCondition(member, party, pm));
-		}
 
 		List<PartySummaryResponse> content = queryFactory
 			.select(Projections.constructor(PartySummaryResponse.class,
@@ -188,6 +188,116 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 		return new PageImpl<>(content, pageable, count != null ? count : 0L);
 	}
 
+	@Override
+	public Page<MyJoinedPartySummaryResponse> findMyPartyHistories(
+		Member member,
+		PartyMemberRole role,
+		PartyTodoFilter todoFilter,
+		Pageable pageable
+	) {
+		QParty party = QParty.party;
+		QPartyMember pm = QPartyMember.partyMember;
+		QPartyMember hostPm = new QPartyMember("hostPm");
+		QStore store = QStore.store;
+		QTheme theme = QTheme.theme;
+		QMember myMember = QMember.member;
+		QMember host = new QMember("host");
+		QPartyMemberReview review = QPartyMemberReview.partyMemberReview;
+
+		BooleanBuilder baseCondition = new BooleanBuilder();
+		baseCondition.or(getCompletedAndAcceptedCondition(member, party, pm))
+			.or(getFullAndAcceptedCondition(member, party, pm))
+			.or(getRecruitingAndAcceptedOrApplicantCondition(member, party, pm))
+			.or(getHostedPartyCondition(member, pm));
+
+		BooleanBuilder filterCondition = new BooleanBuilder();
+		if (role != null) {
+			filterCondition.and(pm.role.eq(role));
+		}
+		if (todoFilter == PartyTodoFilter.HOST_PENDING) {
+			filterCondition.and(party.status.eq(PartyStatus.PENDING));
+		} else if (todoFilter == PartyTodoFilter.PARTICIPANT_REVIEW) {
+			filterCondition.and(party.status.eq(PartyStatus.COMPLETED));
+			filterCondition.and(
+				JPAExpressions.selectOne()
+					.from(review)
+					.where(
+						review.party.id.eq(party.id),
+						review.reviewer.id.eq(member.getId())
+					)
+					.notExists()
+			);
+		}
+
+		BooleanBuilder finalCondition = new BooleanBuilder();
+		finalCondition.and(baseCondition).and(filterCondition);
+
+		List<MyJoinedPartySummaryResponse> content = queryFactory
+			.select(Projections.constructor(MyJoinedPartySummaryResponse.class,
+				party.id,
+				party.title,
+				party.scheduledAt,
+				party.totalParticipants
+					.subtract(party.participantsNeeded)
+					.add(party.acceptedParticipantsCount),
+				party.totalParticipants,
+				party.rookieAvailable,
+				store.name,
+				theme.id,
+				theme.name,
+				theme.thumbnailUrl,
+				host.id,
+				host.nickname,
+				host.profilePictureUrl,
+				pm.role,
+				JPAExpressions
+					.selectOne()
+					.from(review)
+					.where(
+						review.party.id.eq(party.id),
+						review.reviewer.id.eq(member.getId())
+					)
+					.exists(),
+				party.status
+			))
+			.from(pm)
+			.join(pm.party, party)
+			.join(party.theme, theme)
+			.join(theme.store, store)
+			.join(pm.member, myMember)
+			.join(party.partyMembers, hostPm)
+			.join(hostPm.member, host)
+			.where(
+				getHostPmCondition(hostPm),
+				finalCondition
+			)
+			.orderBy(party.scheduledAt.desc())
+			.distinct()
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.fetch();
+
+		Long count = queryFactory
+			.select(party.countDistinct())
+			.from(pm)
+			.join(pm.party, party)
+			.join(party.partyMembers, hostPm)
+			.where(
+				getHostPmCondition(hostPm),
+				finalCondition
+			)
+			.fetchOne();
+
+		return new PageImpl<>(content, pageable, count != null ? count : 0L);
+	}
+
+	private BooleanExpression getCompletedAndAcceptedCondition(Member member, QParty party, QPartyMember pm) {
+		return party.scheduledAt.before(LocalDateTime.now())
+			.and(party.status.eq(PartyStatus.COMPLETED))
+			.and(pm.status.eq(PartyMemberStatus.ACCEPTED))
+			.and(pm.member.eq(member));
+	}
+
 	private BooleanExpression getFullAndAcceptedCondition(Member member, QParty party, QPartyMember pm) {
 		return party.scheduledAt.after(LocalDateTime.now())
 			.and(party.status.eq(PartyStatus.FULL))
@@ -203,11 +313,13 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 			.and(pm.member.eq(member));
 	}
 
-	private BooleanExpression getCompletedAndAcceptedCondition(Member member, QParty party, QPartyMember pm) {
-		return party.scheduledAt.before(LocalDateTime.now())
-			.and(party.status.eq(PartyStatus.COMPLETED))
-			.and(pm.status.eq(PartyMemberStatus.ACCEPTED))
+	private BooleanExpression getHostedPartyCondition(Member member, QPartyMember pm) {
+		return pm.role.eq(PartyMemberRole.HOST)
 			.and(pm.member.eq(member));
+	}
+
+	private BooleanExpression getHostPmCondition(QPartyMember hostPm) {
+		return hostPm.role.eq(PartyMemberRole.HOST);
 	}
 
 	@Override

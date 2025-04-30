@@ -18,6 +18,7 @@ import com.ddobang.backend.domain.party.dto.PartyDto;
 import com.ddobang.backend.domain.party.dto.request.PartyMemberReviewRequest;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
+import com.ddobang.backend.domain.party.dto.response.MyJoinedPartySummaryResponse;
 import com.ddobang.backend.domain.party.dto.response.PartyDetailResponse;
 import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
@@ -31,8 +32,10 @@ import com.ddobang.backend.domain.party.exception.PartyException;
 import com.ddobang.backend.domain.party.repository.PartyMemberRepository;
 import com.ddobang.backend.domain.party.repository.PartyMemberReviewRepository;
 import com.ddobang.backend.domain.party.repository.PartyRepository;
+import com.ddobang.backend.domain.party.types.PartyMemberRole;
 import com.ddobang.backend.domain.party.types.PartyMemberStatus;
 import com.ddobang.backend.domain.party.types.PartyStatus;
+import com.ddobang.backend.domain.party.types.PartyTodoFilter;
 import com.ddobang.backend.domain.theme.entity.Theme;
 import com.ddobang.backend.domain.theme.entity.ThemeStat;
 import com.ddobang.backend.domain.theme.service.ThemeService;
@@ -242,13 +245,15 @@ public class PartyService {
 	public PageDto<PartySummaryResponse> getOtherJoinedParties(Long memberId, int page, int size) {
 		Member member = memberService.getMember(memberId);
 		Pageable pageable = PageRequest.of(page, size);
-		Page<PartySummaryResponse> joinedParties = partyRepository.findByMemberJoined(member, pageable, false);
-		return PageDto.of(joinedParties);
+		Page<PartySummaryResponse> otherJoinedParties = partyRepository.findOtherMemberJoinedParties(member, pageable);
+		return PageDto.of(otherJoinedParties);
 	}
 
-	public PageDto<PartySummaryResponse> getMyJoinedParties(Member actor, int page, int size) {
+	public PageDto<MyJoinedPartySummaryResponse> getMyJoinedParties(
+		Member actor, PartyMemberRole role, PartyTodoFilter todoFilter, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
-		Page<PartySummaryResponse> joinedParties = partyRepository.findByMemberJoined(actor, pageable, true);
-		return PageDto.of(joinedParties);
+		Page<MyJoinedPartySummaryResponse> myJoinedParties = partyRepository.findMyPartyHistories(actor, role,
+			todoFilter, pageable);
+		return PageDto.of(myJoinedParties);
 	}
 }
