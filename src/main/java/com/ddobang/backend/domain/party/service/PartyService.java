@@ -222,7 +222,7 @@ public class PartyService {
 		Set<Long> reviewedMemberIds = new HashSet<>();
 
 		for (PartyMemberReviewRequest request : requests) {
-			Member receiver = memberService.getMember(request.targetId());
+			Member receiver = memberService.getMemberByUsername(request.targetNickname());
 
 			List<MemberReviewKeyword> keywords = request.reviewKeywords().stream()
 				.map(MemberReviewKeyword::valueOf)
