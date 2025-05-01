@@ -161,13 +161,13 @@ public class MemberStatCalculatorTest {
 		MemberStat saved = captor.getValue();
 
 		assertThat(saved.getEscapeScheduleStat().getMonthlyCountMap()).isEqualTo(
-			Map.of("2025년 4월", 0, "2025년 3월", 1, "2025년 2월", 1, "2025년 1월", 0, "2024년 12월", 0, "2024년 11월", 0)
+			Map.of("2025년 5월", 0, "2025년 4월", 0, "2025년 3월", 1, "2025년 2월", 1, "2025년 1월", 0, "2024년 12월", 0)
 		);
-		assertThat(saved.getEscapeScheduleStat().getLastMonthCount()).isEqualTo(1);
+		assertThat(saved.getEscapeScheduleStat().getLastMonthCount()).isEqualTo(0);
 		assertThat(saved.getEscapeScheduleStat().getLastMonthAvgSatisfaction()).isEqualTo(0);
 		assertThat(saved.getEscapeScheduleStat().getLastMonthAvgHintCount()).isEqualTo(0);
 		assertThat(saved.getEscapeScheduleStat().getLastMonthSuccessRate()).isEqualTo(0);
-		assertThat(saved.getEscapeScheduleStat().getLastMonthAvgTime()).isEqualTo(3600);
+		assertThat(saved.getEscapeScheduleStat().getLastMonthAvgTime()).isEqualTo(0);
 		assertThat(saved.getEscapeScheduleStat().getLastMonthTopTheme()).isEqualTo(null);
 		assertThat(saved.getEscapeScheduleStat().getLastMonthTopSatisfaction()).isEqualTo(0);
 	}

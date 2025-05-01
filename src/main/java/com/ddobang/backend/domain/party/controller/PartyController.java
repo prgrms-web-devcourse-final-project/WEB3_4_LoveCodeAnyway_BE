@@ -17,17 +17,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.member.types.KeywordType;
 import com.ddobang.backend.domain.member.types.MemberReviewKeyword;
 import com.ddobang.backend.domain.party.dto.PartyDto;
 import com.ddobang.backend.domain.party.dto.request.PartyMemberReviewRequest;
 import com.ddobang.backend.domain.party.dto.request.PartyRequest;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
+import com.ddobang.backend.domain.party.dto.response.MyJoinedPartySummaryResponse;
 import com.ddobang.backend.domain.party.dto.response.PartyDetailResponse;
 import com.ddobang.backend.domain.party.dto.response.PartyMainResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.service.PartyService;
+import com.ddobang.backend.domain.party.types.PartyMemberRole;
+import com.ddobang.backend.domain.party.types.PartyTodoFilter;
 import com.ddobang.backend.global.response.PageDto;
 import com.ddobang.backend.global.response.ResponseFactory;
 import com.ddobang.backend.global.response.SliceDto;
@@ -132,19 +134,25 @@ public class PartyController {
 	}
 
 	@GetMapping("/joins/{id}")
-	@Operation(summary = "참여한 모임 목록 조회")
-	public ResponseEntity<SuccessResponse<PageDto<PartySummaryResponse>>> getJoinedParties(
+	@Operation(summary = "다른 사람의 참여한 모임 목록 조회")
+	public ResponseEntity<SuccessResponse<PageDto<PartySummaryResponse>>> getOtherJoinedParties(
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size,
 		@PathVariable Long id
 	) {
-		Member actor = loginMemberProvider.getCurrentMember();
+		return ResponseFactory.ok(partyService.getOtherJoinedParties(id, page, size));
+	}
 
-		if (id.equals(actor.getId())) {
-			return ResponseFactory.ok(partyService.getMyJoinedParties(actor, page, size));
-		} else {
-			return ResponseFactory.ok(partyService.getOtherJoinedParties(id, page, size));
-		}
+	@GetMapping("/joins/me")
+	@Operation(summary = "내가 참여한 모임 목록 조회")
+	public ResponseEntity<SuccessResponse<PageDto<MyJoinedPartySummaryResponse>>> getMyJoinedParties(
+		@RequestParam(required = false) PartyMemberRole role,
+		@RequestParam(defaultValue = "NONE") PartyTodoFilter todoFilter,
+		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "10") int size
+	) {
+		return ResponseFactory.ok(
+			partyService.getMyJoinedParties(loginMemberProvider.getCurrentMember(), role, todoFilter, page, size));
 	}
 
 	// 모임원 평가

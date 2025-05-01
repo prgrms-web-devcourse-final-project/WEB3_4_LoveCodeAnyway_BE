@@ -15,9 +15,11 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.ddobang.backend.domain.member.entity.Member;
 import com.ddobang.backend.domain.party.dto.request.PartySearchCondition;
+import com.ddobang.backend.domain.party.dto.response.MyJoinedPartySummaryResponse;
 import com.ddobang.backend.domain.party.dto.response.PartySummaryResponse;
 import com.ddobang.backend.domain.party.entity.Party;
 import com.ddobang.backend.domain.party.testUtils.TestDataHelper;
@@ -622,59 +624,35 @@ public class PartyRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("참여한 모임 조회")
-	void findByMemberJoinedTest() {
+	@DisplayName("내가 참여한 FULL 상태의 파티 조회")
+	void findMyFullFuturePartyHistoriesTest() {
 		// given
 		Region region = createRegion(em, "서울", "강남");
 		Store store = createStore(em, region, "매장1");
-		Theme horrorTheme = createTheme(em, "미스터리 공포 테마", "무서운 경험", Theme.Status.OPENED, store,
-			List.of());
-		Member host = createMember(em, "host-img.jpg", "호스트");
-		Member member = createMember(em, "member-img.jpg", "멤버");
+		Theme theme = createTheme(em, "테마", "설명", Theme.Status.OPENED, store, List.of());
 
-		LocalDateTime scheduledAt = LocalDateTime.now().plusDays(3);
+		Member me = createMember(em, "me.jpg", "나");
+		Member host = createMember(em, "host.jpg", "호스트");
 
-		// 파티 생성
-		Party party1 = createParty(em, partyReq("미스터리 공포 파티 1", horrorTheme.getId(), scheduledAt),
-			horrorTheme);
-		Party party2 = createParty(em, partyReq("미스터리 공포 파티 2", horrorTheme.getId(), scheduledAt),
-			horrorTheme);
-		Party party3 = createParty(em, partyReq("미스터리 공포 파티 3", horrorTheme.getId(), scheduledAt),
-			horrorTheme);
-		Party party4 = createParty(em, partyReq("미스터리 공포 파티 4", horrorTheme.getId(), scheduledAt),
-			horrorTheme);
+		LocalDateTime future = LocalDateTime.now().plusDays(2);
 
-		party1.addPartyMember(createHost(em, party1, member));
-		party2.addPartyMember(createHost(em, party2, host));
-		party3.addPartyMember(createHost(em, party3, host));
-		party4.addPartyMember(createHost(em, party4, member));
-
-		// 파티에 참여자 추가
-		party2.addPartyMember(createPartyMember(em, party2, member));
-		party3.addPartyMember(createPartyMember(em, party3, member));
-
-		party2.updatePartyMemberStatus(member, PartyMemberStatus.CANCELLED);
-		party3.updatePartyMemberStatus(member, PartyMemberStatus.ACCEPTED);
-
-		party4.updateStatus(PartyStatus.COMPLETED);
+		Party party = createParty(em, partyReq("미래 FULL 파티", theme.getId(), future), theme);
+		party.addPartyMember(createHost(em, party, host));
+		party.addPartyMember(createPartyMember(em, party, me));
+		party.updatePartyMemberStatus(me, PartyMemberStatus.ACCEPTED);
+		party.updateStatus(PartyStatus.FULL);
 
 		em.flush();
 		em.clear();
 
-		PageRequest pageable = PageRequest.of(0, 10);
+		Pageable pageable = PageRequest.of(0, 10);
 
 		// when
-		Page<PartySummaryResponse> result = partyRepository.findByMemberJoined(member, pageable, true);
+		Page<MyJoinedPartySummaryResponse> result = partyRepository.findMyPartyHistories(me, null, null, pageable);
 
 		// then
-		assertThat(result).hasSize(2);
-		assertThat(result.getTotalElements()).isEqualTo(2);
-
-		List<String> titles = result.getContent().stream()
-			.map(PartySummaryResponse::title)
-			.toList();
-
-		assertThat(titles).contains("미스터리 공포 파티 1", "미스터리 공포 파티 3");
+		assertThat(result).hasSize(1);
+		assertThat(result.getContent().get(0).title()).isEqualTo("미래 FULL 파티");
 	}
 
 	@Test

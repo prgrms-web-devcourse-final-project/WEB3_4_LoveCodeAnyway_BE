@@ -268,12 +268,22 @@ public class PartyControllerTest {
 	}
 
 	@Test
-	@DisplayName("참여한 모임 목록 조회")
+	@DisplayName("다른 유저의 참여한 모임 목록 조회")
 	void getJoinedPartiesTest() throws Exception {
 
 		mockMvc.perform(get("/api/v1/parties/joins/{id}", host.getId()))
 			.andExpect(handler().handlerType(PartyController.class))
-			.andExpect(handler().methodName("getJoinedParties"))
+			.andExpect(handler().methodName("getOtherJoinedParties"))
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	@DisplayName("내가 참여한 모임 목록 조회")
+	void getMyJoinedPartiesTest() throws Exception {
+
+		mockMvc.perform(get("/api/v1/parties/joins/me", host.getId()))
+			.andExpect(handler().handlerType(PartyController.class))
+			.andExpect(handler().methodName("getMyJoinedParties"))
 			.andExpect(status().isOk());
 	}
 }
