@@ -1,0 +1,50 @@
+name: "✨ Feature"
+description: "새로운 기능 추가"
+labels: ["feature"]
+body:
+  - type: dropdown
+    id: domain
+    attributes:
+      label: 🗂 도메인
+      description: 이 기능이 속한 도메인을 선택해 주세요.
+      options:
+        - 인증 (auth)
+        - 회원 (member)
+        - 테마 (theme)
+        - 매장 (store)
+        - 모임 (party)
+        - 탈출일지 (diary)
+        - 문의 (board)
+        - 쪽지 (message)
+        - 알림 (noti)
+        - 기타 (etc)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "📄 설명"
+      description: "새로운 기능에 대한 설명을 작성해 주세요."
+      placeholder: "자세히 적을수록 좋습니다!"
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: "✅ 작업할 내용"
+      description: "할 일을 체크박스 형태로 작성해주세요."
+      placeholder: |
+        - [ ] 작업 1
+        - [ ] 작업 2
+        - [ ] 작업 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: "🙋🏻 참고 자료"
+      description: "참고 자료가 있다면 작성해 주세요."
+      placeholder: "링크, 문서 등"

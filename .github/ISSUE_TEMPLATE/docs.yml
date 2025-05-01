@@ -1,0 +1,25 @@
+name: "📝 Docs"
+description: "README 또는 기타 문서 수정 이슈"
+labels: ["docs"]
+body:
+  - type: input
+    id: doc-target
+    attributes:
+      label: 📂 수정 대상
+      description: 어떤 문서를 수정할 건지 알려주세요.
+      placeholder: 예) README.md, API 명세서, ERD
+
+  - type: textarea
+    id: change-desc
+    attributes:
+      label: ✏️ 수정 내용
+      description: 어떤 내용을 어떻게 바꾸고 싶은지 구체적으로 적어주세요.
+      placeholder: 예) API 명세에 response 예시 추가
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: 💡 수정 이유
+      description: 왜 수정이 필요한지 간단히 알려주세요.

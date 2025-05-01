@@ -1,0 +1,37 @@
+server:
+  forward-headers-strategy: native
+spring:
+  config:
+    import: optional:application-secret.yml
+  # h2
+  h2:
+    console:
+      enabled: false
+  datasource:
+    url: jdbc:mysql://mysql_1:3306/team02_prod
+    username: lldjlocal
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      auto-commit: false
+  # JPA
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+        highlight_sql: false
+        use_sql_comments: false
+# logging
+logging:
+  level:
+    org.springframework.security: INFO
+    com.ddobang.backend: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: INFO
+    org.hibernate.orm.jdbc.bind: INFO
+    org.hibernate.orm.jdbc.extract: INFO
+custom:
+  sse:
+    timeout: 600000

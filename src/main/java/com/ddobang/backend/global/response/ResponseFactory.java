@@ -1,29 +1,73 @@
 package com.ddobang.backend.global.response;
 
-import com.ddobang.backend.global.exception.ErrorCode;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.ddobang.backend.global.exception.ErrorCode;
+
 public class ResponseFactory {
-    public static <T> ResponseEntity<T> ok(T data) {
-        return ResponseEntity.status(HttpStatus.OK).body(data);
-    }
 
-    public static <T> ResponseEntity<T> created(T data) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(data);
-    }
+	/*
+	메세지, 데이터 모두 포함 (200 OK)
+	 */
+	public static <T> ResponseEntity<SuccessResponse<T>> ok(String message, T data) {
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(SuccessResponse.of(message, data));
+	}
 
-    public static ResponseEntity<Void> noContent() {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
+	/*
+	메세지 포함 (200 OK)
+	 */
+	public static ResponseEntity<SuccessResponse<Void>> ok(String message) {
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(SuccessResponse.of(message));
+	}
 
-    public static ResponseEntity<ErrorResponse> error(ErrorCode errorCode) {
-        return ResponseEntity.status(errorCode.getStatus())
-                .body(ErrorResponse.of(errorCode));
-    }
+	/*
+	데이터 포함 (200 OK)
+	 */
+	public static <T> ResponseEntity<SuccessResponse<T>> ok(T data) {
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(SuccessResponse.of(data));
+	}
 
-    public static ResponseEntity<ErrorResponse> error(String code, String message, HttpStatus status) {
-        return ResponseEntity.status(status)
-                .body(ErrorResponse.of(code, message));
-    }
+	/*
+	메세지, 데이터 모두 포함 (201 Created)
+	 */
+	public static <T> ResponseEntity<SuccessResponse<T>> created(String message, T data) {
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(SuccessResponse.of(message, data));
+	}
+
+	/*
+	메세지 포함 (201 Created)
+	 */
+	public static ResponseEntity<SuccessResponse<Void>> created(String message) {
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(SuccessResponse.of(message));
+	}
+
+	/*
+	데이터 포함 (201 Created)
+	 */
+	public static <T> ResponseEntity<SuccessResponse<T>> created(T data) {
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(SuccessResponse.of(data));
+	}
+
+	public static ResponseEntity<Void> noContent() {
+		return ResponseEntity.noContent().build();
+	}
+
+	public static ResponseEntity<ErrorResponse> error(ErrorCode errorCode) {
+		return ResponseEntity.status(errorCode.getStatus())
+			.body(ErrorResponse.of(errorCode));
+	}
+
+	public static ResponseEntity<ErrorResponse> error(ErrorCode errorCode, List<ErrorResponse.ValidationError> errors) {
+		return ResponseEntity.status(errorCode.getStatus())
+			.body(ErrorResponse.of(errorCode, errors));
+	}
 }
