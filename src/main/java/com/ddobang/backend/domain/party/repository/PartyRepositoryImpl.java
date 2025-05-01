@@ -140,16 +140,17 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 	public Page<PartySummaryResponse> findOtherMemberJoinedParties(Member member, Pageable pageable) {
 		QParty party = QParty.party;
 		QPartyMember pm = QPartyMember.partyMember;
+		QPartyMember hostPm = new QPartyMember("hostPm");
+		QMember host = new QMember("host");
 		QStore store = QStore.store;
 		QTheme theme = QTheme.theme;
-		QMember host = QMember.member;
 
 		BooleanBuilder builder = new BooleanBuilder();
 
 		builder.and(getCompletedAndAcceptedCondition(member, party, pm));
 
 		List<PartySummaryResponse> content = queryFactory
-			.select(Projections.constructor(PartySummaryResponse.class,
+			.selectDistinct(Projections.constructor(PartySummaryResponse.class,
 				party.id,
 				party.title,
 				party.scheduledAt,
@@ -167,25 +168,32 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 				host.profilePictureUrl
 			))
 			.from(party)
-			.leftJoin(party.partyMembers, pm)
+			.join(party.partyMembers, pm)
+			.join(party.partyMembers, hostPm).on(hostPm.role.eq(PartyMemberRole.HOST))
+			.join(hostPm.member, host)
 			.join(party.theme, theme)
 			.join(theme.store, store)
-			.join(pm.member, host)
 			.where(builder)
 			.orderBy(party.scheduledAt.desc())
-			.distinct()
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
 			.fetch();
 
 		Long count = queryFactory
-			.select(party.countDistinct())
+			.select(party.id.countDistinct())
 			.from(party)
-			.leftJoin(party.partyMembers, pm)
+			.join(party.partyMembers, pm)
 			.where(builder)
 			.fetchOne();
 
 		return new PageImpl<>(content, pageable, count != null ? count : 0L);
+	}
+
+	private BooleanExpression getCompletedAndAcceptedCondition(Member member, QParty party, QPartyMember pm) {
+		return party.scheduledAt.before(LocalDateTime.now())
+			.and(party.status.eq(PartyStatus.COMPLETED))
+			.and(pm.status.eq(PartyMemberStatus.ACCEPTED))
+			.and(pm.member.eq(member));
 	}
 
 	@Override
@@ -289,13 +297,6 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 			.fetchOne();
 
 		return new PageImpl<>(content, pageable, count != null ? count : 0L);
-	}
-
-	private BooleanExpression getCompletedAndAcceptedCondition(Member member, QParty party, QPartyMember pm) {
-		return party.scheduledAt.before(LocalDateTime.now())
-			.and(party.status.eq(PartyStatus.COMPLETED))
-			.and(pm.status.eq(PartyMemberStatus.ACCEPTED))
-			.and(pm.member.eq(member));
 	}
 
 	private BooleanExpression getFullAndAcceptedCondition(Member member, QParty party, QPartyMember pm) {
